@@ -1,5 +1,5 @@
 rs: 
-	@python3 manage.py runserver 3000
+	@python3 manage.py runserver 5000
 
 mm:
 	@python3 manage.py makemigrations

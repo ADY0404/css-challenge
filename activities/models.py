@@ -7,6 +7,7 @@ class Event(models.Model):
     description = models.TextField()
     date = models.DateField()
     image = models.ImageField(upload_to='activities/')
-
+    button_text = models.CharField(max_length=50, default="VIEW EVENT")
+    
     def __str__(self):
         return self.title

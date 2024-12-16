@@ -35,7 +35,7 @@
                 {% if user.is_authenticated %}
                     <!-- Show user's profile picture if logged in -->
                     <button class="btn btn-link ms-3" data-bs-toggle="modal" data-bs-target="#profileModal">
-                        <img src="{{ user.profile_picture.url }}" alt="Profile" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                        <img src="{{ user.profile.profile_picture.url }}" alt="Profile" class="rounded-circle" style="width: 40px; height: 40px; object-fit: fill;">
                     </button>
                 {% else %}
                     {% if request.path == '/signup/' %}

@@ -6,14 +6,24 @@
     
     <form method="get" class="my-3">
         <select name="year" onchange="this.form.submit()" class="form-select w-auto mx-auto">
-            <option value="2024/24" {% if academic_year == '2024/24' %}selected{% endif %}>2023/24</option>
-            <option value="2023/23" {% if academic_year == '2023/23' %}selected{% endif %}>2022/23</option>
+            <!-- Default placeholder option -->
+            <option value="" disabled {% if not academic_year %}selected{% endif %} style="color: gray;">
+                Select Year
+            </option>
+            
+            <!-- Dynamically render academic years -->
+            {% for year in academic_years %}
+                <option value="{{ year }}" {% if academic_year == year %}selected{% endif %}>
+                    {{ year }}
+                </option>
+            {% endfor %}
         </select>
     </form>
+    
 
     <div class="row">
         {% for executive in executives %}
-        <div class="col-md-4 my-3">
+        <div class="col-md-3 my-3">
             <div class="card">
                 <img src="{{ executive.image.url }}" class="card-img-top" alt="{{ executive.name }}">
                 <div class="card-body">

@@ -1,37 +1,53 @@
 {% extends "homepage/base2.html" %}
 {% load static %}
 {% block content %}
+<!-- Thick Faded HR -->
+<div class="d-flex justify-content-between align-items-center">
+    <hr class="w-100" style="border-top: 5px solid rgba(0, 0, 0, 0.5);"> <!-- Thick and faded HR -->
+</div>
     <div class="container">
-        <h1 class="mb-4">Activities</h1>
-        <!-- Grouped Events by Month -->
-        {% for month, events in grouped_events.items %}
-            <div class="mb-5">
-                <h4 class="text-muted">{{ month }}</h4>
-                <div class="border-bottom my-3"></div>
+        {% if grouped_events %}
+            {% for month, events in grouped_events.items %}
+                <div class="mb-5">
+                    <h5 class="text-muted" style="font-weight: bold; margin-bottom: 15px;">
+                        • {{ month }}
+                    </h5>
+                    <div class="border-bottom mb-4"></div>
 
-                {% for event in events %}
-                    <!-- Event Card -->
-                    <div class="card mb-4" style="border: none;">
-                        <div class="row g-0 align-items-center">
-                            <div class="col-md-3">
-                                <img src="{{ event.image_url }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 150px; object-fit: cover;">
-                            </div>
-                            <div class="col-md-9">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ event.title }}</h5>
-                                    <p class="card-text text-muted" style="font-size: 0.9rem;">
-                                        {{ event.description }}
-                                    </p>
-                                    <p class="card-text">
-                                        <small class="text-muted">{{ event.date }}</small>
-                                    </p>
-                                    <a href="{{ event.link }}" class="btn btn-primary btn-sm">View Event</a>
+                    {% for event in events %}
+                        <div class="card mb-4 shadow-sm" style="border: none; border-radius: 10px;">
+                            <div class="row g-0 align-items-center">
+                                <div class="col-md-3">
+                                    <img src="{{ event.image_url }}" 
+                                         class="img-fluid rounded" 
+                                         alt="{{ event.title }}"
+                                         style="height: 120px; object-fit: contain; width: 100%;">
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-1" style="font-weight: bold; font-size: 1.2rem;">
+                                            {{ event.title }}
+                                        </h5>
+                                        <p class="card-text text-muted mb-2" style="font-size: 0.9rem; line-height: 1.4;">
+                                            {{ event.description }}
+                                        </p>
+                                        <p class="card-text mb-2">
+                                            <small class="text-muted">{{ event.date }}</small>
+                                        </p>
+                                        <a href="{{ event.link }}" 
+                                           class="btn btn-primary btn-sm" 
+                                           style="font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">
+                                            {{ event.button_text }}
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% endfor %}
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center text-muted">No events available at this time.</p>
+        {% endif %}
     </div>
 {% endblock %}
