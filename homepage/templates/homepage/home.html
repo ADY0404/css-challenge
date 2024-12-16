@@ -1,0 +1,243 @@
+{% extends "homepage/base.html" %}
+{% load static %}
+{% block content %}
+ <!-- Announcement Banner -->
+ <!-- <div class="bg-primary text-white text-center py-2">
+    <p class="mb-0">
+         
+        
+    </p>
+</div> -->
+
+<div class="alert alert-secondary text-primary text-opacity-50 text-center alert-dismissible fade show text-dark" 
+role="alert">
+    CSS Clinic Hub happening on Saturday, 21st January.
+    <a href="#" class="text-blue fw-bold text-decoration-none text-primary text-opacity-25"><strong>Click here</strong></a> for more.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+    <!-- Hero Section -->
+    <main class="container text-center my-5">
+        <h1 class="display-2">Computer Science Society</h1>
+        <p class="lead">Go the distance bush league the gloves are off gamble responsibly <br>fast and furious daisy-cutter claret on the field.</p>
+        <a href="{% url 'community' %}" class="btn btn-primary">Join Our Community</a>
+    </main>
+
+    <!-- Features Section -->
+    <section class="container text-center my-5">
+        <div class="row">
+            <div class="col-md-4">
+                <h3>Learn</h3>
+                <p>Learn from a well-curated guideline in your journey to become the next techie.</p>
+            </div>
+            <div class="col-md-4">
+                <h3>Connect</h3>
+                <p>Network with both senior and junior society members who are of like-minded goals and aims.</p>
+            </div>
+            <div class="col-md-4">
+                <h3>Grow</h3>
+                <p>Expand your horizons and grow both technically and personally with our programs.</p>
+            </div>
+        </div>
+    </section>
+
+<!-- Activities Section -->
+<section class="bg-light py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title">Activities</h2>
+            <a href="#" class="btn btn-primary ms-3">View All</a>
+        </div>
+        <div class="column">
+            <!-- First Activity -->
+                <div class="d-flex">
+                    <img src="{% static 'images/gat.jpeg' %}" alt="Freshers Orientation" class="img-fluid rounded mb-2 me-3" style="width: 450px; height: 200px;">
+                    <div>
+                        <br>
+                        <h4>CSS Freshers' Orientation</h4>
+                        <p>A program to introduce and orient freshers on what the society is about.</p>
+                        <p>30th January, 2023</p>
+                        <!-- Align the button with the text -->
+                        <a href="#" class="btn btn-primary mt-2">View Event</a>
+                    </div>
+                </div>
+        
+            <!-- Second Activity -->
+                <div class="d-flex">
+                    <img src="{% static 'images/gat.jpeg' %}" alt="Workshop" class="img-fluid rounded mb-2 me-3" style="width: 450px; height: 200px;">
+                    <div>
+                        <br>
+                        <h4>Workshops</h4>
+                        <p>Interactive workshops to enhance your tech skills and professional growth.</p>
+                        <p>15th February, 2023</p>
+                        <!-- Align the button with the text -->
+                        <a href="#" class="btn btn-primary mt-2">View Event</a>
+                    </div>
+                </div>
+        </div>
+    </div>
+</section>
+
+
+    <!-- Guidelines Section -->
+    <section class="bg-primary text-white text-center py-5">
+        <h1>Society Guidelines</h1><br>
+        <div class="container">
+             <div>
+            <p>Read our community guidelines to ensure all members understand expectations for behavior and communication within the society.</p><br>
+              </div>
+              <a href="#" class="btn btn-light btn-lg btn-block w-50 text-primary text-opacity-50">Read the Guidelines</a>
+        </div>
+    </section>
+
+    <!-- Challenges Section -->
+        <div class="container text-center position-relative py-5">
+            <!-- Profile Images -->
+            <div class="d-flex justify-content-between align-items-center position-relative">
+                <div class="position-absolute" style="top: -40px; left: 90px;">
+                    <img src="{% static 'images/man1.jpg' %}" alt="Person 1" class="rounded-circle" style="width: 80px; height: 80px; object-fit: contain;">
+                </div>
+                <div class="position-absolute" style="top: 120px; left: 200px;">
+                    <img src="{% static 'images/man2.jpg' %}" alt="Person 2" class="rounded-circle" style="width: 80px; height: 80px; object-fit: contain;">
+                </div>
+                <div class="position-absolute" style="bottom: -350px; left: 90px;">
+                    <img src="{% static 'images/man3.jpg' %}" alt="Person 3" class="rounded-circle" style="width: 80px; height: 80px; object-fit: contain;">
+                </div>
+                <div class="position-absolute" style="top: 40px; right: 90px;">
+                    <img src="{% static 'images/man4.jpg' %}" alt="Person 4" class="rounded-circle" style="width: 80px; height: 80px; object-fit: contain">
+                </div>
+                <div class="position-absolute" style="top: 120px; right: 180px;">
+                    <img src="{% static 'images/man5.jpg' %}" alt="Person 5" class="rounded-circle" style="width: 80px; height: 80px; object-fit: contain;">
+                </div>
+                <div class="position-absolute" style="bottom: -280px; right: 90px;">
+                    <img src="{% static 'images/man6.jpg' %}" alt="Person 6" class="rounded-circle" style="width: 80px; height: 80px; object-fit: contain;">
+                </div>
+            </div>
+    
+            <!-- Main Content -->
+            <h2 class="fw-bold mt-5">Join 1,000+ society members<br>in solving challenges.</h2>
+            <p class="lead">Sharpen your skills; Stand out among your colleagues.</p>
+            <a href="#" class="btn btn-primary my-4 px-4 py-2">Join the Challenge</a>
+        </div>
+    <!-- </div>
+</section> -->
+
+
+    <!-- Spotlight Section -->
+    <section class="container my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 ">
+            <h2>CSS Spotlight</h2>
+            <a href="#" class="btn btn-primary ms-2">View All</a>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <img src="{% static 'images/AI.jpeg' %}" alt="Spotlight" class="img-fluid rounded mb-3 " style="width: 400px; height: 300px;">
+                <h4>The effect of AI on Humanity</h4>
+                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eu turpis molestie, dictum est.</p>
+                <a href="#" class="text-decoration-none ">Read Now</a> 
+            </div>
+            <div class="col-md-6">
+                <ul class="list-unstyled">
+                    <li class="mb-3">
+                        <div class="d-flex">
+                            <img src="{% static 'images/AI.jpeg' %}" alt="picture" class="img-fluid rounded mb-2 me-4" style="max-width: 130px;">
+                            <div>
+                                <br>
+                        <h5><strong>The effect of AI on Humanity</strong></h5>
+                        <h6>prototype</h6>
+                        <p><strong>June 2023</strong></p>
+                    </li>
+                    <li class="mb-3">
+                        <div class="d-flex">
+                            <img src="{% static 'images/AI.jpeg' %}" alt="picture" class="img-fluid rounded mb-2 me-4" style="max-width: 130px;">
+                            <div>
+                                <br>
+                        <h5><strong>future of tech education</strong></h5>
+                        <h6>prototype</h6>
+                        <p><strong>15th May 2023</strong></p>
+                    </li>
+                    <li class="mb-3">
+                        <div class="d-flex">
+                            <img src="{% static 'images/AI.jpeg' %}" alt="picture" class="img-fluid rounded mb-2 me-4" style="max-width: 130px;">
+                            <div>
+                                <br>
+                        <h5><strong>future of tech education</strong></h5>
+                        <h6>prototype</h6>
+                        <p><strong>15th May 2023</strong></p>
+                    </li>
+                    <li class="mb-3">
+                        <div class="d-flex">
+                            <img src="{% static 'images/AI.jpeg' %}" alt="picture" class="img-fluid rounded mb-2 me-4" style="max-width: 130px;">
+                            <div>
+                                <br>
+                        <h5><strong>future of tech education</strong></h5>
+                        <h6>prototype</h6>
+                        <p><strong>15th May 2023</strong></p>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="bg-primary text-white py-5">
+        <div class="container text-center">
+            <h1>Subscribe to our newsletter</h1>
+            <form class="d-flex justify-content-center mt-3 ">
+                <input type="email" class="form-control w-50" placeholder="Enter your email">
+                <button type="submit" class="btn btn-light ms-2 text-primary text-opacity-50">READ NOW</button>
+            </form>
+        </div>
+    </section>
+
+   <!-- Footer Section -->
+<section class="bg-light py-4">
+    <div class="container">
+        <div class="row">
+            <!-- Logo and Social Media -->
+            <div class="col-md-4 d-flex flex-column align-items-start">
+                <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="img-fluid mb-3" style="max-width: 80px;">
+                <div>
+                    <a href="#" class="me-3"><i class="bi bi-instagram text-primary fs-3"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-linkedin text-primary fs-3"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-twitter text-primary fs-3"></i></a>
+                    <a href="#" class="me-3"><i class="bi bi-facebook text-primary fs-3"></i></a>
+                </div>                
+            </div>
+
+            <!-- Connect Links -->
+            <div class="col-md-2 text-center">
+                <h6 class="text-muted">Connect</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-decoration-none">Blog</a></li>
+                    <li><a href="#" class="text-decoration-none">LinkedIn</a></li>
+                    <li><a href="#" class="text-decoration-none">Facebook</a></li>
+                    <li><a href="#" class="text-decoration-none">Twitter</a></li>
+                    <li><a href="#" class="text-decoration-none">Instagram</a></li>
+                </ul>
+                
+            </div>
+
+            <!-- Programs Links -->
+            <div class="col-md-2 text-center">
+                <h6 class="text-muted">Programs</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-decoration-none">School of Groups</a></li>
+                    <li><a href="#" class="text-decoration-none">Tell Your Story</a></li>
+                    <li><a href="#" class="text-decoration-none">PC Clinic</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="col-md-15 text-center">
+        <div>
+            <a href="#" class="text-muted me-3">Terms</a>
+            <span class="text-muted">|</span>
+            <a href="#" class="text-muted ms-3">Privacy</a>
+        </div>
+    </div>
+</section>
+{% endblock content %}

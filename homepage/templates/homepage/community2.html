@@ -1,0 +1,111 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+<!-- Main Container -->
+<div class="container-fluid" style="height: 94vh; overflow: hidden;">
+    <div class="row h-100">
+       <!-- Left Sidebar -->
+<div class="col-1 bg-light py-1 px-3 d-flex flex-column align-items-start" style="border-right: 2px solid #ddd; width: 6%;">
+    <!-- Back Button -->
+    <button class="btn btn-link text-dark p-0 mb-3 " style="font-size: 24px;">
+        <a href="{% url 'community' %}" class=" text-decoration-none">
+        <i class="bi bi-chevron-left text-muted"></i></a>
+    </button>
+    
+    <!-- Add Channel Button -->
+    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+        style="width: 50px; height: 50px; font-size: 20px;">+</div>
+    
+    <!-- Other Circle -->
+    <div class="rounded-circle bg-danger mt-3" style="width: 50px; height: 50px;"></div>
+</div>
+
+
+            <!-- Sidebar -->
+        <div class="col-2 bg-light d-flex flex-column py-0 px-0" style="border-right: 2px solid #ddd;">
+            <!-- Channel Name Section -->
+            <div class="text-white d-flex align-items-center justify-content-center" 
+                style="width: 100%; height: 25%; background-color: rgba(9, 174, 9, 0.631);">
+                <h5 class="mb-0 fw-bold text-center">Channel<br>name</h5>
+            </div>
+            <!-- About Channel -->
+            <div class="mt-4 text-center">
+                <h6 class="fw-bold">About channel</h6>
+                <p class="text-muted small">
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum.
+                </p>
+                <!-- Member Count -->
+                <div class="d-flex align-items-center">
+                    <div class="d-flex position-relative me-2" style="width: 80px;">
+                        <div class="rounded-circle position-absolute" style="width: 30px; height: 30px; left: 10px; top:-10px; background-color: rgba(195, 6, 6, 0.651);"></div>
+                        <div class="rounded-circle position-absolute" style="width: 30px; height: 30px; left: 20px; top:-10px; background-color: rgba(238, 208, 16, 0.713);"></div>
+                        <div class="rounded-circle position-absolute" style="width: 30px; height: 30px; left: 30px; top:-10px;background-color: rgba(36, 102, 245, 0.852);"></div>
+                        <div class="rounded-circle bg-light position-absolute d-flex align-items-center justify-content-center"
+                            style="width: 30px; height: 30px; left: 40px; top:-10px "><span class="text-dark text-opacity-50">+</span></div>
+                    </div>
+                    <span class="text-dark text-opacity-50 small mb-0 mt-2">150+ Members</span>
+                </div>
+            </div>
+
+            <!-- See Challenges -->
+            <div class="mt-4" style="border-top: 2px solid #ddd; border-bottom: 2px solid #ddd;">
+                <a href="#" class="text-decoration-none text-secondary fw-bold d-flex align-items-center justify-content-center py-2">
+                    See challenges <i class="bi bi-chevron-right ms-2 fs-4 text-dark" style="font-weight: bold;"></i>
+                </a>
+            </div>
+            
+        </div>
+
+        <!-- Main Chat Area -->
+<div class="col-7 d-flex flex-column">
+    <!-- Chat Messages -->
+    <div class="flex-grow-1 bg-white p-3 d-flex flex-column-reverse overflow-auto">
+        <!-- Message -->
+        <div class="d-flex align-items-start mb-3">
+            <div class="rounded-circle bg-secondary me-3" style="width: 40px; height: 40px;"></div>
+            <div>
+                <p class="mb-1 fw-bold small">John Doe <span class="text-muted">Today at 7:05pm</span></p>
+                <p class="mb-0">Hello, how are you?</p>
+            </div>
+        </div>
+        <div class="d-flex align-items-start mb-3">
+            <div class="rounded-circle bg-secondary me-3" style="width: 40px; height: 40px;"></div>
+            <div>
+                <p class="mb-1 fw-bold small">John Doe <span class="text-muted">Today at 7:02pm</span></p>
+                <p class="mb-0">Lorem ipsum dolor sit amet.</p>
+            </div>
+        </div>
+        <!-- Date Indicator -->
+        <div class="d-flex align-items-center mb-3">
+            <hr class="flex-grow-1 border-muted m-0">
+            <span class="text-muted small mx-2 ">Today</span>
+            <hr class="flex-grow-1 border-muted m-0">
+        </div>
+        
+    </div>
+
+    <!-- Message Input -->
+    <div class="p-3 py-5" style="width: 130%;">
+        <div class="input-group bg-light" style=" border-radius: 25px; overflow: hidden;">
+            <!-- Emoji Button -->
+            <button class="btn btn-light border-0">
+                <i class="bi bi-emoji-smile text-secondary"></i>
+            </button>
+            <!-- Input Field -->
+            <input type="text" class="form-control border-0 bg-light" placeholder="Message" style="box-shadow: none;">
+            <!-- Send Button -->
+            <button class="btn btn-light border-0">
+                <i class="bi bi-send fs-4 text-dark" style="font-weight: bold;"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+    </div>
+</div>
+
+<!-- Required Bootstrap and Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
+{% endblock content %}

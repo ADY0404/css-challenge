@@ -1,0 +1,79 @@
+{% extends "homepage/base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+<div class="bg-light d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="bg-white p-4 rounded shadow" style="width: 100%; max-width: 400px;">
+        <!-- Title -->
+        <h2 class="text-center fw-bold mb-3">Sign up</h2>
+
+        <!-- Social Login Options -->
+        <div class="d-flex justify-content-center gap-3 mb-4">
+            <a href="#" class="d-flex justify-content-center align-items-center rounded-circle border" style="width: 50px; height: 50px; background-color: #f5f5f5;">
+                <i class="bi bi-google text-danger" style="font-size: 24px;"></i>
+            </a>
+            <a href="#" class="d-flex justify-content-center align-items-center rounded-circle border" style="width: 50px; height: 50px; background-color: #f5f5f5;">
+                <i class="bi bi-linkedin text-primary" style="font-size: 24px;"></i>
+            </a>
+            <a href="#" class="d-flex justify-content-center align-items-center rounded-circle border" style="width: 50px; height: 50px; background-color: #f5f5f5;">
+                <i class="bi bi-twitter text-info" style="font-size: 24px;"></i>
+            </a>
+            <a href="#" class="d-flex justify-content-center align-items-center rounded-circle border" style="width: 50px; height: 50px; background-color: #f5f5f5;">
+                <i class="bi bi-facebook text-primary" style="font-size: 24px;"></i>
+            </a>
+        </div>
+
+        <!-- OR Divider -->
+        <div class="text-center position-relative mb-4">
+            <span class="bg-white px-3 text-muted">or</span>
+            <hr class="position-absolute top-50 start-0 w-100 border-secondary" style="transform: translateY(-50%); z-index: -1;">
+        </div>
+
+        <!-- Sign-Up Form -->
+        <form method="POST" class="row g-3">
+            {% csrf_token %}
+            <div class="col-md-6">
+                <input type="text" class="form-control" name="first_name" placeholder="First name" required>
+            </div>
+            <div class="col-md-6">
+                <input type="text" class="form-control" name="last_name" placeholder="Last name" required>
+            </div>
+            <div class="col-md-6">
+                <input type="date" name="dob" class="form-control" required>
+            </div>
+            <div class="col-md-6 ">
+                <select class="form-select" name="year" required>
+                    <option value="" selected disabled>Year</option>
+                    <option value=""></option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+            </div>
+            
+            <div class="col-12">
+                <input type="email" class="form-control" name="email" placeholder="Email" required>
+            </div>
+            <div class="col-12">
+                <input type="text" class="form-control" name="username" placeholder="Username" required>
+            </div>
+            <div class="col-md-6 position-relative">
+                <input type="password" class="form-control" name="password" placeholder="Password" required>
+                <i class="bi bi-eye position-absolute end-0 top-50 translate-middle-y pe-2"></i>
+            </div>
+            <div class="col-md-6 position-relative">
+                <input type="password" class="form-control" name="confirm_password" placeholder="Confirm Password" required>
+                <i class="bi bi-eye position-absolute end-0 top-50 translate-middle-y pe-2"></i>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary w-100 py-2">Sign up</button>
+            </div>
+        </form>
+
+        <!-- Footer -->
+        <p class="text-center text-muted mt-3">
+            Already have an account? <a href="{% url 'login' %}" class="text-decoration-none">Sign in</a>.
+        </p>
+    </div>
+</div>
+{% endblock content %}
+
