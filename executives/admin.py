@@ -5,5 +5,5 @@ from .models import Executive
 
 @admin.register(Executive)
 class ExecutiveAdmin(admin.ModelAdmin):
-    list_display = ('name', 'title', 'academic_year')
+    list_display = ('name', 'position', 'academic_year')
 
