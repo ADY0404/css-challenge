@@ -29,6 +29,7 @@ urlpatterns = [
     path('community2/', views.community2, name='community2'),
     path('executives/', include('executives.urls', namespace='executives')),
     path('activities/', include('activities.urls', namespace='act')),
+    path('users/', include('users.urls',)),
 ]
 
 from django.conf import settings

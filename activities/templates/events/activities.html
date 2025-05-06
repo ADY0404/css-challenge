@@ -34,7 +34,7 @@
                                         <p class="card-text mb-2">
                                             <small class="text-muted">{{ event.date }}</small>
                                         </p>
-                                        <a href="{{ event.link }}" 
+                                        <a href="{% url 'act:event' event.id %}" 
                                            class="btn btn-primary btn-sm" 
                                            style="font-size: 0.8rem; font-weight: bold; text-transform: uppercase;">
                                             {{ event.button_text }}
@@ -51,3 +51,4 @@
         {% endif %}
     </div>
 {% endblock %}
+

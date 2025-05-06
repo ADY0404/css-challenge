@@ -1,8 +1,8 @@
-# from django.urls import path
-# from . import views
+from django.urls import path
+from .views import login_view, update_profile
 
-# app_name = 'users'
-
-# urlpatterns = [
-#     path('', views.profile, name='profile'),
-# ]
+urlpatterns = [
+    path("login/", login_view, name="login"),
+    path("profile/", update_profile, name="profile"),
+    
+]

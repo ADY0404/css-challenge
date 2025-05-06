@@ -38,9 +38,9 @@
                         <img src="{{ user.profile.profile_picture.url }}" alt="Profile" class="rounded-circle" style="width: 40px; height: 40px; object-fit: fill;">
                     </button>
                 {% else %}
-                    {% if request.path == '/signup/' %}
+                    {% if request.path == '/users/signup/' %}
                         <a href="{% url 'login' %}" class="btn btn-primary ms-3">Sign In</a>
-                    {% elif request.path == '/login/' %}
+                    {% elif request.path == '/users/login/' %}
                         <a href="{% url 'signup' %}" class="btn btn-primary ms-3">Sign Up</a>
                     {% else %}
                         <a href="{% url 'login' %}" class="btn btn-primary ms-3">Sign In</a>

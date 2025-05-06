@@ -1,4 +1,4 @@
-{% extends "base2.html" %}
+{% extends "homepage/base2.html" %}
 {% block content %}
 <div class="container mt-5">
     <h2 class="mb-4">Update Your Profile</h2>
@@ -16,10 +16,10 @@
             <label for="last_name">Last Name</label>
             <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}">
         </div>
-        <div class="form-group mb-3">
+        <!-- <div class="form-group mb-3">
             <label for="email">Email</label>
             <input type="email" class="form-control" id="email" name="email" value="{{ user.email }}">
-        </div>
+        </div> -->
         <div class="form-group mb-3">
             <label for="year">Year</label>
             <input type="number" class="form-control" id="year" name="year" value="{{ user.profile.year }}">

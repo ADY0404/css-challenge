@@ -1,42 +1,79 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
 from django.contrib import messages
-from .models import Profile
+from django.contrib.auth.hashers import make_password
 
-# Create your views here.
 
-# @login_required
-# def profile(request):
-#     if request.method == 'POST':
-#         user = request.user
-#         user.first_name = request.POST.get('first_name')
-#         user.last_name = request.POST.get('last_name')
-#         user.email = request.POST.get('email')
+# def login_view(request):
+#     """
+#     Handles user login functionality.
+#     """
+#     if request.method == "POST":
+#         username = request.POST.get("username")  # Retrieve 'username' from form
+#         password = request.POST.get("password")  # Retrieve 'password' from form
 
-#         profile = user.profile
-#         profile.year = request.POST.get('year')
-#         if 'profile_picture' in request.FILES:
-#             profile.profile_picture = request.FILES['profile_picture']
+#         user = authenticate(request, username=username, password=password)
 
-#         password = request.POST.get('password')
-#         if password:
-#             user.set_password(password)
+#         if user is not None:
+#             login(request, user)
+#             messages.success(request, f"Welcome back, {username}!")
+#             return redirect("home")  # Redirect to home page or dashboard
+#         else:
+#             messages.error(request, "Invalid username or password.")
 
-#         user.save()
-#         profile.save()
-#         messages.success(request, 'Your profile was updated successfully!')
-#         return redirect('profile')
+#     return render(request, "login.html")  # Render login template
 
-#     return render(request, 'users/profile.html')
+# from django.shortcuts import redirect
 
-# from .forms import SignUpForm
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("home")  # Redirect already logged-in users
 
-# def signup_view(request):
-#     form = SignUpForm()
-#     if request.method == 'POST':
-#         form = SignUpForm(request.POST)
-#         if form.is_valid():
-#             # Process form data here
-#             pass
-#     return render(request, 'signup.html', {'form': form})
+    if request.method == "POST":
+        username = request.POST.get("username")
+        password = request.POST.get("password")
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            messages.success(request, f"Welcome back, {username}!")
+            return redirect("home")
+        else:
+            messages.error(request, "Invalid username or password.")
+
+    return render(request, "users/login.html")
+
+def update_profile(request):
+    if request.method == 'POST':
+        # Fetch the user and profile objects
+        user = request.user
+        profile = user.profile  # Assuming a OneToOne relationship with User
+
+        # Handle profile picture update
+        profile_picture = request.FILES.get('profile_picture')
+        if profile_picture:
+            profile.profile_picture = profile_picture
+
+        # Update user's first and last name
+        user.first_name = request.POST.get('first_name', user.first_name)
+        user.last_name = request.POST.get('last_name', user.last_name)
+
+        # Update profile year
+        year = request.POST.get('year')
+        if year:
+            profile.year = year
+
+        # Update password if provided
+        password = request.POST.get('password')
+        if password:
+            user.password = make_password(password)
+
+        # Save changes
+        user.save()
+        profile.save()
+
+        # Show success message
+        messages.success(request, 'Your profile has been updated successfully!')
+        return redirect('update_profile')  # Redirect to the same page after saving
+
+    return render(request, 'users/profile.html')

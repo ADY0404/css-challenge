@@ -1,0 +1,121 @@
+{% extends "homepage/base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Back Button -->
+<div class="container px-0 mt-2 ">
+    <a href="{% url 'act:activities_list' %}" class="d-flex align-items-center text-muted text-decoration-none">
+        <div class="d-flex justify-content-center align-items-center bg-light rounded-circle" 
+             style="width: 40px; height: 40px; margin-right: 10px;">
+            <i class="bi bi-chevron-left fs-5 text-muted"></i>
+        </div>
+        <span>Go back</span>
+    </a>
+</div>
+
+<!-- Event Banner -->
+<div class="container my-4">
+    <img src="{{ event.banner_image.url }}" alt="{{ event.title }} Banner" class="img-fluid rounded" style="height: 500px; width: 100%;">
+</div>
+
+<!-- Event Details -->
+<div class="container">
+    <h1 class="fw-bold">{{ event.title }}</h1>
+    <p class="text-muted mb-2">Date: {{ event.date }} &nbsp;&nbsp;|&nbsp;&nbsp; Time: {{ event.time }} &nbsp;&nbsp;|&nbsp;&nbsp; Location: {{ event.location }}</p>
+
+    <h4 class="mt-4">Description</h4>
+    <p>{{ event.description }}</p>
+
+    <h4 class="mt-4">Activities Outline</h4>
+    <ul class="list-unstyled">
+        <li>{{ event.activity}}</li>
+    </ul>    
+</div>
+
+<!-- Guest Speakers -->
+<div class="container my-5">
+    <h4 class="fw-bold mb-4">Guest Speakers</h4>
+    <div class="row">
+        {% for speaker in event.guestspeaker_set.all %}
+            <div class="col-md-3 mb-4">
+                <div class="card shadow-sm">
+                    <img src="{{ speaker.image_url.url }}" class="card-img-top" alt="{{ speaker.name }}" style="height: 200px; object-fit: contain;">
+                    <div class="card-body text-center">
+                        <h6 class="card-title mb-1 fw-bold">{{ speaker.name }}</h6>
+                        <p class="card-text text-muted">{{ speaker.title }}</p>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <p>No guest speakers for this event.</p>
+        {% endfor %}
+    </div>
+</div>
+
+
+<!-- Upcoming Events -->
+<div class="container my-5">
+    <h4 class="fw-bold mb-4">Upcoming events</h4>
+    <div class="row">
+        {% for upcoming_event in upcoming_events %}
+        <div class="col-md-3 mb-4">
+            <div class="card shadow-sm">
+                <img src="{{ upcoming_event.image.url }}" class="card-img-top" alt="{{ upcoming_event.title }}" style="height: 200px; object-fit: contain;">
+                <div class="card-body">
+                    <h6 class="card-title fw-bold">{{ upcoming_event.title }}</h6>
+                    <p class="card-text text-muted" style="font-size: 0.9rem;">{{ upcoming_event.description }}</p>
+                    <p class="card-text text-muted small">{{ upcoming_event.date }}</p>
+                    <a href="{% url 'act:event' upcoming_event.id %}" class="btn btn-primary btn-sm">View Event</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="bg-light py-4 mt-5">
+    <div class="container">
+        <div class="row">
+            <!-- Logo -->
+            <div class="col-md-4">
+                <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="img-fluid mb-3" style="max-width: 100px;">
+                <div>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-linkedin"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="text-muted me-3 fs-4"><i class="bi bi-facebook"></i></a>
+                </div>
+            </div>
+
+            <!-- Links -->
+            <div class="col-md-2">
+                <h6 class="fw-bold">Connect</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-decoration-none text-muted">Blog</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">LinkedIn</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Facebook</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Twitter</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Instagram</a></li>
+                </ul>
+            </div>
+
+            <div class="col-md-2">
+                <h6 class="fw-bold">Programs</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-decoration-none text-muted">School of Groups</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">Tell Your Story</a></li>
+                    <li><a href="#" class="text-decoration-none text-muted">PC Clinic</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="#" class="text-muted me-3">Terms</a>
+            <span class="text-muted">|</span>
+            <a href="#" class="text-muted ms-3">Privacy</a>
+        </div>
+    </div>
+</footer>
+
+{% endblock content %}
