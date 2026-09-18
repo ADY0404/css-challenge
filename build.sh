@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# Exit on error
+set -o errexit
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Collect static files for WhiteNoise
+python manage.py collectstatic --no-input
+
+# Run database migrations to create all database tables (activities_event, etc.)
+python manage.py migrate
+
+# Seed initial platform data (events, challenges, technical hubs, etc.)
+python manage.py seed_data
+

@@ -25,9 +25,20 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-development-key-change-me')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+raw_debug = config('DJANGO_DEBUG', default=None)
+if raw_debug is not None:
+    DEBUG = str(raw_debug).lower() in ('true', '1', 'yes', 'on')
+else:
+    DEBUG = str(config('DEBUG', default='True')).lower() not in ('false', '0', 'no', 'off', 'prod', 'production')
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default=None)
+if RENDER_EXTERNAL_HOSTNAME:
+    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.onrender.com',
+]
 
 
 # Application definition
@@ -50,6 +61,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -125,9 +137,11 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "homepage/static"]
-
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT.mkdir(exist_ok=True)
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 # Default primary key field type
