@@ -1,0 +1,135 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Header Banner -->
+<section class="bg-primary text-white py-5 mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="{% static 'images/com.png' %}" alt="CSS Crest" style="width: 32px; height: 32px; object-fit: contain;" class="bg-white rounded-circle p-1">
+            <p class="text-uppercase fw-semibold mb-0" style="letter-spacing: .08em; font-size: 0.85rem;">Computer Science Society</p>
+        </div>
+        <h1 class="display-5 fw-bold">Update Profile</h1>
+        <p class="lead mb-0">Keep your member information, bio, social links, and credentials up to date.</p>
+    </div>
+</section>
+
+<main class="container pb-5" style="max-width: 860px;">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'settings' %}" class="text-decoration-none">Settings</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Profile</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: 16px;">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Current Avatar Preview & Upload -->
+            <div class="d-flex align-items-center gap-4 mb-4 pb-4 border-bottom flex-wrap">
+                <div>
+                    {% if user.profile.profile_picture %}
+                        <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle shadow-sm" style="width: 90px; height: 90px; object-fit: cover;">
+                    {% else %}
+                        <div class="d-flex align-items-center justify-content-center rounded-circle bg-primary text-white shadow-sm" style="width: 90px; height: 90px; font-size: 2.2rem; font-weight: bold;">
+                            {{ user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="flex-grow-1">
+                    <label for="profile_picture" class="form-label fw-bold mb-1">Profile Photo</label>
+                    <input type="file" class="form-control form-control-sm" id="profile_picture" name="profile_picture" accept="image/png, image/jpeg, image/webp">
+                    <small class="text-muted d-block mt-1"><i class="bi bi-info-circle me-1"></i>Requirements: Square aspect ratio (1:1), 100&times;100px to 2000&times;2000px, PNG/JPG/WebP, max 2MB.</small>
+                </div>
+            </div>
+
+            <!-- Name Fields -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label for="first_name" class="form-label fw-bold small text-secondary">First Name</label>
+                    <input type="text" class="form-control" id="first_name" name="first_name" value="{{ user.first_name }}" placeholder="e.g. Ada">
+                </div>
+                <div class="col-md-6">
+                    <label for="last_name" class="form-label fw-bold small text-secondary">Last Name</label>
+                    <input type="text" class="form-control" id="last_name" name="last_name" value="{{ user.last_name }}" placeholder="e.g. Lovelace">
+                </div>
+            </div>
+
+            <!-- Username & Email (Informational) -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-secondary">Username</label>
+                    <input type="text" class="form-control bg-light" value="@{{ user.username }}" disabled>
+                    <small class="text-muted">Usernames are permanently linked to your student registration.</small>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold small text-secondary">Email Address</label>
+                    <input type="text" class="form-control bg-light" value="{{ user.email }}" disabled>
+                    <small class="text-muted">Society alerts and verification emails are sent here.</small>
+                </div>
+            </div>
+
+            <!-- Academic Year & Department -->
+            <div class="row g-3 mb-3">
+                <div class="col-md-4">
+                    <label for="year" class="form-label fw-bold small text-secondary">Academic Year</label>
+                    <input type="number" class="form-control" id="year" name="year" value="{{ user.profile.year|default:1 }}" min="1" max="6" placeholder="e.g. 2">
+                    <small class="text-muted">Year of study (1 - 6).</small>
+                </div>
+                <div class="col-md-8">
+                    <label for="department" class="form-label fw-bold small text-secondary">Department / Major</label>
+                    <input type="text" class="form-control" id="department" name="department" value="{{ user.profile.department|default:'Computer Science' }}" placeholder="e.g. Computer Science, Software Engineering">
+                </div>
+            </div>
+
+            <!-- Bio / About -->
+            <div class="mb-3">
+                <label for="bio" class="form-label fw-bold small text-secondary">Short Bio / Interests</label>
+                <textarea class="form-control" id="bio" name="bio" rows="3" placeholder="Tell other members what you are building, your tech stack, or interests...">{{ user.profile.bio|default:'' }}</textarea>
+                <small class="text-muted">Shown on your public card and leaderboard profile.</small>
+            </div>
+
+            <!-- Social Links -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="github_url" class="form-label fw-bold small text-secondary">GitHub Profile URL</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted"><i class="bi bi-github"></i></span>
+                        <input type="url" class="form-control" id="github_url" name="github_url" value="{{ user.profile.github_url|default:'' }}" placeholder="https://github.com/username">
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="linkedin_url" class="form-label fw-bold small text-secondary">LinkedIn Profile URL</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted"><i class="bi bi-linkedin text-primary"></i></span>
+                        <input type="url" class="form-control" id="linkedin_url" name="linkedin_url" value="{{ user.profile.linkedin_url|default:'' }}" placeholder="https://linkedin.com/in/username">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Update Field -->
+            <div class="mb-4 pt-3 border-top">
+                <label for="password" class="form-label fw-bold small text-secondary">Change Password</label>
+                <div class="input-group" style="max-width: 450px;">
+                    <span class="input-group-text bg-white"><i class="bi bi-key text-muted"></i></span>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter new password (min 6 chars)">
+                </div>
+                <small class="form-text text-muted">Leave blank if you wish to keep your current password.</small>
+            </div>
+
+            <!-- Buttons -->
+            <div class="d-flex justify-content-between align-items-center pt-2">
+                <a href="{% url 'settings' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Settings
+                </a>
+                <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                    <i class="bi bi-check-lg me-1"></i>Save Profile
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock content %}

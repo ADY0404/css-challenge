@@ -1,0 +1,158 @@
+{% extends "homepage/base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Back Navigation -->
+<div class="container mt-4">
+    <a href="{% url 'act:activities_list' %}" class="btn btn-outline-secondary btn-sm">
+        <i class="bi bi-arrow-left me-1"></i>Back to All Activities
+    </a>
+</div>
+
+<!-- Event Banner -->
+<div class="container my-4">
+    {% if event.banner_image %}
+        <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 420px; object-fit: cover;">
+    {% elif event.image %}
+        <img src="{{ event.image.url }}" alt="{{ event.title }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 420px; object-fit: cover;">
+    {% else %}
+        <img src="{% static 'images/gat.jpeg' %}" alt="{{ event.title }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 420px; object-fit: cover;">
+    {% endif %}
+</div>
+
+<!-- Event Details & Registration -->
+<div class="container mb-5">
+    <div class="row g-5">
+        <!-- Main Details -->
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                <span class="badge bg-primary px-3 py-1">CSS Activity</span>
+                <span class="badge bg-light text-dark border"><i class="bi bi-calendar3 me-1"></i>{{ event.date|date:"l, F d, Y" }}</span>
+                <span class="badge bg-light text-dark border"><i class="bi bi-clock me-1"></i>{{ event.time|time:"g:i A" }}</span>
+            </div>
+            <h1 class="display-6 fw-bold text-dark mb-3">{{ event.title }}</h1>
+            
+            <h4 class="h5 fw-bold text-dark mt-4 mb-2">Description</h4>
+            <p class="text-secondary leading-relaxed">{{ event.description }}</p>
+
+            <h4 class="h5 fw-bold text-dark mt-4 mb-2">Activities Outline &amp; Agenda</h4>
+            <div class="card border-0 shadow-sm p-3 bg-light" style="border-radius: 12px;">
+                <p class="text-secondary small mb-0">{{ event.activity }}</p>
+            </div>
+
+            <!-- Guest Speakers Section -->
+            <div class="mt-5">
+                <h4 class="h5 fw-bold text-dark mb-3">Guest Speakers &amp; Facilitators</h4>
+                <div class="row g-3">
+                    {% for speaker in guest_speakers %}
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card border-0 shadow-sm text-center p-3 h-100" style="border-radius: 12px;">
+                                {% if speaker.image_url %}
+                                    <img src="{{ speaker.image_url.url }}" class="rounded-circle mx-auto mb-2 shadow-sm" alt="{{ speaker.name }}" style="width: 72px; height: 72px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                    <div class="rounded-circle mx-auto mb-2 shadow-sm d-none d-flex align-items-center justify-content-center bg-primary text-white" style="width: 72px; height: 72px; font-size: 1.75rem;">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                {% else %}
+                                    <div class="rounded-circle mx-auto mb-2 shadow-sm d-flex align-items-center justify-content-center bg-primary text-white" style="width: 72px; height: 72px; font-size: 1.75rem;">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                {% endif %}
+                                <h6 class="fw-bold mb-1 text-dark">{{ speaker.name }}</h6>
+                                <p class="text-muted small mb-0">{{ speaker.title }}</p>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-muted small">CSS Executive Committee &middot; Peer Mentors</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Registration Column -->
+        <div class="col-lg-4">
+            <aside>
+                <div class="card border-0 shadow-sm p-4" style="border-radius: 16px; background-color: #F8FAFC;">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary text-white rounded p-2 me-3 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                            <i class="bi bi-ticket-perforated fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Event Registration</h5>
+                            <small class="text-muted">Free for all university students</small>
+                        </div>
+                    </div>
+                    <hr class="my-3">
+
+                    {% if user_registered %}
+                        <div class="alert alert-success border-0 small mb-3">
+                            <i class="bi bi-check-circle-fill me-1"></i> You are registered for this event!
+                        </div>
+                    {% endif %}
+
+                    <form method="post" action="{% url 'act:event_register' event.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="regName" class="form-label small fw-bold">Full Name</label>
+                            <input type="text" class="form-control form-control-sm" id="regName" name="full_name" required 
+                                value="{% if user.is_authenticated %}{{ user.first_name }} {{ user.last_name|default:user.username }}{% endif %}" 
+                                placeholder="e.g. Grace Hopper">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="regEmail" class="form-label small fw-bold">Student Email</label>
+                            <input type="email" class="form-control form-control-sm" id="regEmail" name="email" required 
+                                value="{% if user.is_authenticated %}{{ user.email }}{% endif %}" 
+                                placeholder="student@university.edu">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="regYear" class="form-label small fw-bold">Academic Year</label>
+                            <select class="form-select form-select-sm" id="regYear" name="year">
+                                <option value="1" {% if user.is_authenticated and user.profile.year == 1 %}selected{% endif %}>Year 1</option>
+                                <option value="2" {% if user.is_authenticated and user.profile.year == 2 %}selected{% endif %}>Year 2</option>
+                                <option value="3" {% if user.is_authenticated and user.profile.year == 3 %}selected{% endif %}>Year 3</option>
+                                <option value="4" {% if user.is_authenticated and user.profile.year == 4 %}selected{% endif %}>Year 4</option>
+                                <option value="5" {% if user.is_authenticated and user.profile.year >= 5 %}selected{% endif %}>Year 5+ / Postgrad</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            {% if user_registered %}Update Registration{% else %}Register for Event{% endif %}
+                        </button>
+                    </form>
+                </div>
+            </aside>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Events Section -->
+{% if upcoming_events %}
+    <section class="bg-light py-5 border-top">
+        <div class="container">
+            <h4 class="fw-bold mb-4">Other Upcoming Events</h4>
+            <div class="row g-4">
+                {% static 'images/gat.jpeg' as fallback_event_banner %}
+                {% for upcoming in upcoming_events %}
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm p-3" style="border-radius: 12px;">
+                            {% if upcoming.banner_image %}
+                                <img src="{{ upcoming.banner_image.url }}" class="rounded mb-2 w-100" style="height: 120px; object-fit: cover;" alt="{{ upcoming.title }}" onerror="this.onerror=null; this.src='{{ fallback_event_banner }}';">
+                            {% elif upcoming.image %}
+                                <img src="{{ upcoming.image.url }}" class="rounded mb-2 w-100" style="height: 120px; object-fit: cover;" alt="{{ upcoming.title }}" onerror="this.onerror=null; this.src='{{ fallback_event_banner }}';">
+                            {% else %}
+                                <img src="{{ fallback_event_banner }}" class="rounded mb-2 w-100" style="height: 120px; object-fit: cover;" alt="{{ upcoming.title }}">
+                            {% endif %}
+                            <span class="badge bg-primary-subtle text-primary mb-2 align-self-start">{{ upcoming.date|date:"M d, Y" }}</span>
+                            <h5 class="h6 fw-bold mb-2">{{ upcoming.title }}</h5>
+                            <p class="text-muted small mb-3">{{ upcoming.description|truncatewords:14 }}</p>
+                            <a href="{% url 'act:event' upcoming.id %}" class="btn btn-outline-primary btn-sm mt-auto">View Event</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+{% endif %}
+
+{% endblock content %}

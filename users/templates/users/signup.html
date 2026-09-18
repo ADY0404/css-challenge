@@ -1,0 +1,123 @@
+{% extends "homepage/base.html" %}
+{% load static %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center py-5 bg-light" style="min-height: 85vh;">
+    <div class="card border-0 shadow-sm p-4 p-md-5" style="width: 100%; max-width: 520px; border-radius: 16px; background-color: #FFFFFF;">
+        <!-- Logo & Header -->
+        <div class="text-center mb-4">
+            <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="img-fluid rounded mb-2" style="max-height: 52px;">
+            <h2 class="fw-bold text-dark mb-1" style="font-size: 1.5rem;">Join CSS</h2>
+            <p class="text-secondary small mb-0">Create your student account to participate in challenges and access community resources.</p>
+        </div>
+
+        <!-- Sign-Up Form -->
+        <form method="POST" class="row g-3" novalidate>
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="col-12">
+                    <div class="alert alert-danger py-2 mb-0 small">
+                        {% for error in form.non_field_errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">First Name</label>
+                <input type="text" class="form-control {% if form.first_name.errors %}is-invalid{% endif %}" name="first_name" placeholder="Ada" value="{{ form.first_name.value|default:'' }}" required>
+                {% for error in form.first_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Last Name</label>
+                <input type="text" class="form-control {% if form.last_name.errors %}is-invalid{% endif %}" name="last_name" placeholder="Lovelace" value="{{ form.last_name.value|default:'' }}" required>
+                {% for error in form.last_name.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Year of Study</label>
+                <select class="form-select {% if form.year.errors %}is-invalid{% endif %}" name="year" required>
+                    <option value="" disabled {% if not form.year.value %}selected{% endif %}>Select Year</option>
+                    {% for value, label in form.year.field.choices %}
+                        {% if value %}
+                            <option value="{{ value }}" {% if form.year.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                {% for error in form.year.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Username</label>
+                <input type="text" class="form-control {% if form.username.errors %}is-invalid{% endif %}" name="username" placeholder="ada_lovelace" value="{{ form.username.value|default:'' }}" required autocomplete="username">
+                {% for error in form.username.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12">
+                <label class="form-label small fw-bold text-secondary mb-1">Student / Personal Email</label>
+                <input type="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" name="email" placeholder="student@example.edu" value="{{ form.email.value|default:'' }}" required autocomplete="email">
+                {% for error in form.email.errors %}<div class="invalid-feedback">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control border-end-0 {% if form.password1.errors %}is-invalid{% endif %}" id="signupPassword1" name="password1" placeholder="Create password" required autocomplete="new-password">
+                    <button type="button" class="btn btn-outline-secondary border-start-0 bg-white" id="togglePass1" aria-label="Toggle password visibility">
+                        <i class="bi bi-eye text-muted" id="iconPass1"></i>
+                    </button>
+                </div>
+                {% for error in form.password1.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label small fw-bold text-secondary mb-1">Confirm Password</label>
+                <div class="input-group">
+                    <input type="password" class="form-control border-end-0 {% if form.password2.errors %}is-invalid{% endif %}" id="signupPassword2" name="password2" placeholder="Confirm password" required autocomplete="new-password">
+                    <button type="button" class="btn btn-outline-secondary border-start-0 bg-white" id="togglePass2" aria-label="Toggle password visibility">
+                        <i class="bi bi-eye text-muted" id="iconPass2"></i>
+                    </button>
+                </div>
+                {% for error in form.password2.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+            </div>
+
+            <div class="col-12 mt-4">
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">Create Student Account</button>
+            </div>
+        </form>
+
+        <!-- Footer Link -->
+        <div class="text-center mt-4 pt-3 border-top">
+            <p class="text-muted small mb-0">
+                Already registered? <a href="{% url 'login' %}" class="text-decoration-none fw-semibold text-primary">Sign in here</a>.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        function setupToggle(btnId, inputId, iconId) {
+            const btn = document.getElementById(btnId);
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (btn && input && icon) {
+                btn.addEventListener('click', function() {
+                    if (input.type === 'password') {
+                        input.type = 'text';
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    } else {
+                        input.type = 'password';
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
+                    }
+                });
+            }
+        }
+        setupToggle('togglePass1', 'signupPassword1', 'iconPass1');
+        setupToggle('togglePass2', 'signupPassword2', 'iconPass2');
+    });
+</script>
+{% endblock content %}

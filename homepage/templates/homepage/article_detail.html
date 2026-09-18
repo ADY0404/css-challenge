@@ -1,0 +1,95 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Header Banner -->
+<section class="bg-primary text-white py-5 mb-4">
+    <div class="container" style="max-width: 860px;">
+        <nav aria-label="breadcrumb" class="mb-3">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'blog' %}" class="text-white-50 text-decoration-none">Blog</a></li>
+                <li class="breadcrumb-item active text-white" aria-current="page">{{ article.title|truncatewords:6 }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+            <span class="badge bg-light text-primary text-capitalize fw-bold">{{ article.category }}</span>
+            <span class="badge text-bg-dark bg-opacity-25"><i class="bi bi-clock me-1"></i>{{ article.read_time }}</span>
+            <span class="badge text-bg-dark bg-opacity-25">{{ article.published_at|date:"F d, Y" }}</span>
+        </div>
+        <h1 class="display-6 fw-bold mb-3">{{ article.title }}</h1>
+        <p class="lead mb-0 text-white-50">{{ article.summary }}</p>
+    </div>
+</section>
+
+<main class="container pb-5" style="max-width: 860px;">
+    <!-- Article Featured Image -->
+    <div class="mb-4">
+        <img src="{% static article.image_path %}" alt="{{ article.title }}" class="img-fluid rounded-4 w-100 shadow-sm" style="max-height: 420px; object-fit: cover;">
+    </div>
+
+    <!-- Author Byline -->
+    <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 mb-4">
+        <img src="{% static 'images/man1.jpg' %}" alt="{{ article.author_name }}" class="rounded-circle shadow-sm" style="width: 48px; height: 48px; object-fit: cover;">
+        <div>
+            <h6 class="fw-bold mb-0 text-dark">{{ article.author_name }}</h6>
+            <small class="text-muted">{{ article.author_role }} &middot; Computer Science Society</small>
+        </div>
+    </div>
+
+    <!-- Article Content -->
+    <article class="card border-0 shadow-sm p-4 p-md-5 mb-5" style="border-radius: 14px;">
+        <div class="article-body text-secondary" style="font-size: 1.05rem; line-height: 1.8;">
+            {{ article.content|linebreaks }}
+        </div>
+    </article>
+
+    <!-- Author / Society Bio Box -->
+    <div class="card border-0 shadow-sm p-4 bg-light mb-5" style="border-radius: 12px;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="bg-primary text-white rounded-circle p-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
+                <i class="bi bi-journal-bookmark fs-4"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold mb-1">About the CSS Journal</h6>
+                <p class="text-muted small mb-0">
+                    The CSS Journal is written by students, mentors, and alumni of the Computer Science Society. Have an idea or project review you'd like to publish? Reach out to the editorial committee via <strong>journal@css.community</strong>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Related Articles -->
+    {% if related_articles %}
+        <section class="mb-5">
+            <h4 class="fw-bold mb-3">Related Stories</h4>
+            <div class="row g-3">
+                {% for related in related_articles %}
+                    <div class="col-md-4">
+                        <div class="card h-100 border-0 shadow-sm p-3" style="border-radius: 10px;">
+                            <img src="{% static related.image_path %}" class="rounded mb-2 w-100" style="height: 110px; object-fit: cover;" alt="{{ related.title }}">
+                            <span class="badge bg-light text-primary border text-capitalize mb-2 align-self-start">{{ related.category }}</span>
+                            <h6 class="fw-bold mb-2">
+                                <a href="{% url 'article_detail' related.slug %}" class="text-dark text-decoration-none">
+                                    {{ related.title }}
+                                </a>
+                            </h6>
+                            <small class="text-muted mt-auto">{{ related.read_time }}</small>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <div class="d-flex justify-content-between align-items-center">
+        <a href="{% url 'blog' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-1"></i>Back to CSS Journal
+        </a>
+        <a href="{% url 'challenge' %}" class="btn btn-primary">
+            Try a Coding Challenge <i class="bi bi-arrow-right ms-1"></i>
+        </a>
+    </div>
+</main>
+{% endblock content %}
+

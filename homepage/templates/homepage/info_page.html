@@ -1,0 +1,408 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Header Banner -->
+<section class="bg-primary text-white py-5 mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="{% static 'images/com.png' %}" alt="CSS Crest" style="width: 32px; height: 32px; object-fit: contain;" class="bg-white rounded-circle p-1">
+            <p class="text-uppercase fw-semibold mb-0" style="letter-spacing: .08em; font-size: 0.85rem;">Computer Science Society</p>
+        </div>
+        <h1 class="display-5 fw-bold">{{ title }}</h1>
+        <p class="lead mb-0" style="max-width: 750px;">{{ summary }}</p>
+    </div>
+</section>
+
+<main class="container pb-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+
+    {% if page_key == 'guidelines' %}
+    <!-- ============================================== -->
+    <!-- GUIDELINES & CODE OF CONDUCT                  -->
+    <!-- ============================================== -->
+    <section class="mb-5">
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm p-3 text-center" style="border-radius: 12px;">
+                    <div class="text-primary fs-1 mb-2"><i class="bi bi-heart-pulse"></i></div>
+                    <h5 class="fw-bold">Inclusivity &amp; Respect</h5>
+                    <p class="text-muted small mb-0">We welcome students of every background, skill level, identity, and experience.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm p-3 text-center" style="border-radius: 12px;">
+                    <div class="text-primary fs-1 mb-2"><i class="bi bi-shield-check"></i></div>
+                    <h5 class="fw-bold">Academic Integrity</h5>
+                    <p class="text-muted small mb-0">Collaboration is encouraged; honor originality and give credit where credit is due.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm p-3 text-center" style="border-radius: 12px;">
+                    <div class="text-primary fs-1 mb-2"><i class="bi bi-chat-left-dots"></i></div>
+                    <h5 class="fw-bold">Constructive Feedback</h5>
+                    <p class="text-muted small mb-0">Review code with empathy. Critique ideas and implementations, never individuals.</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm p-3 text-center" style="border-radius: 12px;">
+                    <div class="text-primary fs-1 mb-2"><i class="bi bi-people"></i></div>
+                    <h5 class="fw-bold">Community Growth</h5>
+                    <p class="text-muted small mb-0">Pass on your knowledge. Today's mentor was once yesterday's beginner.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-5">
+            <div class="col-lg-8">
+                <article class="pe-lg-3">
+                    <h2 class="h3 fw-bold text-dark mb-3">1. Our Community Standards</h2>
+                    <p class="text-secondary leading-relaxed">
+                        The Computer Science Society (CSS) exists to provide a friendly, safe, and welcoming environment for all members, regardless of gender, sexual orientation, disability, physical appearance, body size, race, ethnicity, or technical skill level.
+                    </p>
+                    <p class="text-secondary leading-relaxed">
+                        We expect everyone who participates in society activities—including online channels, hackathons, workshops, and study groups—to abide by this code of conduct.
+                    </p>
+
+                    <h2 class="h3 fw-bold text-dark mt-5 mb-3">2. Expected Behavior</h2>
+                    <ul class="list-group list-group-flush mb-4">
+                        <li class="list-group-item px-0 py-2 border-0 d-flex align-items-start">
+                            <i class="bi bi-check2-circle text-success fs-5 me-2 mt-1"></i>
+                            <div><strong>Be welcoming and patient:</strong> Remember that everyone was a novice once. Answer beginner questions with clarity and respect.</div>
+                        </li>
+                        <li class="list-group-item px-0 py-2 border-0 d-flex align-items-start">
+                            <i class="bi bi-check2-circle text-success fs-5 me-2 mt-1"></i>
+                            <div><strong>Communicate constructively:</strong> Phrase disagreements objectively. Focus on technical trade-offs rather than subjective dismissals.</div>
+                        </li>
+                        <li class="list-group-item px-0 py-2 border-0 d-flex align-items-start">
+                            <i class="bi bi-check2-circle text-success fs-5 me-2 mt-1"></i>
+                            <div><strong>Practice ethical computing:</strong> Respect user privacy, follow security testing protocols, and never deploy malicious software.</div>
+                        </li>
+                        <li class="list-group-item px-0 py-2 border-0 d-flex align-items-start">
+                            <i class="bi bi-check2-circle text-success fs-5 me-2 mt-1"></i>
+                            <div><strong>Maintain academic honesty:</strong> You may seek guidance and references, but submit original code for challenges and project reviews.</div>
+                        </li>
+                    </ul>
+
+                    <h2 class="h3 fw-bold text-dark mt-5 mb-3">3. Unacceptable Behavior</h2>
+                    <p class="text-secondary leading-relaxed">The following behaviors are strictly prohibited across all CSS physical and virtual spaces:</p>
+                    <div class="alert alert-danger border-0 mb-4" role="alert">
+                        <ul class="mb-0 ps-3">
+                            <li class="mb-1">Harassment, discriminatory jokes, hate speech, or offensive comments.</li>
+                            <li class="mb-1">Publishing or threatening to publish private information (doxxing).</li>
+                            <li class="mb-1">Unsolicited commercial advertisements, spam, or scam distributions.</li>
+                            <li class="mb-1">Plagiarism or submitting work that is not your own without attribution.</li>
+                            <li>Sustained disruption of talks, workshops, or study sessions.</li>
+                        </ul>
+                    </div>
+
+                    <h2 class="h3 fw-bold text-dark mt-5 mb-3">4. Reporting &amp; Enforcement</h2>
+                    <p class="text-secondary leading-relaxed">
+                        If you experience or witness unacceptable behavior, or have any other concerns, please notify a CSS Executive immediately. All reports will be handled with strict confidentiality.
+                    </p>
+                    <p class="text-secondary leading-relaxed">
+                        Violations may result in a formal warning, temporary suspension from society channels, or permanent removal from all CSS activities upon executive review.
+                    </p>
+                </article>
+            </div>
+
+            <div class="col-lg-4">
+                <aside>
+                    <div class="card border-0 shadow-sm p-4 bg-light mb-4" style="border-radius: 12px;">
+                        <h4 class="h5 fw-bold mb-3"><i class="bi bi-megaphone text-primary me-2"></i>Reporting Contacts</h4>
+                        <p class="text-muted small">Need to report an issue or ask a confidential question?</p>
+                        <ul class="list-unstyled small mb-3">
+                            <li class="mb-2"><i class="bi bi-envelope me-2 text-primary"></i><strong>ethics@css.community</strong></li>
+                            <li class="mb-2"><i class="bi bi-person-badge me-2 text-primary"></i>Contact any Executive Member</li>
+                        </ul>
+                        <a href="{% url 'executives:list' %}" class="btn btn-outline-primary btn-sm w-100">Meet the Executives</a>
+                    </div>
+
+                    <div class="card border-0 shadow-sm p-4 text-white bg-primary" style="border-radius: 12px;">
+                        <h4 class="h5 fw-bold mb-2">Join the Community</h4>
+                        <p class="small text-white-50 mb-3">Participate in discussions, code reviews, and study sessions in our specialized channels.</p>
+                        <a href="{% url 'community' %}" class="btn btn-light btn-sm text-primary fw-bold">Explore Channels</a>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    {% elif page_key == 'programs' %}
+    <!-- ============================================== -->
+    <!-- SOCIETY PROGRAMS                               -->
+    <!-- ============================================== -->
+    <section class="mb-5">
+        <p class="lead text-muted mb-5">
+            The Computer Science Society runs structured, hands-on initiatives designed to support every student from their first line of code to industry placement.
+        </p>
+
+        <!-- Program 1: School of Groups -->
+        <article class="card border-0 shadow-sm mb-4 overflow-hidden" style="border-radius: 14px;">
+            <div class="row g-0">
+                <div class="col-md-4 position-relative" style="min-height: 200px;">
+                    <img src="{% static 'images/gat.jpeg' %}" alt="School of Groups" class="w-100 h-100" style="object-fit: cover; position: absolute; top: 0; left: 0;">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-end p-3" style="background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.85) 100%);">
+                        <span class="badge bg-primary align-self-start mb-1">Peer Study Tracks</span>
+                        <h3 class="h5 fw-bold text-white mb-0">School of Groups</h3>
+                    </div>
+                </div>
+                <div class="col-md-8 p-4">
+                    <h4 class="h5 fw-bold mb-2">Collaborative Learning Cohorts</h4>
+                    <p class="text-muted mb-3">
+                        School of Groups connects members into specialized peer cohorts focused on specific engineering domains: Frontend, Backend &amp; APIs, AI/Machine Learning, Cybersecurity, and Mobile Development. Cohorts meet weekly for code reviews, architecture discussions, and build-along projects.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge text-bg-light border text-muted">Weekly Syncs</span>
+                        <span class="badge text-bg-light border text-muted">Guided Projects</span>
+                        <span class="badge text-bg-light border text-muted">Mentor Support</span>
+                    </div>
+                    <a href="{% url 'community' %}" class="btn btn-sm btn-primary">Join a Study Track</a>
+                </div>
+            </div>
+        </article>
+
+        <!-- Program 2: Tell Your Story -->
+        <article class="card border-0 shadow-sm mb-4 overflow-hidden" style="border-radius: 14px;">
+            <div class="row g-0">
+                <div class="col-md-4 position-relative" style="min-height: 200px;">
+                    <img src="{% static 'images/images.jpeg' %}" alt="Tell Your Story" class="w-100 h-100" style="object-fit: cover; position: absolute; top: 0; left: 0;">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-end p-3" style="background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.85) 100%);">
+                        <span class="badge bg-secondary align-self-start mb-1">Speaker Series</span>
+                        <h3 class="h5 fw-bold text-white mb-0">Tell Your Story</h3>
+                    </div>
+                </div>
+                <div class="col-md-8 p-4">
+                    <h4 class="h5 fw-bold mb-2">Inspirational Tech Journeys</h4>
+                    <p class="text-muted mb-3">
+                        A bi-weekly interactive stage where CSS alumni, senior students, and industry engineers share how they broke into tech, built notable projects, prepared for technical interviews, and navigated career crossroads.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge text-bg-light border text-muted">Alumni Talks</span>
+                        <span class="badge text-bg-light border text-muted">Live Q&amp;A</span>
+                        <span class="badge text-bg-light border text-muted">Career Insights</span>
+                    </div>
+                    <a href="{% url 'blog' %}" class="btn btn-sm btn-outline-primary">Read Past Stories</a>
+                </div>
+            </div>
+        </article>
+
+        <!-- Program 3: PC Clinic -->
+        <article class="card border-0 shadow-sm mb-4 overflow-hidden" style="border-radius: 14px;">
+            <div class="row g-0">
+                <div class="col-md-4 position-relative" style="min-height: 200px;">
+                    <img src="{% static 'images/bot.jpeg' %}" alt="PC Clinic" class="w-100 h-100" style="object-fit: cover; position: absolute; top: 0; left: 0;">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-end p-3" style="background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.85) 100%);">
+                        <span class="badge bg-success align-self-start mb-1">Hardware &amp; System Hub</span>
+                        <h3 class="h5 fw-bold text-white mb-0">PC Clinic</h3>
+                    </div>
+                </div>
+                <div class="col-md-8 p-4">
+                    <h4 class="h5 fw-bold mb-2">Free Tech Support &amp; Maintenance</h4>
+                    <p class="text-muted mb-3">
+                        A community-first clinic where senior computer science students offer free hardware diagnostics, software setup, Linux dual-boot installations, development environment configurations, and thermal cleaning to university students and staff.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge text-bg-light border text-muted">OS Setup</span>
+                        <span class="badge text-bg-light border text-muted">Hardware Diagnostics</span>
+                        <span class="badge text-bg-light border text-muted">Environment Config</span>
+                    </div>
+                    <a href="{% url 'clinic_dates' %}" class="btn btn-sm btn-outline-success">View Clinic Dates &amp; Bookings</a>
+                </div>
+            </div>
+        </article>
+
+        <!-- Program 4: Hackathons & Challenges -->
+        <article class="card border-0 shadow-sm mb-4 overflow-hidden" style="border-radius: 14px;">
+            <div class="row g-0">
+                <div class="col-md-4 position-relative" style="min-height: 200px;">
+                    <img src="{% static 'images/images (1).jpeg' %}" alt="CSS Hackathons" class="w-100 h-100" style="object-fit: cover; position: absolute; top: 0; left: 0;">
+                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex flex-column justify-content-end p-3" style="background: linear-gradient(180deg, rgba(15,23,42,0.15) 0%, rgba(15,23,42,0.85) 100%);">
+                        <span class="badge bg-info text-dark align-self-start mb-1">Code Sprints</span>
+                        <h3 class="h5 fw-bold text-white mb-0">CSS Hackathons</h3>
+                    </div>
+                </div>
+                <div class="col-md-8 p-4">
+                    <h4 class="h5 fw-bold mb-2">48-Hour Innovation Challenges</h4>
+                    <p class="text-muted mb-3">
+                        Intensive collaborative sprints where student teams build solutions addressing campus, societal, or climate challenges. Features workshops, mentor office hours, industry judging panels, and portfolio-boosting awards.
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <span class="badge text-bg-light border text-muted">Team Building</span>
+                        <span class="badge text-bg-light border text-muted">Mentorship</span>
+                        <span class="badge text-bg-light border text-muted">Prizes &amp; Swag</span>
+                    </div>
+                    <a href="{% url 'challenge' %}" class="btn btn-sm btn-outline-primary">Browse Challenges</a>
+                </div>
+            </div>
+        </article>
+
+        <!-- Program FAQs -->
+        <div class="mt-5">
+            <h3 class="h4 fw-bold mb-4">Frequently Asked Questions</h3>
+            <div class="accordion" id="programsAccordion">
+                <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 8px;">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                            Who is eligible to participate in CSS programs?
+                        </button>
+                    </h2>
+                    <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#programsAccordion">
+                        <div class="accordion-body text-muted">
+                            All enrolled students from any faculty or department are welcome to join. While some advanced tracks assume foundational programming concepts, we have introductory tracks specifically designed for freshers and beginners.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 8px;">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                            Do I have to pay to attend any program?
+                        </button>
+                    </h2>
+                    <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#programsAccordion">
+                        <div class="accordion-body text-muted">
+                            No. All CSS programs, workshops, clinics, and hackathons are 100% free of charge for students, supported by our departmental sponsors and society partners.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 8px;">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                            How can I lead a study group or volunteer as a speaker?
+                        </button>
+                    </h2>
+                    <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#programsAccordion">
+                        <div class="accordion-body text-muted">
+                            We are always eager to welcome student leaders and guest speakers! Reach out to any member of the CSS Executive Committee or email <strong>programs@css.community</strong> with your topic proposal.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% elif page_key == 'terms' %}
+    <!-- ============================================== -->
+    <!-- TERMS OF USE                                   -->
+    <!-- ============================================== -->
+    <section class="mb-5">
+        <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: 14px;">
+            <p class="text-muted small mb-4"><i class="bi bi-clock me-1"></i>Last revised: September 2024</p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">1. Agreement to Terms</h2>
+            <p class="text-secondary leading-relaxed mb-4">
+                By accessing or using the Computer Science Society (CSS) platform, attending our sponsored events, or participating in society challenges and hackathons, you agree to comply with and be bound by these Terms of Use and our Community Guidelines. If you do not agree to these terms, please do not use our services.
+            </p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">2. Membership and Account Registration</h2>
+            <p class="text-secondary leading-relaxed mb-4">
+                When you create a CSS account, you agree to provide accurate, current, and complete information, and to keep this information updated. You are responsible for safeguarding your credentials and for all activities that occur under your account.
+            </p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">3. Code Ownership and Intellectual Property</h2>
+            <p class="text-secondary leading-relaxed mb-4">
+                You retain all intellectual property rights in and to the original code, designs, and content you create and submit during CSS challenges, study groups, or hackathons. By submitting work to public challenges or leaderboards, you grant CSS a non-exclusive license to display, reference, and highlight your project for educational and promotional purposes.
+            </p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">4. Acceptable Use Policy</h2>
+            <p class="text-secondary leading-relaxed mb-3">Members agree not to:</p>
+            <ul class="text-secondary mb-4 ps-3">
+                <li class="mb-1">Use society servers, channels, or web tools to distribute malicious software, viruses, or unauthorized automated scripts.</li>
+                <li class="mb-1">Attempt to breach, probe, or scan security vulnerabilities of CSS infrastructure without explicit authorization.</li>
+                <li class="mb-1">Plagiarize code or misrepresent work submitted for competitive prizes and challenges.</li>
+                <li class="mb-1">Harass, impersonate, or intimidate other members or faculty representatives.</li>
+            </ul>
+
+            <h2 class="h4 fw-bold text-dark mb-3">5. Event Participation &amp; Media Release</h2>
+            <p class="text-secondary leading-relaxed mb-4">
+                CSS regularly documents workshops, hackathons, and symposiums through photography and video recordings to promote tech activities on campus. By participating in in-person events, you acknowledge that your likeness may appear in society publications. If you wish to opt out, notify the event organizing team beforehand.
+            </p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">6. Limitation of Liability</h2>
+            <p class="text-secondary leading-relaxed mb-4">
+                CSS educational materials, challenge instructions, and peer advice are provided on an "as-is" and "as-available" basis without warranties of any kind. CSS, its executive committee, and affiliates shall not be liable for any indirect, incidental, or consequential damages resulting from the use or inability to use our services.
+            </p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">7. Modifications to Terms</h2>
+            <p class="text-secondary leading-relaxed mb-0">
+                We reserve the right to modify these Terms of Use at any time. Notice of significant changes will be communicated via the CSS platform and email announcements. Continued use of CSS services following posted changes constitutes acceptance of the revised terms.
+            </p>
+        </div>
+    </section>
+
+    {% elif page_key == 'privacy' %}
+    <!-- ============================================== -->
+    <!-- PRIVACY POLICY                                 -->
+    <!-- ============================================== -->
+    <section class="mb-5">
+        <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: 14px;">
+            <p class="text-muted small mb-4"><i class="bi bi-clock me-1"></i>Last revised: September 2024</p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">1. Information We Collect</h2>
+            <p class="text-secondary leading-relaxed mb-2">We collect information that you directly provide to us, including:</p>
+            <ul class="text-secondary mb-4 ps-3">
+                <li class="mb-1"><strong>Account Profile:</strong> Name, student email address, academic year, username, and optional profile photograph.</li>
+                <li class="mb-1"><strong>Activity &amp; Participation:</strong> Challenge submissions, project code links, attendance at workshops, and community channel discussions.</li>
+                <li class="mb-1"><strong>Technical Log Data:</strong> IP address, browser type, and session timestamps used solely for security and debugging.</li>
+            </ul>
+
+            <h2 class="h4 fw-bold text-dark mb-3">2. How We Use Your Information</h2>
+            <p class="text-secondary leading-relaxed mb-2">The information collected is used exclusively for legitimate student society purposes:</p>
+            <ul class="text-secondary mb-4 ps-3">
+                <li class="mb-1">Operating and personalizing your user experience across CSS tools and challenge platforms.</li>
+                <li class="mb-1">Facilitating peer mentoring, team formation for hackathons, and study cohorts.</li>
+                <li class="mb-1">Sending society announcements, event reminders, and career opportunities (with opt-out settings available).</li>
+                <li class="mb-1">Maintaining leaderboard integrity and validating eligibility for student awards.</li>
+            </ul>
+
+            <h2 class="h4 fw-bold text-dark mb-3">3. Data Sharing &amp; Third Parties</h2>
+            <div class="alert alert-success border-0 mb-4" role="alert">
+                <i class="bi bi-shield-lock-fill me-2"></i>
+                <strong>Our Privacy Commitment:</strong> We do not sell, rent, or trade your personal information to advertisers or commercial third parties under any circumstances.
+            </div>
+            <p class="text-secondary leading-relaxed mb-4">
+                Information is only disclosed when required by law, to protect the rights and safety of our members, or with your explicit consent when submitting your resume to partner company recruiters via our internships board.
+            </p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">4. Security Measures</h2>
+            <p class="text-secondary leading-relaxed mb-4">
+                We implement industry-standard security safeguards including encrypted data transmission (HTTPS), salted password hashing (PBKDF2/Argon2), and restricted database access to protect your personal information against unauthorized access, alteration, or disclosure.
+            </p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">5. Your Rights and Data Controls</h2>
+            <p class="text-secondary leading-relaxed mb-4">
+                You have full control over your personal data. You can review and update your profile information at any time via <a href="{% url 'profile' %}">Profile Settings</a>. You may also request the complete deletion of your account and associated submission history by contacting <strong>privacy@css.community</strong>.
+            </p>
+
+            <h2 class="h4 fw-bold text-dark mb-3">6. Cookies and Storage</h2>
+            <p class="text-secondary leading-relaxed mb-0">
+                We use strictly necessary session cookies to authenticate your login and remember your UI preferences. We do not use third-party behavioral tracking or ad network cookies.
+            </p>
+        </div>
+    </section>
+
+    {% else %}
+    <!-- Default / Fallback Informational Layout -->
+    <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: 14px;">
+        <h2 class="h4 fw-bold mb-3">{{ title }}</h2>
+        <p class="lead text-muted">{{ summary }}</p>
+        <hr class="my-4">
+        <p class="text-secondary">
+            Welcome to this official Computer Science Society resource. For any questions, inquiries, or suggestions regarding this page, feel free to reach out to the CSS leadership team.
+        </p>
+        <div class="d-flex gap-2 mt-4">
+            <a href="{% url 'home' %}" class="btn btn-primary">Return Home</a>
+            <a href="{% url 'executives:list' %}" class="btn btn-outline-primary">Contact Executives</a>
+        </div>
+    </div>
+    {% endif %}
+</main>
+{% endblock content %}

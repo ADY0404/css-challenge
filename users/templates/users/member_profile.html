@@ -1,0 +1,195 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Header Banner -->
+<section class="bg-primary text-white py-4 mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <img src="{% static 'images/com.png' %}" alt="CSS Crest" style="width: 32px; height: 32px; object-fit: contain;" class="bg-white rounded-circle p-1">
+                <p class="text-uppercase fw-semibold mb-0" style="letter-spacing: .08em; font-size: 0.85rem;">Computer Science Society &middot; Member Directory</p>
+            </div>
+            <a href="{% url 'community' %}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back to Community
+            </a>
+        </div>
+    </div>
+</section>
+
+<main class="container pb-5" style="max-width: 960px;">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'community' %}" class="text-decoration-none">Community</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ member_user.get_full_name|default:member_user.username }}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Left Column: Member Card -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 text-center sticky-lg-top" style="border-radius: 16px; top: 1.5rem;">
+                <div class="mb-3 mx-auto">
+                    {% if member_profile.profile_picture %}
+                        <img src="{{ member_profile.profile_picture.url }}" alt="{{ member_user.username }}" class="rounded-circle shadow-sm" style="width: 110px; height: 110px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                        <div class="rounded-circle mx-auto shadow-sm d-none d-flex align-items-center justify-content-center bg-primary text-white" style="width: 110px; height: 110px; font-size: 2.5rem; font-weight: bold;">
+                            {{ member_user.first_name|first|default:member_user.username|first|upper }}
+                        </div>
+                    {% else %}
+                        <div class="rounded-circle mx-auto shadow-sm d-flex align-items-center justify-content-center bg-primary text-white" style="width: 110px; height: 110px; font-size: 2.5rem; font-weight: bold;">
+                            {{ member_user.first_name|first|default:member_user.username|first|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <h4 class="fw-bold mb-1">{{ member_user.get_full_name|default:member_user.username }}</h4>
+                <p class="text-muted small mb-3">@{{ member_user.username }}</p>
+
+                <div class="d-flex justify-content-center gap-2 mb-3 flex-wrap">
+                    {% if member_profile.department %}
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ member_profile.department }}</span>
+                    {% endif %}
+                    {% if member_profile.year %}
+                        <span class="badge bg-light text-secondary border">Year {{ member_profile.year }}</span>
+                    {% endif %}
+                    {% if member_user.is_staff %}
+                        <span class="badge bg-warning-subtle text-dark border border-warning-subtle"><i class="bi bi-shield-check me-1"></i>Staff / Exec</span>
+                    {% endif %}
+                </div>
+
+                <!-- Bio -->
+                {% if member_profile.bio %}
+                    <p class="text-secondary small mb-4 text-start bg-light p-3 rounded" style="line-height: 1.6;">
+                        {{ member_profile.bio|linebreaksbr }}
+                    </p>
+                {% else %}
+                    <p class="text-muted small mb-4 fst-italic">
+                        Student builder in the Computer Science Society.
+                    </p>
+                {% endif %}
+
+                <!-- Social Links -->
+                <div class="d-flex justify-content-center gap-2 mb-4 flex-wrap">
+                    {% if member_profile.github_url %}
+                        <a href="{{ member_profile.github_url }}" target="_blank" rel="noopener" class="btn btn-outline-dark btn-sm d-flex align-items-center gap-1">
+                            <i class="bi bi-github"></i> GitHub
+                        </a>
+                    {% endif %}
+                    {% if member_profile.linkedin_url %}
+                        <a href="{{ member_profile.linkedin_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm d-flex align-items-center gap-1">
+                            <i class="bi bi-linkedin"></i> LinkedIn
+                        </a>
+                    {% endif %}
+                </div>
+
+                {% if is_self %}
+                    <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-sm w-100">
+                        <i class="bi bi-pencil-square me-1"></i>Edit My Profile
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column: Stats & Portfolio -->
+        <div class="col-lg-8">
+            <!-- Metrics Row -->
+            <div class="row g-3 mb-4">
+                <div class="col-sm-4">
+                    <div class="card border-0 shadow-sm p-3 text-center" style="border-radius: 12px;">
+                        <span class="text-muted small text-uppercase fw-semibold">Challenges</span>
+                        <h3 class="fw-bold text-primary mb-0 mt-1">{{ submissions_count }}</h3>
+                        <small class="text-muted">Solutions submitted</small>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="card border-0 shadow-sm p-3 text-center" style="border-radius: 12px;">
+                        <span class="text-muted small text-uppercase fw-semibold">Chat Messages</span>
+                        <h3 class="fw-bold text-success mb-0 mt-1">{{ messages_count }}</h3>
+                        <small class="text-muted">Track posts &amp; replies</small>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="card border-0 shadow-sm p-3 text-center" style="border-radius: 12px;">
+                        <span class="text-muted small text-uppercase fw-semibold">Member Since</span>
+                        <h5 class="fw-bold text-dark mb-0 mt-2">{{ member_user.date_joined|date:"M Y" }}</h5>
+                        <small class="text-muted">Society verified</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievement Badges -->
+            {% if badges %}
+                <div class="card border-0 shadow-sm p-3 mb-4 bg-white" style="border-radius: 14px;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-award-fill text-warning me-2"></i>Achievement Badges</h6>
+                        <a href="{% url 'leaderboard' %}" class="small text-decoration-none fw-semibold">View Leaderboard &rarr;</a>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for badge in badges %}
+                            <div class="badge bg-{{ badge.color }}-subtle text-{{ badge.color }} border border-{{ badge.color }}-subtle p-2 d-flex align-items-center gap-2" title="{{ badge.description }}" style="font-size: 0.85rem; border-radius: 8px;">
+                                <i class="bi {{ badge.icon }} fs-6"></i>
+                                <div class="text-start">
+                                    <span class="fw-bold d-block text-dark">{{ badge.name }}</span>
+                                    <small class="text-secondary fw-normal d-block" style="font-size: 0.72rem;">{{ badge.description }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Challenge Solutions Portfolio -->
+            <div class="card border-0 shadow-sm p-4" style="border-radius: 16px;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">
+                        <i class="bi bi-trophy text-primary me-2"></i>Challenge Solutions Portfolio
+                    </h5>
+                    <span class="badge bg-light text-secondary border">{{ submissions_count }} Projects</span>
+                </div>
+
+                {% if submissions %}
+                    <div class="list-group list-group-flush">
+                        {% for sub in submissions %}
+                            <div class="list-group-item px-0 py-3 border-bottom">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-1">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">{{ sub.project_title }}</h6>
+                                        <small class="text-muted">
+                                            Challenge: <a href="{% url 'challenge_detail' sub.challenge.slug %}" class="text-decoration-none fw-semibold">{{ sub.challenge.title }}</a>
+                                            &middot; <span class="badge bg-primary-subtle text-primary">{{ sub.challenge.category }}</span>
+                                        </small>
+                                    </div>
+                                    <small class="text-muted">{{ sub.submitted_at|date:"M j, Y" }}</small>
+                                </div>
+                                <p class="small text-secondary mb-2">{{ sub.description }}</p>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ sub.repo_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.8rem;">
+                                        <i class="bi bi-github me-1"></i>View Code
+                                    </a>
+                                    {% if sub.demo_url %}
+                                        <a href="{{ sub.demo_url }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.8rem;">
+                                            <i class="bi bi-box-arrow-up-right me-1"></i>Live Demo
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-muted fs-1 mb-2"><i class="bi bi-journal-code"></i></div>
+                        <h6 class="fw-bold">No challenge submissions yet</h6>
+                        <p class="text-muted small mb-3">This student has not published any weekly challenge submissions yet.</p>
+                        {% if is_self %}
+                            <a href="{% url 'challenge' %}" class="btn btn-primary btn-sm">Explore Weekly Challenges</a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock content %}
+

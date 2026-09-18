@@ -1,0 +1,729 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
+<style>
+    .channel-shell {
+        height: calc(100vh - 65px);
+        overflow: hidden;
+        background-color: #FFFFFF;
+    }
+
+    /* --- Icon rail --- */
+    .icon-rail {
+        width: 68px;
+        background-color: #0F172A;
+        padding: 1rem 0.5rem;
+    }
+
+    .icon-rail .back-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #94A3B8;
+        background-color: #1E293B;
+        transition: background-color 0.15s ease, color 0.15s ease;
+        margin-bottom: 1.25rem;
+        text-decoration: none;
+    }
+
+    .icon-rail .back-btn:hover {
+        background-color: #334155;
+        color: #FFFFFF;
+    }
+
+    .rail-avatar {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        margin-bottom: 0.75rem;
+        text-decoration: none;
+        transition: border-radius 0.15s ease, transform 0.15s ease;
+    }
+
+    .rail-avatar:hover, .rail-avatar.active {
+        border-radius: 12px;
+        transform: translateY(-1px);
+        box-shadow: 0 0 0 2px #FFFFFF;
+    }
+
+    .rail-ai { background-color: #2563EB; }
+    .rail-web { background-color: #059669; }
+    .rail-sec { background-color: #DC2626; }
+    .rail-algo { background-color: #D97706; }
+    .rail-mobile { background-color: #0284C7; }
+    .rail-oss { background-color: #475569; }
+
+    /* --- Channel info sidebar --- */
+    .channel-sidebar {
+        width: 270px;
+        background-color: #F8FAFC;
+        border-right: 1px solid #E2E8F0;
+    }
+
+    .channel-banner {
+        width: 100%;
+        padding: 1.25rem 1rem;
+        background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+        color: #FFFFFF;
+    }
+
+    .channel-banner h5 {
+        font-size: 1.05rem;
+        letter-spacing: -0.01em;
+        margin-bottom: 0.25rem;
+    }
+
+    .channel-about {
+        padding: 1.25rem 1rem;
+    }
+
+    .channel-about h6 {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748B;
+        margin-bottom: 0.5rem;
+    }
+
+    .channel-about p {
+        color: #475569;
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .channel-links {
+        border-top: 1px solid #E2E8F0;
+        padding: 1rem;
+    }
+
+    .channel-links a {
+        display: flex;
+        align-items: center;
+        padding: 0.5rem 0.75rem;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        color: #475569;
+        text-decoration: none;
+        margin-bottom: 0.25rem;
+        transition: background-color 0.15s ease, color 0.15s ease;
+    }
+
+    .channel-links a:hover {
+        background-color: #E2E8F0;
+        color: #0F172A;
+    }
+
+    .channel-links a.active {
+        background-color: #E0E7FF;
+        color: #1E40AF;
+        font-weight: 600;
+    }
+
+    /* --- Chat area --- */
+    .chat-area {
+        background-color: #FFFFFF;
+    }
+
+    .chat-header {
+        padding: 0.9rem 1.5rem;
+        border-bottom: 1px solid #E2E8F0;
+        background-color: #FFFFFF;
+    }
+
+    .chat-messages {
+        padding: 1.5rem;
+        background-color: #FAFAFA;
+    }
+
+    .msg-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        color: #FFFFFF;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    .msg-author {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #0F172A;
+    }
+
+    .msg-time {
+        font-weight: 400;
+        color: #94A3B8;
+        font-size: 0.76rem;
+        margin-left: 0.5rem;
+    }
+
+    .msg-text {
+        color: #334155;
+        font-size: 0.92rem;
+        line-height: 1.55;
+        word-break: break-word;
+    }
+
+    .chat-message-row {
+        transition: background-color 0.15s ease;
+        border-radius: 8px;
+        padding: 0.35rem 0.5rem;
+    }
+
+    .chat-message-row:hover {
+        background-color: #F8FAFC;
+    }
+
+    .chat-message-row .reply-btn {
+        opacity: 0;
+        transition: opacity 0.15s ease;
+        font-size: 0.78rem;
+    }
+
+    .chat-message-row:hover .reply-btn {
+        opacity: 1;
+    }
+
+    .reply-quote {
+        transition: background-color 0.15s ease;
+        border-left: 3px solid #2563EB;
+        background-color: #F1F5F9;
+        font-size: 0.8rem;
+    }
+
+    .reply-quote:hover {
+        background-color: #E2E8F0;
+    }
+
+    .date-divider span {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #94A3B8;
+        background-color: #F1F5F9;
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+    }
+
+    .date-divider hr {
+        border-top: 1px solid #E2E8F0;
+    }
+
+    /* --- Message input --- */
+    .message-input-wrapper {
+        padding: 1rem 1.5rem;
+        background-color: #FFFFFF;
+        border-top: 1px solid #E2E8F0;
+    }
+
+    .message-input-group {
+        border-radius: 25px;
+        overflow: hidden;
+        background-color: #F1F5F9;
+        border: 1px solid #CBD5E1;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .message-input-group:focus-within {
+        border-color: #2563EB;
+        background-color: #FFFFFF;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    }
+
+    .message-input-group .form-control {
+        background-color: transparent;
+        font-size: 0.92rem;
+        padding-left: 1.25rem;
+    }
+
+    .message-input-group .form-control:focus {
+        box-shadow: none;
+        background-color: transparent;
+    }
+
+    .message-input-group .btn-send {
+        color: #2563EB;
+        padding-right: 1.25rem;
+        background: transparent;
+        border: none;
+    }
+
+    .message-input-group .btn-send:hover {
+        color: #1D4ED8;
+    }
+
+    /* Code block styling */
+    .code-block-wrapper {
+        border: 1px solid #334155;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 0.4rem;
+        margin-bottom: 0.4rem;
+        max-width: 680px;
+    }
+
+    .code-header {
+        background-color: #1E293B;
+        color: #94A3B8;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 0.72rem;
+        padding: 0.25rem 0.75rem;
+        border-bottom: 1px solid #334155;
+    }
+
+    .code-header .copy-code-btn {
+        color: #94A3B8;
+        background: none;
+        border: none;
+        font-size: 0.75rem;
+        padding: 0;
+        cursor: pointer;
+    }
+
+    .code-header .copy-code-btn:hover {
+        color: #FFFFFF;
+    }
+
+    pre[class*="language-"] {
+        margin: 0 !important;
+        padding: 0.75rem 1rem !important;
+        font-size: 0.82rem !important;
+        line-height: 1.45 !important;
+        background: #0F172A !important;
+    }
+</style>
+
+<!-- Main Container -->
+<div class="container-fluid channel-shell">
+    <div class="row h-100 g-0">
+
+        <!-- Icon Rail -->
+        <div class="col-auto icon-rail d-flex flex-column align-items-center">
+            <a href="{% url 'home' %}" class="mb-3" title="CSS Home">
+                <img src="{% static 'images/com.png' %}" alt="CSS" style="width: 38px; height: 38px; object-fit: contain;" class="bg-white p-1 rounded">
+            </a>
+            <a href="{% url 'community' %}" class="back-btn" title="Back to All Hubs">
+                <i class="bi bi-grid fs-5"></i>
+            </a>
+            <a href="{% url 'community_channel' 'ai-ml' %}" class="rail-avatar rail-ai {% if active_channel == 'ai-ml' %}active{% endif %}" title="AI & Machine Learning"><i class="bi bi-cpu-fill"></i></a>
+            <a href="{% url 'community_channel' 'web-cloud' %}" class="rail-avatar rail-web {% if active_channel == 'web-cloud' %}active{% endif %}" title="Web & Cloud"><i class="bi bi-cloud-arrow-up-fill"></i></a>
+            <a href="{% url 'community_channel' 'cybersecurity' %}" class="rail-avatar rail-sec {% if active_channel == 'cybersecurity' %}active{% endif %}" title="Cybersecurity"><i class="bi bi-shield-lock-fill"></i></a>
+            <a href="{% url 'community_channel' 'algorithms' %}" class="rail-avatar rail-algo {% if active_channel == 'algorithms' %}active{% endif %}" title="Competitive Programming"><i class="bi bi-diagram-3-fill"></i></a>
+            <a href="{% url 'community_channel' 'mobile' %}" class="rail-avatar rail-mobile {% if active_channel == 'mobile' %}active{% endif %}" title="Mobile Apps"><i class="bi bi-phone-fill"></i></a>
+            <a href="{% url 'community_channel' 'open-source' %}" class="rail-avatar rail-oss {% if active_channel == 'open-source' %}active{% endif %}" title="Open Source"><i class="bi bi-git"></i></a>
+        </div>
+
+        <!-- Channel Info Sidebar -->
+        <div class="col-auto channel-sidebar d-flex flex-column d-none d-md-flex">
+            <!-- Channel Name Section -->
+            <div class="channel-banner d-flex align-items-center gap-2">
+                <div class="bg-white rounded p-2 d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+                    {% if active_channel == 'ai-ml' %}
+                        <i class="bi bi-cpu-fill fs-5 text-primary"></i>
+                    {% elif active_channel == 'web-cloud' %}
+                        <i class="bi bi-cloud-arrow-up-fill fs-5 text-success"></i>
+                    {% elif active_channel == 'cybersecurity' %}
+                        <i class="bi bi-shield-lock-fill fs-5 text-danger"></i>
+                    {% elif active_channel == 'algorithms' %}
+                        <i class="bi bi-diagram-3-fill fs-5 text-warning"></i>
+                    {% elif active_channel == 'mobile' %}
+                        <i class="bi bi-phone-fill fs-5 text-info"></i>
+                    {% else %}
+                        <i class="bi bi-git fs-5 text-secondary"></i>
+                    {% endif %}
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">#{{ active_channel }}</h5>
+                    <span class="badge bg-white text-primary small">Active Channel</span>
+                </div>
+            </div>
+
+            <!-- About Channel -->
+            <div class="channel-about">
+                <h6>Track Description</h6>
+                <p class="mb-0">
+                    {{ channel_title }}. Connect with society peers, post questions, share code snippets, and coordinate workshop projects.
+                </p>
+            </div>
+
+            <!-- Channel Directory -->
+            <div class="channel-links flex-grow-1 overflow-auto">
+                <h6 class="text-uppercase text-muted small fw-bold mb-2">Technical Tracks</h6>
+                {% for slug, title in channels.items %}
+                    <a href="{% url 'community_channel' slug %}" class="{% if active_channel == slug %}active{% endif %}">
+                        <i class="bi bi-hash me-2 text-muted"></i>
+                        <span class="text-truncate">{{ title }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+
+            <!-- See Challenges -->
+            <div class="p-3 border-top bg-white">
+                <a href="{% url 'challenge' %}" class="btn btn-outline-primary btn-sm w-100 d-flex align-items-center justify-content-center">
+                    <i class="bi bi-trophy me-2"></i>View Weekly Challenges
+                </a>
+            </div>
+        </div>
+
+        <!-- Main Chat Area -->
+        <div class="col d-flex flex-column chat-area">
+            <!-- Channel Header -->
+            <div class="chat-header d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <h5 class="fw-bold mb-0 me-2"><i class="bi bi-hash text-muted me-1"></i>{{ active_channel }}</h5>
+                    <span class="badge bg-light text-secondary border small">{{ channel_title }}</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'community' %}" class="btn btn-outline-secondary btn-sm d-md-none">
+                        <i class="bi bi-grid"></i> All Hubs
+                    </a>
+                    <a href="{% url 'challenge' %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-code-square me-1"></i>Active Tasks
+                    </a>
+                </div>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div class="flex-grow-1 chat-messages overflow-auto" id="chatContainer">
+                <div class="d-flex align-items-center mb-4 date-divider">
+                    <hr class="flex-grow-1 m-0">
+                    <span class="mx-2">Channel History</span>
+                    <hr class="flex-grow-1 m-0">
+                </div>
+
+                {% if messages_list %}
+                    {% for msg in messages_list %}
+                        <div class="chat-message-row d-flex align-items-start mb-3" id="msg-{{ msg.id }}">
+                            <a href="{% url 'member_profile' msg.user.username %}" class="text-decoration-none me-3" title="View {{ msg.user.username }}'s profile">
+                                {% if msg.user.profile.profile_picture %}
+                                    <img src="{{ msg.user.profile.profile_picture.url }}" alt="{{ msg.user.username }}" class="rounded-circle shadow-sm" style="width: 38px; height: 38px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                    <div class="msg-avatar bg-primary text-white shadow-sm d-none">
+                                        <i class="bi bi-person-fill fs-5"></i>
+                                    </div>
+                                {% else %}
+                                    <div class="msg-avatar bg-primary text-white shadow-sm">
+                                        <i class="bi bi-person-fill fs-5"></i>
+                                    </div>
+                                {% endif %}
+                            </a>
+                            <div class="flex-grow-1">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <p class="mb-0">
+                                        <a href="{% url 'member_profile' msg.user.username %}" class="msg-author text-decoration-none text-dark" title="View profile">
+                                            {{ msg.user.get_full_name|default:msg.user.username }}
+                                        </a>
+                                        {% if msg.user.profile.department %}
+                                            <span class="badge text-bg-light border small text-muted ms-1">{{ msg.user.profile.department }}</span>
+                                        {% endif %}
+                                        <span class="msg-time">{{ msg.created_at|date:"M j, g:i A" }}</span>
+                                    </p>
+                                    {% if user.is_authenticated %}
+                                        <button type="button" class="btn btn-sm btn-link text-muted p-0 reply-btn" onclick="setReplyTarget({{ msg.id }}, '{{ msg.user.get_full_name|default:msg.user.username|escapejs }}', '{{ msg.text|truncatechars:45|escapejs }}')" title="Reply to this message">
+                                            <i class="bi bi-reply-fill"></i> Reply
+                                        </button>
+                                    {% endif %}
+                                </div>
+                                {% if msg.parent %}
+                                    <div class="reply-quote py-1 px-2 mb-2 rounded small text-muted d-flex align-items-center gap-1" style="cursor: pointer;" onclick="scrollToMsg({{ msg.parent.id }})" title="Jump to original message">
+                                        <i class="bi bi-arrow-return-right text-primary me-1"></i>
+                                        <span>Replying to <strong class="text-dark">@{{ msg.parent.user.username }}</strong>: <em class="text-secondary">{{ msg.parent.text|truncatechars:55 }}</em></span>
+                                    </div>
+                                {% endif %}
+                                <div class="msg-raw d-none">{{ msg.text }}</div>
+                                <div class="mb-0 msg-text">{{ msg.text|linebreaksbr }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="text-muted fs-1 mb-2"><i class="bi bi-chat-heart"></i></div>
+                        <h5 class="fw-bold">Welcome to #{{ active_channel }}!</h5>
+                        <p class="text-muted small mb-0">No messages have been posted in this track yet. Start the conversation below!</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input-wrapper">
+                {% if user.is_authenticated %}
+                    <!-- Active Reply Banner -->
+                    <div id="replyBanner" class="d-none alert alert-light border py-1 px-3 mb-2 d-flex justify-content-between align-items-center small shadow-sm rounded-pill">
+                        <div class="text-truncate me-2">
+                            <i class="bi bi-reply-fill text-primary me-1"></i>
+                            <span>Replying to <strong id="replyAuthor"></strong>: <span id="replyPreview" class="text-muted fst-italic"></span></span>
+                        </div>
+                        <button type="button" class="btn-close btn-sm p-1" onclick="cancelReply()" aria-label="Cancel reply"></button>
+                    </div>
+
+                    <form method="POST" action="{% url 'community_channel' active_channel %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="parent_id" id="parentIdInput" value="">
+                        <div class="input-group message-input-group">
+                            <input type="text" name="text" id="chatInput" class="form-control border-0" placeholder="Message #{{ active_channel }} as {{ user.first_name|default:user.username }}... (Press Enter to send)" required autocomplete="off">
+                            <button type="submit" class="btn btn-send" aria-label="Send message">
+                                <i class="bi bi-send-fill fs-5"></i>
+                            </button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="d-flex align-items-center justify-content-between p-3 rounded bg-light border">
+                        <div>
+                            <span class="fw-semibold small d-block">Sign in to participate in technical discussions</span>
+                            <span class="text-muted small">Registered students can ask questions, respond, and collaborate.</span>
+                        </div>
+                        <a href="{% url 'login' %}?next={% url 'community_channel' active_channel %}" class="btn btn-primary btn-sm">
+                            Sign In to Chat
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Prism.js Syntax Highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+
+<script>
+    let lastMessageId = 0;
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function formatMessageContent(raw) {
+        if (!raw) return '';
+
+        const codeBlockRegex = /```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g;
+        let lastIndex = 0;
+        let match;
+
+        function formatInline(text) {
+            let esc = escapeHtml(text);
+            // Inline code `snippet`
+            esc = esc.replace(/`([^`\n]+)`/g, '<code class="bg-light border text-danger px-1 py-0.5 rounded font-monospace" style="font-size:0.88em;">$1</code>');
+            // Bold **text**
+            esc = esc.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+            // Italic *text*
+            esc = esc.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+            // Line breaks
+            esc = esc.replace(/\n/g, '<br>');
+            return esc;
+        }
+
+        let resultHtml = '';
+        while ((match = codeBlockRegex.exec(raw)) !== null) {
+            const textBefore = raw.substring(lastIndex, match.index);
+            resultHtml += formatInline(textBefore);
+
+            const lang = match[1] || 'markup';
+            const code = escapeHtml(match[2].trim());
+            resultHtml += `
+                <div class="code-block-wrapper my-2">
+                    <div class="code-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-code-slash me-1"></i>${escapeHtml(lang)}</span>
+                        <button type="button" class="copy-code-btn" onclick="copyCode(this)">
+                            <i class="bi bi-clipboard me-1"></i>Copy
+                        </button>
+                    </div>
+                    <pre class="language-${escapeHtml(lang)}"><code class="language-${escapeHtml(lang)}">${code}</code></pre>
+                </div>
+            `;
+            lastIndex = match.index + match[0].length;
+        }
+
+        const remainingText = raw.substring(lastIndex);
+        resultHtml += formatInline(remainingText);
+
+        return resultHtml;
+    }
+
+    function copyCode(btn) {
+        const codeEl = btn.closest('.code-block-wrapper').querySelector('code');
+        if (!codeEl) return;
+        navigator.clipboard.writeText(codeEl.innerText).then(() => {
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check2 text-success me-1"></i>Copied!';
+            setTimeout(() => { btn.innerHTML = original; }, 2000);
+        });
+    }
+
+    function setReplyTarget(msgId, authorName, textSnippet) {
+        document.getElementById('parentIdInput').value = msgId;
+        document.getElementById('replyAuthor').textContent = authorName;
+        document.getElementById('replyPreview').textContent = `"${textSnippet}"`;
+        const banner = document.getElementById('replyBanner');
+        banner.classList.remove('d-none');
+        const input = document.getElementById('chatInput');
+        if (input) {
+            input.focus();
+            input.placeholder = `Replying to @${authorName}...`;
+        }
+    }
+
+    function cancelReply() {
+        document.getElementById('parentIdInput').value = '';
+        const banner = document.getElementById('replyBanner');
+        banner.classList.add('d-none');
+        const input = document.getElementById('chatInput');
+        if (input) {
+            input.placeholder = "Message #{{ active_channel }} as {{ user.first_name|default:user.username }}... (Press Enter to send)";
+        }
+    }
+
+    function scrollToMsg(targetId) {
+        const el = document.getElementById('msg-' + targetId);
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            el.style.backgroundColor = '#FEF08A';
+            setTimeout(() => {
+                el.style.backgroundColor = '';
+            }, 1800);
+        }
+    }
+
+    function appendNewMessage(msg) {
+        if (document.getElementById('msg-' + msg.id)) return;
+        lastMessageId = Math.max(lastMessageId, msg.id);
+
+        const chatContainer = document.getElementById('chatContainer');
+        if (!chatContainer) return;
+
+        const isNearBottom = (chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight) < 140;
+
+        const row = document.createElement('div');
+        row.className = 'chat-message-row d-flex align-items-start mb-3';
+        row.id = 'msg-' + msg.id;
+
+        let avatarHtml = '';
+        if (msg.avatar_url) {
+            avatarHtml = `<img src="${msg.avatar_url}" alt="${escapeHtml(msg.username)}" class="rounded-circle shadow-sm" style="width: 38px; height: 38px; object-fit: cover;">`;
+        } else {
+            avatarHtml = `<div class="msg-avatar bg-primary text-white shadow-sm"><i class="bi bi-person-fill fs-5"></i></div>`;
+        }
+
+        let deptHtml = '';
+        if (msg.department) {
+            deptHtml = `<span class="badge text-bg-light border small text-muted ms-1">${escapeHtml(msg.department)}</span>`;
+        }
+
+        let replyQuoteHtml = '';
+        if (msg.parent_id) {
+            replyQuoteHtml = `
+                <div class="reply-quote py-1 px-2 mb-2 rounded small text-muted d-flex align-items-center gap-1" style="cursor: pointer;" onclick="scrollToMsg(${msg.parent_id})" title="Jump to original message">
+                    <i class="bi bi-arrow-return-right text-primary me-1"></i>
+                    <span>Replying to <strong class="text-dark">@${escapeHtml(msg.parent_author)}</strong>: <em class="text-secondary">${escapeHtml(msg.parent_snippet)}</em></span>
+                </div>
+            `;
+        }
+
+        const formattedContent = formatMessageContent(msg.text);
+
+        let replyBtnHtml = '';
+        {% if user.is_authenticated %}
+        const safeName = (msg.full_name || msg.username).replace(/'/g, "\\'");
+        const safeSnippet = msg.text.substring(0, 45).replace(/'/g, "\\'").replace(/\n/g, ' ');
+        replyBtnHtml = `
+            <button type="button" class="btn btn-sm btn-link text-muted p-0 reply-btn" onclick="setReplyTarget(${msg.id}, '${safeName}', '${safeSnippet}')" title="Reply to this message">
+                <i class="bi bi-reply-fill"></i> Reply
+            </button>
+        `;
+        {% endif %}
+
+        row.innerHTML = `
+            <a href="/users/member/${escapeHtml(msg.username)}/" class="text-decoration-none me-3" title="View ${escapeHtml(msg.username)}'s profile">
+                ${avatarHtml}
+            </a>
+            <div class="flex-grow-1">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <p class="mb-0">
+                        <a href="/users/member/${escapeHtml(msg.username)}/" class="msg-author text-decoration-none text-dark" title="View profile">
+                            ${escapeHtml(msg.full_name || msg.username)}
+                        </a>
+                        ${deptHtml}
+                        <span class="msg-time">${escapeHtml(msg.created_at)}</span>
+                    </p>
+                    ${replyBtnHtml}
+                </div>
+                ${replyQuoteHtml}
+                <div class="msg-raw d-none">${escapeHtml(msg.text)}</div>
+                <div class="mb-0 msg-text">${formattedContent}</div>
+            </div>
+        `;
+
+        chatContainer.appendChild(row);
+
+        if (window.Prism) {
+            Prism.highlightAllUnder(row);
+        }
+
+        if (isNearBottom) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    }
+
+    function pollMessages() {
+        fetch('/community/api/messages/?channel={{ active_channel }}&after_id=' + lastMessageId)
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.messages && data.messages.length > 0) {
+                    data.messages.forEach(msg => appendNewMessage(msg));
+                }
+            })
+            .catch(err => console.error('Poll error:', err));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatContainer = document.getElementById('chatContainer');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Parse IDs and format all pre-existing messages
+        document.querySelectorAll('.chat-message-row').forEach(row => {
+            const idNum = parseInt(row.id.replace('msg-', ''), 10);
+            if (!isNaN(idNum) && idNum > lastMessageId) {
+                lastMessageId = idNum;
+            }
+
+            const rawEl = row.querySelector('.msg-raw');
+            const textEl = row.querySelector('.msg-text');
+            if (rawEl && textEl) {
+                textEl.innerHTML = formatMessageContent(rawEl.textContent);
+            }
+        });
+
+        if (window.Prism) {
+            Prism.highlightAll();
+        }
+
+        // Start real-time polling every 4 seconds
+        setInterval(pollMessages, 4000);
+    });
+</script>
+{% endblock content %}

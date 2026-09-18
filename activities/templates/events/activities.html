@@ -1,0 +1,54 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+<section class="bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <p class="text-uppercase fw-semibold mb-2" style="letter-spacing: .08em;">Computer Science Society</p>
+        <h1 class="display-5 fw-bold">Activities &amp; events</h1>
+        <p class="lead mb-0">Learn together, meet new people, and put your skills into practice.</p>
+    </div>
+</section>
+
+<main class="container pb-5">
+    {% if showing_sample_events %}
+        <div class="alert alert-info border-0 mb-4" role="status">
+            These are sample activities while the next CSS events are being published.
+        </div>
+    {% endif %}
+
+    {% for month, events in grouped_events.items %}
+        <section class="mb-5">
+            <h2 class="h4 text-muted fw-bold mb-3">{{ month }}</h2>
+            <div class="border-bottom mb-4"></div>
+            {% static 'images/gat.jpeg' as default_act_img %}
+            {% for event in events %}
+                <article class="card mb-4 shadow-sm border-0" style="border-radius: 10px;">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-md-3">
+                            {% if event.image_url %}
+                                <img src="{{ event.image_url }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onerror="this.onerror=null; this.src='{{ default_act_img }}';">
+                            {% elif event.image_path %}
+                                <img src="{% static event.image_path %}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onerror="this.onerror=null; this.src='{{ default_act_img }}';">
+                            {% else %}
+                                <img src="{{ default_act_img }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <div class="card-body p-4">
+                                <h3 class="h4 card-title fw-bold mb-2">{{ event.title }}</h3>
+                                <p class="card-text text-muted mb-2">{{ event.description }}</p>
+                                <p class="card-text mb-3"><small class="text-muted">{{ event.date }}</small></p>
+                                {% if showing_sample_events %}
+                                    <a href="{% url 'act:sample_event' event.slug %}" class="btn btn-primary btn-sm text-uppercase">{{ event.button_text }}</a>
+                                {% else %}
+                                    <a href="{% url 'act:event' event.id %}" class="btn btn-primary btn-sm text-uppercase">{{ event.button_text }}</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </section>
+    {% endfor %}
+</main>
+{% endblock %}

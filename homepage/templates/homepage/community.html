@@ -1,0 +1,923 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        .communities-hero {
+            background: linear-gradient(180deg, #F0F4FF 0%, #FFFFFF 100%);
+            padding: 3.5rem 0 2.5rem;
+        }
+
+        .communities-hero h1 {
+            font-size: 2.25rem;
+            letter-spacing: -0.02em;
+            color: #111827;
+        }
+
+        .communities-hero p.subtitle {
+            max-width: 660px;
+            margin: 0.75rem auto 0;
+            color: #4B5563;
+            font-size: 1.05rem;
+            line-height: 1.6;
+        }
+
+        .search-wrapper {
+            max-width: 720px;
+            margin: 2rem auto 0;
+        }
+
+        .search-wrapper .input-group {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #D1D5DB;
+            background: #FFFFFF;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .search-wrapper .input-group:focus-within {
+            border-color: #2563EB;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .search-wrapper .form-control {
+            height: 52px;
+            font-size: 0.95rem;
+            background-color: transparent;
+            padding-left: 1.25rem;
+        }
+
+        .search-wrapper .form-control:focus {
+            box-shadow: none;
+            background-color: transparent;
+        }
+
+        .search-wrapper .input-group-text {
+            background-color: transparent;
+            padding-right: 1.25rem;
+        }
+
+        .category-pill {
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 0.4rem 1rem;
+            border: 1px solid #E5E7EB;
+            background: #FFFFFF;
+            color: #4B5563;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .category-pill:hover, .category-pill.active {
+            background-color: #2563EB;
+            color: #FFFFFF;
+            border-color: #2563EB;
+        }
+
+        .section-heading {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1.5rem;
+        }
+
+        .community-card {
+            border: 1px solid #EDEFF2;
+            border-radius: 14px;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+            background: #FFFFFF;
+            position: relative;
+        }
+
+        .community-card:hover {
+            box-shadow: 0 10px 25px rgba(17, 24, 39, 0.08);
+            border-color: #CBD5E1;
+            transform: translateY(-2px);
+        }
+
+        .community-avatar-box {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.85rem;
+            flex-shrink: 0;
+        }
+
+        .community-avatar-img {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 1px solid #E2E8F0;
+        }
+
+        .community-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.35rem;
+        }
+
+        .community-description {
+            color: #4B5563;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            margin-bottom: 0.9rem;
+            max-width: 680px;
+        }
+
+        .member-avatars {
+            display: flex;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .member-avatars .avatar-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #FFFFFF;
+            margin-left: -8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: #FFFFFF;
+        }
+
+        .member-avatars .avatar-circle:first-child {
+            margin-left: 0;
+        }
+
+        .member-count-badge {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #374151;
+            background-color: #F3F4F6;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            margin-left: 0.85rem;
+        }
+
+        .community-cta {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #F3F4F6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #374151;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .community-card:hover .community-cta {
+            background-color: #2563EB;
+            color: #FFFFFF;
+        }
+
+        /* Requirements callout badge */
+        .req-badge {
+            font-size: 0.75rem;
+            background-color: #F1F5F9;
+            color: #475569;
+            border: 1px solid #E2E8F0;
+            border-radius: 6px;
+            padding: 0.2rem 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .img-preview-box {
+            width: 70px;
+            height: 70px;
+            border-radius: 16px;
+            object-fit: cover;
+            border: 2px dashed #CBD5E1;
+            background-color: #F8FAFC;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .member-avatar-img {
+            width: 30px;
+            height: 30px;
+            object-fit: cover;
+        }
+
+        .member-avatar-initials {
+            width: 30px;
+            height: 30px;
+            font-size: 0.72rem;
+        }
+
+        .avatar-overlap {
+            margin-left: -8px;
+        }
+
+        .badge-track-ai, .avatar-box-ai { background-color: #EEF2FF; color: #4F46E5; }
+        .badge-track-web, .avatar-box-web { background-color: #ECFDF5; color: #059669; }
+        .badge-track-security, .avatar-box-security { background-color: #FEF2F2; color: #DC2626; }
+        .badge-track-algo, .avatar-box-algo { background-color: #FFFBEB; color: #D97706; }
+        .badge-track-mobile, .avatar-box-mobile { background-color: #F0F9FF; color: #0284C7; }
+        .badge-track-systems, .avatar-box-systems { background-color: #F1F5F9; color: #334155; }
+        .badge-track-all, .avatar-box-all { background-color: #F1F5F9; color: #2563EB; }
+    </style>
+
+    <!-- Hero Section -->
+    <div class="communities-hero">
+        <div class="container text-center">
+            <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="bg-white p-2 rounded-circle shadow-sm mb-3" style="width: 56px; height: 56px; object-fit: contain;">
+            <h1 class="text-center fw-bold">Join a Technical Community</h1>
+            <p class="text-center subtitle">
+                Explore specialized engineering tracks, participate in hands-on study groups, work on open-source projects, and accelerate your tech career alongside peer builders.
+            </p>
+
+            <!-- Search Bar -->
+            <div class="search-wrapper">
+                <div class="input-group">
+                    <input type="text" id="communitySearchInput" class="form-control border-0"
+                        placeholder="Search by topic, track, or keywords (e.g., AI, React, Security, LeetCode)..."
+                        autocomplete="off">
+                    <button type="button" id="clearSearchBtn" class="btn btn-link text-muted p-0 pe-2 d-none" aria-label="Clear search" title="Clear search">
+                        <i class="bi bi-x-circle-fill fs-5"></i>
+                    </button>
+                    <span class="input-group-text border-0">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Filter Pills -->
+            <div class="d-flex justify-content-center gap-2 flex-wrap mt-3" id="categoryFilters">
+                <button type="button" class="category-pill active" data-category="all">All Tracks</button>
+                <button type="button" class="category-pill" data-category="ai">AI &amp; Machine Learning</button>
+                <button type="button" class="category-pill" data-category="web">Web &amp; Cloud</button>
+                <button type="button" class="category-pill" data-category="security">Cybersecurity</button>
+                <button type="button" class="category-pill" data-category="algo">Algorithms &amp; CP</button>
+                <button type="button" class="category-pill" data-category="mobile">Mobile Apps</button>
+                <button type="button" class="category-pill" data-category="systems">Open Source</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="section-heading mb-0">Active Technical Hubs (<span id="hubCount">{{ channels|length|default:6 }}</span>)</h2>
+                <span class="text-muted small">Updated for the 2024/2025 Academic Year</span>
+            </div>
+            <div>
+                <button type="button" class="btn btn-primary btn-sm fw-semibold d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#proposeHubModal">
+                    <i class="bi bi-plus-circle me-1"></i> Propose a Hub
+                </button>
+            </div>
+        </div>
+
+        <div id="communitiesList">
+            {% if channels %}
+                {% for ch in channels %}
+                <div class="card community-card shadow-sm mb-4" 
+                     data-category="{{ ch.category_key }} {{ ch.category|lower }}" 
+                     data-slug="{{ ch.slug }}" 
+                     data-keywords="{{ ch.name|lower }} {{ ch.description|lower }} {{ ch.category|lower }} {{ ch.slug }}">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto px-4 py-4">
+                            {% if ch.image %}
+                                <img src="{{ ch.image.url }}" alt="{{ ch.name }}" class="community-avatar-img shadow-sm">
+                            {% else %}
+                                <div class="community-avatar-box shadow-sm avatar-box-{{ ch.category_key }}" data-accent-bg="{{ ch.accent_bg }}" data-accent-color="{{ ch.accent_color }}">
+                                    <i class="bi {{ ch.icon_class }}"></i>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col">
+                            <div class="card-body py-4 pe-3">
+                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="community-title mb-0">{{ ch.name }}</h3>
+                                    <span class="badge badge-track-{{ ch.category_key }}" data-accent-bg="{{ ch.accent_bg }}" data-accent-color="{{ ch.accent_color }}">{{ ch.category }}</span>
+                                </div>
+                                <p class="community-description">
+                                    {{ ch.description }}
+                                </p>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="member-avatars">
+                                        {% if ch.recent_members %}
+                                            {% for m in ch.recent_members %}
+                                                {% if m.profile.profile_picture %}
+                                                    <img src="{{ m.profile.profile_picture.url }}" alt="{{ m.username }}" class="rounded-circle border border-2 border-white shadow-sm member-avatar-img{% if not forloop.first %} avatar-overlap{% endif %}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white border border-2 border-white shadow-sm small fw-bold d-none member-avatar-initials{% if not forloop.first %} avatar-overlap{% endif %}">{{ m.username|first|upper }}</span>
+                                                {% else %}
+                                                    <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white border border-2 border-white shadow-sm small fw-bold member-avatar-initials{% if not forloop.first %} avatar-overlap{% endif %}">{{ m.username|first|upper }}</span>
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% else %}
+                                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white border border-2 border-white shadow-sm small fw-bold member-avatar-initials"><i class="bi bi-people-fill"></i></span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="member-count-badge">{% if ch.message_count %}{{ ch.message_count }} Discussions{% else %}Active Track{% endif %}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto pe-4">
+                            <a href="{% url 'community_channel' ch.slug %}" class="stretched-link text-decoration-none" aria-label="Enter {{ ch.name }}">
+                                <span class="community-cta">
+                                    <i class="bi bi-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Hub 1: AI & Web3 -->
+                <div class="card community-card shadow-sm mb-4" data-category="ai" data-slug="ai-ml" data-keywords="artificial intelligence machine learning deep learning pytorch llm web3 nlp neural networks">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto px-4 py-4">
+                            <div class="community-avatar-box shadow-sm" style="background-color: #EEF2FF; color: #4F46E5;">
+                                <i class="bi bi-cpu-fill"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card-body py-4 pe-3">
+                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="community-title mb-0">Future of AI &amp; Machine Learning Hub</h3>
+                                    <span class="badge bg-primary-subtle text-primary">Most Active</span>
+                                </div>
+                                <p class="community-description">
+                                    Dive deep into neural architectures, PyTorch, generative models, and applied ML. Members collaborate on Kaggle competitions, research paper breakdowns, and computer vision projects.
+                                </p>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="member-avatars">
+                                        <img src="{% static 'images/man1.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover;">
+                                        <img src="{% static 'images/man2.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man3.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man4.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                    </div>
+                                    <span class="member-count-badge">180+ Members</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto pe-4">
+                            <a href="{% url 'community_channel' 'ai-ml' %}" class="stretched-link text-decoration-none" aria-label="Enter AI Hub">
+                                <span class="community-cta">
+                                    <i class="bi bi-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hub 2: Web & Cloud -->
+                <div class="card community-card shadow-sm mb-4" data-category="web" data-slug="web-cloud" data-keywords="web development fullstack frontend backend django react node postgres aws docker cloud">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto px-4 py-4">
+                            <div class="community-avatar-box shadow-sm" style="background-color: #ECFDF5; color: #059669;">
+                                <i class="bi bi-cloud-arrow-up-fill"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card-body py-4 pe-3">
+                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="community-title mb-0">Web &amp; Cloud Systems Guild</h3>
+                                    <span class="badge bg-success-subtle text-success">High Demand</span>
+                                </div>
+                                <p class="community-description">
+                                    Build responsive full-stack applications with modern frameworks. Topics span Django, React, REST &amp; GraphQL APIs, containerization with Docker, and cloud deployments on AWS &amp; GCP.
+                                </p>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="member-avatars">
+                                        <img src="{% static 'images/man2.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover;">
+                                        <img src="{% static 'images/man3.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man4.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man5.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                    </div>
+                                    <span class="member-count-badge">240+ Members</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto pe-4">
+                            <a href="{% url 'community_channel' 'web-cloud' %}" class="stretched-link text-decoration-none" aria-label="Enter Web Guild">
+                                <span class="community-cta">
+                                    <i class="bi bi-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hub 3: Cybersecurity -->
+                <div class="card community-card shadow-sm mb-4" data-category="security" data-slug="cybersecurity" data-keywords="cybersecurity ethical hacking ctf penetration testing network security cryptography linux infosec">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto px-4 py-4">
+                            <div class="community-avatar-box shadow-sm" style="background-color: #FEF2F2; color: #DC2626;">
+                                <i class="bi bi-shield-lock-fill"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card-body py-4 pe-3">
+                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="community-title mb-0">Cybersecurity &amp; Ethical Hacking SIG</h3>
+                                    <span class="badge bg-danger-subtle text-danger">CTF Team</span>
+                                </div>
+                                <p class="community-description">
+                                    Master defense and ethical offensive techniques. Participate in weekend Capture-the-Flag (CTF) tournaments, web exploitation laboratories, network security auditing, and secure coding practices.
+                                </p>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="member-avatars">
+                                        <img src="{% static 'images/man4.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover;">
+                                        <img src="{% static 'images/man1.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man6.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man2.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                    </div>
+                                    <span class="member-count-badge">110+ Members</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto pe-4">
+                            <a href="{% url 'community_channel' 'cybersecurity' %}" class="stretched-link text-decoration-none" aria-label="Enter Security Hub">
+                                <span class="community-cta">
+                                    <i class="bi bi-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hub 4: Algorithms & CP -->
+                <div class="card community-card shadow-sm mb-4" data-category="algo" data-slug="algorithms" data-keywords="competitive programming algorithms data structures leetcode codeforces icpc interview prep cpp java">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto px-4 py-4">
+                            <div class="community-avatar-box shadow-sm" style="background-color: #FFFBEB; color: #D97706;">
+                                <i class="bi bi-diagram-3-fill"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card-body py-4 pe-3">
+                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="community-title mb-0">Competitive Programming &amp; Algorithms</h3>
+                                    <span class="badge bg-warning-subtle text-warning">Interview Prep</span>
+                                </div>
+                                <p class="community-description">
+                                    Sharpen your algorithmic thinking and problem-solving speed. We practice weekly on LeetCode and Codeforces, prepare for ICPC competitions, and conduct peer mock technical interviews.
+                                </p>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="member-avatars">
+                                        <img src="{% static 'images/man3.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover;">
+                                        <img src="{% static 'images/man5.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man1.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man2.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                    </div>
+                                    <span class="member-count-badge">165+ Members</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto pe-4">
+                            <a href="{% url 'community_channel' 'algorithms' %}" class="stretched-link text-decoration-none" aria-label="Enter Algorithms Hub">
+                                <span class="community-cta">
+                                    <i class="bi bi-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hub 5: Mobile Apps -->
+                <div class="card community-card shadow-sm mb-4" data-category="mobile" data-slug="mobile" data-keywords="mobile flutter react native android ios swift kotlin apps cross-platform mobile dev">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto px-4 py-4">
+                            <div class="community-avatar-box shadow-sm" style="background-color: #F0F9FF; color: #0284C7;">
+                                <i class="bi bi-phone-fill"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card-body py-4 pe-3">
+                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="community-title mb-0">Mobile Apps &amp; Cross-Platform Collective</h3>
+                                    <span class="badge bg-info-subtle text-info">iOS &amp; Android</span>
+                                </div>
+                                <p class="community-description">
+                                    Craft smooth, native and cross-platform experiences for mobile users. Build real apps using Flutter, React Native, Swift, and Kotlin, with guidance on app store deployments and UX principles.
+                                </p>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="member-avatars">
+                                        <img src="{% static 'images/man6.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover;">
+                                        <img src="{% static 'images/man4.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man2.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man5.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                    </div>
+                                    <span class="member-count-badge">130+ Members</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto pe-4">
+                            <a href="{% url 'community_channel' 'mobile' %}" class="stretched-link text-decoration-none" aria-label="Enter Mobile Hub">
+                                <span class="community-cta">
+                                    <i class="bi bi-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hub 6: Open Source & Systems -->
+                <div class="card community-card shadow-sm mb-4" data-category="systems" data-slug="open-source" data-keywords="open source linux git rust c cpp operating systems kernel devops github">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto px-4 py-4">
+                            <div class="community-avatar-box shadow-sm" style="background-color: #F1F5F9; color: #334155;">
+                                <i class="bi bi-git"></i>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="card-body py-4 pe-3">
+                                <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                    <h3 class="community-title mb-0">Open Source &amp; Systems Collective</h3>
+                                    <span class="badge bg-secondary-subtle text-dark">Linux &amp; Systems</span>
+                                </div>
+                                <p class="community-description">
+                                    Learn the art of upstream open-source contributions. Explore systems programming in Rust and C++, delve into Linux internals, and participate in global Hacktoberfest &amp; Google Summer of Code sprints.
+                                </p>
+                                <div class="d-flex align-items-center flex-wrap gap-2">
+                                    <div class="member-avatars">
+                                        <img src="{% static 'images/man1.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover;">
+                                        <img src="{% static 'images/man5.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man3.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                        <img src="{% static 'images/man4.jpg' %}" alt="Member" class="rounded-circle border border-2 border-white shadow-sm" style="width: 30px; height: 30px; object-fit: cover; margin-left: -8px;">
+                                    </div>
+                                    <span class="member-count-badge">95+ Members</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto pe-4">
+                            <a href="{% url 'community_channel' 'open-source' %}" class="stretched-link text-decoration-none" aria-label="Enter Open Source Hub">
+                                <span class="community-cta">
+                                    <i class="bi bi-chevron-right"></i>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- No Results Empty State -->
+        <div id="noResultsState" class="card border-0 shadow-sm p-5 text-center d-none" style="border-radius: 14px;">
+            <div class="text-muted fs-1 mb-2"><i class="bi bi-search"></i></div>
+            <h4 class="fw-bold">No matching communities found</h4>
+            <p class="text-muted mb-3">Try adjusting your search terms or select "All Tracks" to view all active hubs.</p>
+            <button type="button" class="btn btn-primary btn-sm mx-auto" onclick="resetFilters()">View All Tracks</button>
+        </div>
+
+        <!-- Propose Hub Callout Section -->
+        <section class="card border-0 shadow-sm mt-5 p-4 p-md-5 text-center bg-white" style="border-radius: 16px;">
+            <div class="mx-auto mb-3 text-primary fs-1">
+                <i class="bi bi-lightbulb-fill"></i>
+            </div>
+            <h3 class="fw-bold mb-2">Have an Idea for a New Technical Hub?</h3>
+            <p class="text-muted mx-auto mb-4" style="max-width: 600px;">
+                Propose a specialized track, study circle, or student guild. Upload an icon, describe the curriculum and goals, and start collaborating with peer builders across the department.
+            </p>
+            <div>
+                <button type="button" class="btn btn-primary px-4 py-2 fw-semibold d-inline-flex align-items-center" data-bs-toggle="modal" data-bs-target="#proposeHubModal">
+                    <i class="bi bi-plus-circle me-2"></i> Propose a Technical Track
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Propose Hub Modal -->
+    <div class="modal fade" id="proposeHubModal" tabindex="-1" aria-labelledby="proposeHubModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+                <div class="modal-header border-0 pb-0">
+                    <div>
+                        <h4 class="modal-title fw-bold text-dark" id="proposeHubModalLabel">Propose a Technical Hub</h4>
+                        <p class="text-muted small mb-0">Create a new student study group or engineering guild for the society.</p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4">
+                    {% if user.is_authenticated %}
+                        <form method="POST" action="{% url 'propose_community_channel' %}" enctype="multipart/form-data" id="proposeHubForm">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="hub_name" class="form-label small fw-bold">Hub Title <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="hub_name" name="name" required placeholder="e.g. Game Development &amp; Real-Time Graphics" minlength="3" maxlength="120">
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="hub_category" class="form-label small fw-bold">Engineering Domain / Track <span class="text-danger">*</span></label>
+                                <select class="form-select" id="hub_category" name="category" required>
+                                    <option value="AI & Machine Learning">AI &amp; Machine Learning</option>
+                                    <option value="Web & Cloud">Web &amp; Cloud Systems</option>
+                                    <option value="Cybersecurity">Cybersecurity &amp; Ethical Hacking</option>
+                                    <option value="Algorithms & CP">Competitive Programming &amp; Algorithms</option>
+                                    <option value="Mobile Apps">Mobile Apps &amp; Cross-Platform</option>
+                                    <option value="Open Source & Systems" selected>Open Source &amp; Systems Engineering</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="hub_description" class="form-label small fw-bold">Overview &amp; Study Objectives <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="hub_description" name="description" rows="3" required placeholder="Describe what projects members will build, learning milestones, and tools covered..." minlength="15"></textarea>
+                            </div>
+
+                            <!-- Hub Icon Image Upload with Strict Validation Display -->
+                            <div class="mb-4">
+                                <label for="hub_image" class="form-label small fw-bold d-flex justify-content-between align-items-center">
+                                    <span>Hub Icon / Badge Image <span class="text-danger">*</span></span>
+                                    <span class="text-muted small">Required 1:1 Aspect Ratio</span>
+                                </label>
+                                
+                                <input type="file" class="form-control" id="hub_image" name="hub_image" accept="image/png, image/jpeg, image/webp" required>
+                                
+                                <!-- Dimension & Format Requirements Display -->
+                                <div class="bg-light rounded p-3 mt-2 border">
+                                    <div class="fw-semibold small text-dark mb-1">
+                                        <i class="bi bi-shield-check text-primary me-1"></i> Image Upload Requirements
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2 mt-2">
+                                        <span class="req-badge"><i class="bi bi-aspect-ratio text-primary"></i> Aspect Ratio: <strong>1:1 Square</strong></span>
+                                        <span class="req-badge"><i class="bi bi-arrows-angle-expand text-primary"></i> Dimensions: <strong>100&times;100px – 1200&times;1200px</strong></span>
+                                        <span class="req-badge"><i class="bi bi-filetype-png text-primary"></i> Formats: <strong>PNG, JPG, WebP</strong></span>
+                                        <span class="req-badge"><i class="bi bi-hdd text-primary"></i> Max File Size: <strong>2 MB</strong></span>
+                                    </div>
+                                </div>
+
+                                <!-- Live Image Preview & Validation Feedback -->
+                                <div id="hubImagePreviewContainer" class="d-none mt-3 p-3 border rounded bg-white">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <img id="hubImagePreview" src="#" alt="Hub Icon Preview" class="img-preview-box">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-1 fw-bold text-dark small" id="hubImageFileName">image.png</h6>
+                                            <div class="d-flex flex-wrap gap-2 align-items-center mb-1">
+                                                <span class="badge bg-light text-dark border" id="hubImageDimensions">0 x 0 px</span>
+                                                <span class="badge bg-light text-dark border" id="hubImageRatio">1:1 Ratio</span>
+                                                <span class="badge bg-light text-dark border" id="hubImageSize">0 KB</span>
+                                                <span id="hubImageValidationBadge" class="badge bg-success">Valid Dimensions</span>
+                                            </div>
+                                            <div id="hubImageError" class="text-danger small d-none"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="modal-footer border-0 px-0 pb-0">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary btn-sm fw-semibold" id="submitProposalBtn">
+                                    <i class="bi bi-check2-circle me-1"></i> Submit Proposal
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="text-muted fs-1 mb-3"><i class="bi bi-lock-fill"></i></div>
+                            <h5 class="fw-bold">Sign in to propose a technical hub</h5>
+                            <p class="text-muted small mb-4">You must be an authenticated society member to propose and lead study tracks.</p>
+                            <a href="{% url 'login' %}?next={% url 'community' %}" class="btn btn-primary btn-sm px-4">
+                                Sign In to Continue
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-side Search, Category Filtering, and Image Validation Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('communitySearchInput');
+            const clearSearchBtn = document.getElementById('clearSearchBtn');
+            const filterButtons = document.querySelectorAll('#categoryFilters .category-pill');
+            const cards = document.querySelectorAll('#communitiesList .community-card');
+            const noResults = document.getElementById('noResultsState');
+            const hubCount = document.getElementById('hubCount');
+
+            let currentCategory = 'all';
+
+            function filterCards() {
+                const query = searchInput.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                // Toggle search clear button
+                if (clearSearchBtn) {
+                    if (query.length > 0) {
+                        clearSearchBtn.classList.remove('d-none');
+                    } else {
+                        clearSearchBtn.classList.add('d-none');
+                    }
+                }
+
+                cards.forEach(card => {
+                    const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
+                    const cardSlug = (card.getAttribute('data-slug') || '').toLowerCase();
+                    const keywords = (card.getAttribute('data-keywords') || '').toLowerCase();
+                    const titleEl = card.querySelector('.community-title');
+                    const descEl = card.querySelector('.community-description');
+                    const title = titleEl ? titleEl.textContent.toLowerCase() : '';
+                    const desc = descEl ? descEl.textContent.toLowerCase() : '';
+
+                    // Robust category matching: matches key ('ai'), slug ('ai-ml'), or category string
+                    const matchesCategory = (
+                        currentCategory === 'all' || 
+                        cardCategory.includes(currentCategory) || 
+                        cardSlug === currentCategory ||
+                        (currentCategory === 'systems' && (cardCategory.includes('open') || cardCategory.includes('sys'))) ||
+                        (currentCategory === 'algo' && (cardCategory.includes('algo') || cardCategory.includes('problem'))) ||
+                        (currentCategory === 'ai' && (cardCategory.includes('ai') || cardCategory.includes('machine') || cardCategory.includes('data'))) ||
+                        (currentCategory === 'web' && (cardCategory.includes('web') || cardCategory.includes('cloud') || cardCategory.includes('infra'))) ||
+                        (currentCategory === 'security' && (cardCategory.includes('sec') || cardCategory.includes('cyber'))) ||
+                        (currentCategory === 'mobile' && (cardCategory.includes('mob') || cardCategory.includes('app')))
+                    );
+
+                    const matchesQuery = !query || title.includes(query) || desc.includes(query) || keywords.includes(query) || cardSlug.includes(query);
+
+                    if (matchesCategory && matchesQuery) {
+                        card.style.display = '';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (hubCount) {
+                    hubCount.textContent = visibleCount;
+                }
+                if (noResults) {
+                    if (visibleCount === 0) {
+                        noResults.classList.remove('d-none');
+                    } else {
+                        noResults.classList.add('d-none');
+                    }
+                }
+            }
+
+            if (searchInput) {
+                searchInput.addEventListener('input', filterCards);
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') {
+                        searchInput.value = '';
+                        filterCards();
+                    }
+                });
+            }
+
+            if (clearSearchBtn) {
+                clearSearchBtn.addEventListener('click', function() {
+                    if (searchInput) {
+                        searchInput.value = '';
+                        searchInput.focus();
+                    }
+                    filterCards();
+                });
+            }
+
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    filterButtons.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentCategory = this.getAttribute('data-category');
+                    filterCards();
+                });
+            });
+
+            window.resetFilters = function() {
+                if (searchInput) searchInput.value = '';
+                currentCategory = 'all';
+                filterButtons.forEach(b => b.classList.remove('active'));
+                if (filterButtons.length > 0) filterButtons[0].classList.add('active');
+                filterCards();
+            };
+
+            // Apply custom accent colors if specified via data attributes (e.g. from database)
+            document.querySelectorAll('[data-accent-bg]').forEach(el => {
+                const bg = el.getAttribute('data-accent-bg');
+                const color = el.getAttribute('data-accent-color');
+                if (bg && bg.trim()) el.style.backgroundColor = bg;
+                if (color && color.trim()) el.style.color = color;
+            });
+
+            // Initialize count and state on DOM load
+            filterCards();
+
+            // Client-side image validation and live preview for Hub Icon upload
+            const hubImageInput = document.getElementById('hub_image');
+            const previewContainer = document.getElementById('hubImagePreviewContainer');
+            const previewImg = document.getElementById('hubImagePreview');
+            const fileNameEl = document.getElementById('hubImageFileName');
+            const dimensionsEl = document.getElementById('hubImageDimensions');
+            const ratioEl = document.getElementById('hubImageRatio');
+            const sizeEl = document.getElementById('hubImageSize');
+            const validationBadge = document.getElementById('hubImageValidationBadge');
+            const errorEl = document.getElementById('hubImageError');
+            const submitBtn = document.getElementById('submitProposalBtn');
+
+            if (hubImageInput) {
+                hubImageInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (!file) {
+                        if (previewContainer) previewContainer.classList.add('d-none');
+                        return;
+                    }
+
+                    // 1. Check file size (max 2MB)
+                    const maxBytes = 2 * 1024 * 1024;
+                    const fileSizeKB = (file.size / 1024).toFixed(1);
+                    const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+
+                    // 2. Check file format (PNG, JPEG, WebP)
+                    const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+                    if (!validTypes.includes(file.type)) {
+                        alert('Invalid image format. Please select a PNG, JPG, or WebP image file.');
+                        this.value = '';
+                        if (previewContainer) previewContainer.classList.add('d-none');
+                        return;
+                    }
+
+                    // Load image into an Image object to read natural dimensions & aspect ratio
+                    const objectUrl = URL.createObjectURL(file);
+                    const tempImg = new Image();
+
+                    tempImg.onload = function() {
+                        const width = this.naturalWidth;
+                        const height = this.naturalHeight;
+                        const ratio = width / height;
+
+                        if (previewContainer) previewContainer.classList.remove('d-none');
+                        if (previewImg) previewImg.src = objectUrl;
+                        if (fileNameEl) fileNameEl.textContent = file.name;
+                        if (dimensionsEl) dimensionsEl.textContent = `${width} x ${height} px`;
+                        if (ratioEl) ratioEl.textContent = `${ratio.toFixed(2)}:1 Ratio`;
+                        if (sizeEl) sizeEl.textContent = file.size > 1024 * 1024 ? `${fileSizeMB} MB` : `${fileSizeKB} KB`;
+
+                        let errorMessages = [];
+
+                        // Validate file size limit
+                        if (file.size > maxBytes) {
+                            errorMessages.push(`File size (${fileSizeMB} MB) exceeds maximum 2MB limit.`);
+                        }
+
+                        // Validate minimum dimensions
+                        if (width < 100 || height < 100) {
+                            errorMessages.push(`Image dimensions too small (${width}x${height}px). Minimum is 100x100px.`);
+                        }
+
+                        // Validate maximum dimensions
+                        if (width > 1200 || height > 1200) {
+                            errorMessages.push(`Image dimensions too large (${width}x${height}px). Maximum is 1200x1200px.`);
+                        }
+
+                        // Validate 1:1 square aspect ratio (0.80 to 1.20 tolerance)
+                        if (ratio < 0.80 || ratio > 1.20) {
+                            errorMessages.push(`Image is not square (${ratio.toFixed(2)}:1 aspect ratio). Please upload a 1:1 square image.`);
+                        }
+
+                        if (errorMessages.length > 0) {
+                            if (validationBadge) {
+                                validationBadge.className = 'badge bg-danger';
+                                validationBadge.textContent = 'Invalid Requirements';
+                            }
+                            if (errorEl) {
+                                errorEl.textContent = errorMessages.join(' ');
+                                errorEl.classList.remove('d-none');
+                            }
+                            if (submitBtn) submitBtn.disabled = true;
+                        } else {
+                            if (validationBadge) {
+                                validationBadge.className = 'badge bg-success';
+                                validationBadge.textContent = 'Meets Requirements';
+                            }
+                            if (errorEl) {
+                                errorEl.textContent = '';
+                                errorEl.classList.add('d-none');
+                            }
+                            if (submitBtn) submitBtn.disabled = false;
+                        }
+                    };
+
+                    tempImg.onerror = function() {
+                        alert('Could not read the selected image file. Please try a different image.');
+                        hubImageInput.value = '';
+                        if (previewContainer) previewContainer.classList.add('d-none');
+                    };
+
+                    tempImg.src = objectUrl;
+                });
+            }
+        });
+    </script>
+{% endblock content %}

@@ -1,0 +1,19 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+<div class="d-flex justify-content-center align-items-center py-5 bg-light" style="min-height: 75vh;">
+    <div class="card border-0 shadow-sm p-4 p-md-5 text-center" style="max-width: 480px; border-radius: 16px; background-color: #FFFFFF;">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary mx-auto mb-4" style="width: 76px; height: 76px;">
+            <i class="bi bi-box-arrow-right fs-1"></i>
+        </div>
+        <h2 class="fw-bold mb-2">You Have Been Signed Out</h2>
+        <p class="text-muted mb-4">
+            Thank you for participating in the Computer Science Society community. Your session has been safely closed.
+        </p>
+        <div class="d-grid gap-2">
+            <a href="{% url 'login' %}" class="btn btn-primary py-2 fw-semibold">Sign In Again</a>
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary py-2">Return to Homepage</a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

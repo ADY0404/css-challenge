@@ -1,0 +1,34 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<section class="bg-primary text-white py-4 mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+                <img src="{% static 'images/com.png' %}" alt="CSS Crest" style="width: 32px; height: 32px; object-fit: contain;" class="bg-white rounded-circle p-1">
+                <p class="text-uppercase fw-semibold mb-0" style="letter-spacing: .08em; font-size: 0.85rem;">Computer Science Society</p>
+            </div>
+            <a href="{% url 'community' %}" class="btn btn-outline-light btn-sm">
+                <i class="bi bi-arrow-left me-1"></i>Back to Community
+            </a>
+        </div>
+    </div>
+</section>
+
+<main class="container py-5 text-center" style="max-width: 600px;">
+    <div class="card border-0 shadow-sm p-5" style="border-radius: 16px;">
+        <div class="text-muted fs-1 mb-3"><i class="bi bi-lock-fill"></i></div>
+        <h4 class="fw-bold mb-2">This Profile is Private</h4>
+        <p class="text-muted small mb-4">
+            @{{ member_user.username }} has chosen to keep their society profile private. Only the account owner and society administrators can view their details.
+        </p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{% url 'community' %}" class="btn btn-primary btn-sm">Return to Community</a>
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm">Go to Homepage</a>
+        </div>
+    </div>
+</main>
+
+{% endblock content %}
+

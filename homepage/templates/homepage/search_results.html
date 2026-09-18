@@ -1,0 +1,196 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Search Header -->
+<section class="bg-primary text-white py-5 mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3 mb-2">
+            <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="bg-white p-1 rounded-circle shadow-sm" style="width: 44px; height: 44px; object-fit: contain;">
+            <p class="text-uppercase fw-semibold mb-0" style="letter-spacing: .08em;">Computer Science Society</p>
+        </div>
+        <h1 class="display-6 fw-bold mb-3">Search Society Resources</h1>
+
+        <!-- Search Input Form -->
+        <form method="get" action="{% url 'search' %}" class="row g-2 align-items-center" style="max-width: 650px;">
+            <div class="col">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" value="{{ query }}" class="form-control border-0 py-2" placeholder="Search challenges, articles, opportunities, messages..." required autofocus>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-light fw-semibold px-4 py-2 text-primary">Search</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+<main class="container pb-5">
+    {% if query %}
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h2 class="h5 fw-bold text-dark mb-0">Search Results for &ldquo;<span class="text-primary">{{ query }}</span>&rdquo;</h2>
+                <small class="text-muted">{{ total_results }} result{{ total_results|pluralize }} found across the platform</small>
+            </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <ul class="nav nav-pills mb-4 gap-2 border-bottom pb-3">
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'all' or not tab %}active{% endif %} rounded-pill py-1 px-3" href="{% url 'search' %}?q={{ query|urlencode }}&tab=all">
+                    All Results <span class="badge bg-light text-dark ms-1">{{ total_results }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'challenges' %}active{% endif %} rounded-pill py-1 px-3" href="{% url 'search' %}?q={{ query|urlencode }}&tab=challenges">
+                    Challenges <span class="badge bg-light text-dark ms-1">{{ challenges_count }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'articles' %}active{% endif %} rounded-pill py-1 px-3" href="{% url 'search' %}?q={{ query|urlencode }}&tab=articles">
+                    Articles <span class="badge bg-light text-dark ms-1">{{ articles_count }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'internships' %}active{% endif %} rounded-pill py-1 px-3" href="{% url 'search' %}?q={{ query|urlencode }}&tab=internships">
+                    Internships <span class="badge bg-light text-dark ms-1">{{ internships_count }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if tab == 'community' %}active{% endif %} rounded-pill py-1 px-3" href="{% url 'search' %}?q={{ query|urlencode }}&tab=community">
+                    Discussions <span class="badge bg-light text-dark ms-1">{{ messages_count }}</span>
+                </a>
+            </li>
+        </ul>
+
+        {% if total_results > 0 %}
+            <div class="d-flex flex-column gap-3">
+                <!-- Challenges -->
+                {% if tab == 'all' or tab == 'challenges' %}
+                    {% for item in challenges %}
+                        <div class="card border-0 shadow-sm p-3 bg-white" style="border-radius: 12px;">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-1 flex-wrap">
+                                <div>
+                                    <span class="badge bg-primary-subtle text-primary border me-1">Challenge</span>
+                                    <span class="badge bg-success-subtle text-success">{{ item.difficulty }}</span>
+                                    <span class="text-muted small ms-1">{{ item.category }}</span>
+                                </div>
+                                <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>{{ item.week_label }}</span>
+                            </div>
+                            <h5 class="fw-bold mb-1">
+                                <a href="{% url 'challenge_detail' item.slug %}" class="text-dark text-decoration-none hover-primary">
+                                    {{ item.title }}
+                                </a>
+                            </h5>
+                            <p class="text-secondary small mb-2">{{ item.summary }}</p>
+                            <div>
+                                <a href="{% url 'challenge_detail' item.slug %}" class="btn btn-outline-primary btn-sm">
+                                    View Challenge <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Blog Articles -->
+                {% if tab == 'all' or tab == 'articles' %}
+                    {% for item in articles %}
+                        <div class="card border-0 shadow-sm p-3 bg-white" style="border-radius: 12px;">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-1 flex-wrap">
+                                <div>
+                                    <span class="badge bg-info-subtle text-info-emphasis border me-1">Journal Article</span>
+                                    <span class="badge bg-light border text-muted">{{ item.get_category_display }}</span>
+                                </div>
+                                <span class="text-muted small">{{ item.read_time }}</span>
+                            </div>
+                            <h5 class="fw-bold mb-1">
+                                <a href="{% url 'article_detail' item.slug %}" class="text-dark text-decoration-none">
+                                    {{ item.title }}
+                                </a>
+                            </h5>
+                            <p class="text-secondary small mb-2">{{ item.summary }}</p>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <small class="text-muted">By {{ item.author_name }} &middot; {{ item.published_at|date:"M d, Y" }}</small>
+                                <a href="{% url 'article_detail' item.slug %}" class="btn btn-outline-secondary btn-sm">
+                                    Read Article <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Internships -->
+                {% if tab == 'all' or tab == 'internships' %}
+                    {% for item in internships %}
+                        <div class="card border-0 shadow-sm p-3 bg-white" style="border-radius: 12px;">
+                            <div class="d-flex justify-content-between align-items-start gap-2 mb-1 flex-wrap">
+                                <div>
+                                    <span class="badge bg-warning-subtle text-warning-emphasis border me-1">Opportunity</span>
+                                    <span class="badge bg-light border text-dark">{{ item.role_type }}</span>
+                                </div>
+                                <span class="text-muted small"><i class="bi bi-geo-alt me-1"></i>{{ item.location }}</span>
+                            </div>
+                            <h5 class="fw-bold mb-1">{{ item.title }} &mdash; <span class="text-primary">{{ item.company }}</span></h5>
+                            <p class="text-secondary small mb-2">{{ item.description|truncatechars:180 }}</p>
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div class="d-flex flex-wrap gap-1">
+                                    {% for tag in item.get_tags_list %}
+                                        <span class="badge bg-light border text-muted small">{{ tag }}</span>
+                                    {% endfor %}
+                                </div>
+                                {% if item.apply_url %}
+                                    <a href="{{ item.apply_url }}" target="_blank" class="btn btn-primary btn-sm">
+                                        Apply Opportunity <i class="bi bi-box-arrow-up-right ms-1"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Community Messages -->
+                {% if tab == 'all' or tab == 'community' %}
+                    {% for msg in community_messages %}
+                        <div class="card border-0 shadow-sm p-3 bg-white" style="border-radius: 12px;">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="badge bg-secondary-subtle text-secondary border">#{{ msg.channel }}</span>
+                                    <a href="{% url 'member_profile' msg.user.username %}" class="fw-bold text-dark text-decoration-none small">
+                                        {{ msg.user.get_full_name|default:msg.user.username }}
+                                    </a>
+                                </div>
+                                <span class="text-muted small">{{ msg.created_at|date:"M j, g:i A" }}</span>
+                            </div>
+                            <p class="text-secondary small mb-2">{{ msg.text|truncatechars:200 }}</p>
+                            <div>
+                                <a href="{% url 'community_channel' msg.channel %}" class="btn btn-outline-secondary btn-sm py-0 px-2" style="font-size: 0.8rem;">
+                                    View in #{{ msg.channel }} <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="card border-0 shadow-sm p-5 text-center text-muted bg-white" style="border-radius: 14px;">
+                <i class="bi bi-search fs-1 mb-2 text-secondary"></i>
+                <h5 class="fw-bold text-dark">No Results Found</h5>
+                <p class="mb-3">We couldn't find any matches for &ldquo;{{ query }}&rdquo;. Try searching for different keywords, topics like "CSS", "Python", "Algorithms", or an author's name.</p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{% url 'challenge' %}" class="btn btn-outline-primary btn-sm">Browse Challenges</a>
+                    <a href="{% url 'community' %}" class="btn btn-outline-secondary btn-sm">Community Hubs</a>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="card border-0 shadow-sm p-5 text-center text-muted bg-white" style="border-radius: 14px;">
+            <i class="bi bi-search fs-1 mb-2 text-secondary"></i>
+            <h5 class="fw-bold text-dark">Explore the Computer Science Society</h5>
+            <p class="mb-0">Type a keyword or phrase above to search across active challenges, journal articles, career opportunities, and student discussions.</p>
+        </div>
+    {% endif %}
+</main>
+
+{% endblock content %}
+

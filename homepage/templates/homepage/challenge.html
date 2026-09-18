@@ -1,0 +1,138 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Header Banner -->
+<section class="bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3 mb-2">
+            <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="bg-white p-1 rounded-circle shadow-sm" style="width: 44px; height: 44px; object-fit: contain;">
+            <p class="text-uppercase fw-semibold mb-0" style="letter-spacing: .08em;">Computer Science Society</p>
+        </div>
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
+            <div>
+                <h1 class="display-5 fw-bold">Coding &amp; Design Challenges</h1>
+                <p class="lead mb-0 text-white-50">Build real projects, solve engineering prompts, and showcase your GitHub repositories.</p>
+            </div>
+            <a href="{% url 'leaderboard' %}" class="btn btn-outline-light btn-sm px-3 fw-semibold">
+                <i class="bi bi-award me-1"></i>Society Leaderboard
+            </a>
+        </div>
+    </div>
+</section>
+
+<main class="container pb-5">
+    <!-- Featured Current Challenge -->
+    {% if featured_challenge %}
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-end gap-3 mb-3">
+            <div>
+                <h2 class="h4 text-dark fw-bold mb-1">Featured Active Challenge</h2>
+                <p class="text-muted small mb-0">Weekly collaborative prompt open to all student years.</p>
+            </div>
+            <span class="badge rounded-pill bg-primary-subtle text-primary border px-3 py-2 fw-bold">
+                {{ featured_challenge.week_label }}
+            </span>
+        </div>
+        <div class="border-bottom mb-4"></div>
+
+        <article class="card shadow-sm border-0 overflow-hidden" style="border-radius: 14px;">
+            <div class="row g-0 align-items-center">
+                <div class="col-md-4 position-relative" style="min-height: 220px;">
+                    <img src="{% static 'images/bot.jpeg' %}" alt="{{ featured_challenge.title }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 220px;">
+                    <div class="position-absolute top-0 start-0 m-3">
+                        <span class="badge bg-primary text-white fw-semibold shadow-sm">{{ featured_challenge.category }}</span>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center gap-2 mb-2 flex-wrap">
+                            <span class="badge bg-success-subtle text-success">{{ featured_challenge.difficulty }}</span>
+                            <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ featured_challenge.deadline_text }}</small>
+                        </div>
+                        <h3 class="h4 card-title fw-bold mb-2">{{ featured_challenge.title }}</h3>
+                        <p class="card-text text-secondary mb-3">{{ featured_challenge.summary }}</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge text-bg-light border text-muted">
+                                    <i class="bi bi-code-square me-1"></i>{{ featured_challenge.submissions.count }} Submissions
+                                </span>
+                                {% if user_submissions and featured_challenge.id in user_submissions %}
+                                    <span class="badge bg-success text-white"><i class="bi bi-check2 me-1"></i>You Submitted</span>
+                                {% endif %}
+                            </div>
+                            <a href="{% url 'challenge_detail' featured_challenge.slug %}" class="btn btn-primary btn-sm px-4 fw-semibold">
+                                View Challenge &amp; Submit <i class="bi bi-arrow-right ms-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </section>
+    {% endif %}
+
+    <!-- Other Active Challenges -->
+    <section class="mb-5">
+        <h2 class="h4 text-dark fw-bold mb-1">More Challenges to Explore</h2>
+        <p class="text-muted small mb-3">Self-paced problem sets across systems, community, and data tracks.</p>
+        <div class="border-bottom mb-4"></div>
+
+        <div class="row g-4">
+            {% for challenge in challenges %}
+                <div class="col-md-4">
+                    <article class="card h-100 shadow-sm border-0 d-flex flex-column justify-content-between overflow-hidden" style="border-radius: 12px;">
+                        <div>
+                            {% if forloop.counter|divisibleby:2 %}
+                                <img src="{% static 'images/AI.jpeg' %}" alt="{{ challenge.title }}" class="w-100" style="height: 140px; object-fit: cover;">
+                            {% else %}
+                                <img src="{% static 'images/gat.jpeg' %}" alt="{{ challenge.title }}" class="w-100" style="height: 140px; object-fit: cover;">
+                            {% endif %}
+                            <div class="p-4 pb-0">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <span class="badge bg-light text-primary border fw-semibold">{{ challenge.category }}</span>
+                                    <span class="badge bg-secondary-subtle text-dark small">{{ challenge.difficulty }}</span>
+                                </div>
+                                <h3 class="h5 fw-bold text-dark mb-2">{{ challenge.title }}</h3>
+                                <p class="text-secondary small mb-3">{{ challenge.summary }}</p>
+                            </div>
+                        </div>
+                        <div class="p-4 pt-0">
+                            <div class="border-top pt-3 d-flex justify-content-between align-items-center mt-3">
+                                <small class="text-muted">
+                                    <i class="bi bi-people me-1"></i>{{ challenge.submissions.count }} submitted
+                                </small>
+                                <a href="{% url 'challenge_detail' challenge.slug %}" class="btn btn-outline-primary btn-sm fw-semibold">
+                                    View Challenge
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center py-4">
+                    <p class="text-muted">No additional challenges available at the moment.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Support & Community Callout -->
+    <section class="card border-0 shadow-sm p-4 p-md-5 bg-light" style="border-radius: 14px;">
+        <div class="row align-items-center g-4">
+            <div class="col-md-8">
+                <h3 class="h4 fw-bold mb-2">Need Guidance with Your Submission?</h3>
+                <p class="text-secondary mb-0">
+                    Connect with peer reviewers and mentors in the CSS study channels. Share your work in progress, get constructive code reviews, and pair program.
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <a href="{% url 'community' %}" class="btn btn-primary fw-semibold px-4">
+                    Join Community Channels <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
+{% endblock content %}

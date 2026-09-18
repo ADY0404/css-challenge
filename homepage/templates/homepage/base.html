@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Computer Science Society</title>
+    <link rel="icon" type="image/png" href="{% static 'images/com.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/com.png' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'homepage/main.css' %}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navbar -->
+    <header class="navbar navbar-expand-lg navbar-light bg-light border-bottom sticky-top py-2">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center fw-bold" href="{% url 'home' %}">
+                <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="img-fluid rounded me-2" style="max-height: 40px;">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <nav class="navbar-nav">
+                    <a class="nav-link {% if request.path == '/' %}active fw-semibold text-primary{% endif %}" href="{% url 'home' %}">Home</a>
+                    <a class="nav-link {% if '/community' in request.path %}active fw-semibold text-primary{% endif %}" href="{% url 'community' %}">Community</a>
+                    <a class="nav-link {% if '/activities' in request.path %}active fw-semibold text-primary{% endif %}" href="{% url 'act:activities_list' %}">Activities</a>
+                    <a class="nav-link {% if '/challenges' in request.path %}active fw-semibold text-primary{% endif %}" href="{% url 'challenge' %}">Challenges</a>
+                    <a class="nav-link {% if '/leaderboard' in request.path %}active fw-semibold text-primary{% endif %}" href="{% url 'leaderboard' %}">Leaderboard</a>
+                    <a class="nav-link {% if '/executives' in request.path %}active fw-semibold text-primary{% endif %}" href="{% url 'executives:list' %}">Executives</a>
+                    <a class="nav-link {% if '/blog' in request.path %}active fw-semibold text-primary{% endif %}" href="{% url 'blog' %}">Blog</a>
+                    <a class="nav-link {% if '/internships' in request.path %}active fw-semibold text-primary{% endif %}" href="{% url 'internships' %}">Internships</a>
+                </nav>
+            </div>
+
+            <!-- Search Form -->
+            <form class="d-none d-lg-flex me-3" method="get" action="{% url 'search' %}" style="max-width: 200px;">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-white border-end-0 text-muted py-1"><i class="bi bi-search"></i></span>
+                    <input type="text" name="q" class="form-control border-start-0 py-1" placeholder="Search..." aria-label="Search">
+                </div>
+            </form>
+
+            <!-- User Authentication / Actions -->
+            <div class="d-flex align-items-center">
+                {% if user.is_authenticated %}
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle p-0 text-decoration-none d-flex align-items-center" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        {% if user.profile.profile_picture %}
+                            <img src="{{ user.profile.profile_picture.url }}" alt="Profile" class="rounded-circle shadow-sm" style="width: 38px; height: 38px; object-fit: cover;">
+                        {% else %}
+                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white shadow-sm fw-bold" style="width: 38px; height: 38px;">{{ user.username|first|upper }}</span>
+                        {% endif %}
+                    </button>
+                
+                    <div class="dropdown-menu dropdown-menu-end p-3 shadow" aria-labelledby="profileDropdown" style="width: 18rem; border-radius: 12px;">
+                        <div class="text-center pb-2">
+                            {% if user.profile.profile_picture %}
+                                <img src="{{ user.profile.profile_picture.url }}" alt="Profile picture" class="rounded-circle mb-2 shadow-sm" style="width: 72px; height: 72px; object-fit: cover;">
+                            {% else %}
+                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white mb-2 shadow-sm fw-bold" style="width: 72px; height: 72px; font-size: 1.8rem;">{{ user.username|first|upper }}</span>
+                            {% endif %}
+                            <h6 class="fw-bold mb-0">{{ user.first_name }} {{ user.last_name|default:user.username }}</h6>
+                            <p class="text-muted small mb-0">Year {{ user.profile.year|default:"1" }} &middot; {{ user.profile.department|default:"Computer Science" }}</p>
+                        </div>
+                
+                        <div class="dropdown-divider"></div>
+                        <ul class="list-unstyled mb-0">
+                            <li class="mb-1">
+                                <a href="{% url 'profile' %}" class="dropdown-item py-2 rounded">
+                                    <i class="bi bi-person me-2 text-primary"></i> Profile
+                                </a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{% url 'settings' %}" class="dropdown-item py-2 rounded">
+                                    <i class="bi bi-gear me-2 text-primary"></i> Settings
+                                </a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{% url 'challenge' %}" class="dropdown-item py-2 rounded">
+                                    <i class="bi bi-trophy me-2 text-primary"></i> Challenges
+                                </a>
+                            </li>
+                            <li class="mb-1">
+                                <a href="{% url 'leaderboard' %}" class="dropdown-item py-2 rounded">
+                                    <i class="bi bi-award me-2 text-warning"></i> Leaderboard
+                                </a>
+                            </li>
+                        </ul>
+                
+                        <div class="dropdown-divider"></div>
+                        <form method="post" action="{% url 'logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm w-100">Sign Out</button>
+                        </form>
+                    </div>
+                </div>                
+                {% else %}
+                    {% if request.path == '/users/signup/' or request.path == '/signup/' %}
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-sm px-3">Sign In</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm me-2">Sign In</a>
+                        <a href="{% url 'signup' %}" class="btn btn-primary btn-sm">Join CSS</a>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Messages -->
+    {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Page Content -->
+    <div class="flex-grow-1">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-3 mt-auto">
+        <div class="container d-flex flex-wrap justify-content-between align-items-center">
+            <p class="mb-0 text-white-50 small">&copy; {% now "Y" %} Computer Science Society. All rights reserved.</p>
+            <div class="d-flex gap-3 small">
+                <a href="{% url 'guidelines' %}" class="text-white-50 text-decoration-none">Guidelines</a>
+                <a href="{% url 'terms' %}" class="text-white-50 text-decoration-none">Terms</a>
+                <a href="{% url 'privacy' %}" class="text-white-50 text-decoration-none">Privacy</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

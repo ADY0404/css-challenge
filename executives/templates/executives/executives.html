@@ -1,0 +1,74 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Header Banner -->
+<section class="bg-primary text-white py-5 mb-4">
+    <div class="container text-center">
+        <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="img-fluid mb-3 bg-white p-2 rounded-circle shadow-sm" style="width: 58px; height: 58px; object-fit: contain;">
+        <p class="text-uppercase fw-semibold mb-2" style="letter-spacing: .08em;">Computer Science Society</p>
+        <h1 class="display-5 fw-bold">Meet the Executives</h1>
+        <p class="lead mb-0 mx-auto" style="max-width: 680px;">
+            These passionate leaders guide the society's mission, organize technical programs, foster partnerships, and champion initiatives that benefit our members.
+        </p>
+    </div>
+</section>
+
+<div class="container pb-5">
+    <!-- Year Selector Form -->
+    <div class="d-flex justify-content-center mb-5">
+        <form method="get" class="d-flex align-items-center gap-2 p-2 bg-light rounded-3 shadow-sm">
+            <label for="yearSelect" class="fw-bold small text-muted text-nowrap px-2">Academic Year:</label>
+            <select id="yearSelect" name="year" onchange="this.form.submit()" class="form-select form-select-sm w-auto border-0 bg-white">
+                <option value="" disabled {% if not academic_year %}selected{% endif %} style="color: gray;">
+                    Select Year
+                </option>
+                {% for year in academic_years %}
+                    <option value="{{ year }}" {% if academic_year == year %}selected{% endif %}>
+                        {{ year }}
+                    </option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+
+    <!-- Executives Cards Row -->
+    <div class="row g-4 justify-content-center">
+        {% for executive in executives %}
+            <div class="col-md-4 col-lg-3">
+                <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius: 14px;">
+                    {% if executive.image %}
+                        <img src="{{ executive.image.url }}" class="rounded-circle mx-auto mb-3 shadow-sm" alt="{{ executive.name }}" style="width: 110px; height: 110px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                        <div class="rounded-circle mx-auto mb-3 shadow-sm d-none d-flex align-items-center justify-content-center bg-primary text-white" style="width: 110px; height: 110px; font-size: 2.5rem;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                    {% else %}
+                        <div class="rounded-circle mx-auto mb-3 shadow-sm d-flex align-items-center justify-content-center bg-primary text-white" style="width: 110px; height: 110px; font-size: 2.5rem;">
+                            <i class="bi bi-person-fill"></i>
+                        </div>
+                    {% endif %}
+                    <div class="card-body p-0">
+                        <h5 class="card-title fw-bold mb-1">{{ executive.name }}</h5>
+                        <p class="card-text text-primary small fw-semibold mb-2">{{ executive.position }}</p>
+                        <span class="badge bg-light text-muted border">{{ executive.academic_year }}</span>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-md-8 text-center py-5">
+                <div class="card border-0 shadow-sm p-5 text-center" style="border-radius: 16px;">
+                    <div class="text-muted fs-1 mb-2"><i class="bi bi-people"></i></div>
+                    {% if academic_year %}
+                        <h4 class="fw-bold">No Records Found for {{ academic_year }}</h4>
+                        <p class="text-muted mb-3">No executive committee has been published for the {{ academic_year }} academic session yet.</p>
+                        <a href="{% url 'executives:list' %}" class="btn btn-outline-primary btn-sm mx-auto">View Latest Year</a>
+                    {% else %}
+                        <h4 class="fw-bold">Select an Academic Year</h4>
+                        <p class="text-muted mb-0">Use the dropdown filter above to view executives for a specific academic session.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

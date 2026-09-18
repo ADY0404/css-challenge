@@ -1,0 +1,306 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Header Banner -->
+<section class="bg-primary text-white py-5 mb-4">
+    <div class="container">
+        <div class="d-flex align-items-center gap-3 mb-2">
+            <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="bg-white p-1 rounded-circle shadow-sm" style="width: 44px; height: 44px; object-fit: contain;">
+            <p class="text-uppercase fw-semibold mb-0" style="letter-spacing: .08em;">Computer Science Society</p>
+        </div>
+        <div class="d-flex justify-content-between align-items-end flex-wrap gap-3">
+            <div>
+                <h1 class="display-5 fw-bold mb-2">Challenge Leaderboard</h1>
+                <p class="lead mb-0 text-white-50" style="max-width: 680px;">
+                    Recognizing students solving real engineering prompts, publishing open-source repositories, and contributing to the society.
+                </p>
+            </div>
+            <a href="{% url 'challenge' %}" class="btn btn-outline-light btn-sm px-3 fw-semibold">
+                <i class="bi bi-code-square me-1"></i>Active Challenges
+            </a>
+        </div>
+    </div>
+</section>
+
+<main class="container pb-5">
+    <!-- Stat Counters -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="card border-0 shadow-sm p-3 text-center bg-white" style="border-radius: 12px;">
+                <span class="text-muted small fw-semibold text-uppercase">Active Challenges</span>
+                <span class="fs-3 fw-bold text-primary">{{ total_challenges }}</span>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-0 shadow-sm p-3 text-center bg-white" style="border-radius: 12px;">
+                <span class="text-muted small fw-semibold text-uppercase">Verified Submissions</span>
+                <span class="fs-3 fw-bold text-success">{{ total_submissions }}</span>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-0 shadow-sm p-3 text-center bg-white" style="border-radius: 12px;">
+                <span class="text-muted small fw-semibold text-uppercase">Ranked Solvers</span>
+                <span class="fs-3 fw-bold text-dark">{{ total_participants }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 3 Podium (if at least 1 solver) -->
+    {% if top_three %}
+        <section class="mb-5">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <h2 class="h5 fw-bold text-dark mb-0"><i class="bi bi-award-fill text-warning me-2"></i>Top Contributors Podium</h2>
+                <span class="text-muted small">Based on verified challenge solutions</span>
+            </div>
+
+            <div class="row g-3 align-items-end justify-content-center">
+                <!-- Rank 2 (Silver) -->
+                {% if top_three|length > 1 %}
+                    {% with member=top_three.1 %}
+                        <div class="col-md-4 col-sm-6 order-2 order-md-1">
+                            <div class="card border-0 shadow-sm p-4 text-center h-100 bg-white" style="border-radius: 14px; border-top: 4px solid #94A3B8 !important;">
+                                <div class="mb-2">
+                                    <span class="badge rounded-pill bg-secondary text-white px-3 py-1 fw-bold">
+                                        <i class="bi bi-trophy me-1"></i>Rank #2
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-center my-3">
+                                    <a href="{% url 'member_profile' member.user.username %}" class="text-decoration-none">
+                                        {% if member.user.profile.profile_picture %}
+                                            <img src="{{ member.user.profile.profile_picture.url }}" alt="{{ member.user.username }}" class="rounded-circle shadow-sm" style="width: 72px; height: 72px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle shadow-sm d-inline-flex align-items-center justify-content-center bg-secondary text-white fw-bold fs-4" style="width: 72px; height: 72px;">
+                                                {{ member.user.first_name|first|default:member.user.username|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                <h5 class="fw-bold mb-1">
+                                    <a href="{% url 'member_profile' member.user.username %}" class="text-dark text-decoration-none">
+                                        {{ member.user.get_full_name|default:member.user.username }}
+                                    </a>
+                                </h5>
+                                <p class="text-muted small mb-2">@{{ member.user.username }} &middot; {{ member.user.profile.department|default:"CS" }}</p>
+                                <div class="badge bg-light border text-dark fw-semibold py-2 px-3 mb-3">
+                                    <i class="bi bi-check2-circle text-success me-1"></i>{{ member.submission_count }} Solved
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                    {% for badge in member.badges %}
+                                        <span class="badge bg-{{ badge.color }}-subtle text-{{ badge.color }} border" title="{{ badge.description }}">
+                                            <i class="bi {{ badge.icon }} me-1"></i>{{ badge.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endwith %}
+                {% endif %}
+
+                <!-- Rank 1 (Gold) -->
+                {% with member=top_three.0 %}
+                    <div class="col-md-4 col-sm-6 order-1 order-md-2">
+                        <div class="card border-0 shadow p-4 text-center h-100 bg-white position-relative" style="border-radius: 16px; border-top: 5px solid #F59E0B !important;">
+                            <div class="mb-2">
+                                <span class="badge rounded-pill bg-warning text-dark px-3 py-1 fw-bold fs-6">
+                                    <i class="bi bi-trophy-fill me-1"></i>Rank #1 Leader
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-center my-3">
+                                <a href="{% url 'member_profile' member.user.username %}" class="text-decoration-none position-relative">
+                                    {% if member.user.profile.profile_picture %}
+                                        <img src="{{ member.user.profile.profile_picture.url }}" alt="{{ member.user.username }}" class="rounded-circle shadow" style="width: 88px; height: 88px; object-fit: cover; border: 3px solid #F59E0B;">
+                                    {% else %}
+                                        <div class="rounded-circle shadow d-inline-flex align-items-center justify-content-center bg-warning text-dark fw-bold fs-2" style="width: 88px; height: 88px; border: 3px solid #D97706;">
+                                            {{ member.user.first_name|first|default:member.user.username|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                </a>
+                            </div>
+                            <h4 class="fw-bold mb-1">
+                                <a href="{% url 'member_profile' member.user.username %}" class="text-dark text-decoration-none">
+                                    {{ member.user.get_full_name|default:member.user.username }}
+                                </a>
+                            </h4>
+                            <p class="text-muted small mb-2">@{{ member.user.username }} &middot; {{ member.user.profile.department|default:"Computer Science" }}</p>
+                            <div class="badge bg-warning-subtle text-dark border border-warning fw-bold py-2 px-4 fs-6 mb-3">
+                                <i class="bi bi-star-fill text-warning me-1"></i>{{ member.submission_count }} Solved Challenges
+                            </div>
+                            <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                {% for badge in member.badges %}
+                                    <span class="badge bg-{{ badge.color }}-subtle text-{{ badge.color }} border" title="{{ badge.description }}">
+                                        <i class="bi {{ badge.icon }} me-1"></i>{{ badge.name }}
+                                    </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endwith %}
+
+                <!-- Rank 3 (Bronze) -->
+                {% if top_three|length > 2 %}
+                    {% with member=top_three.2 %}
+                        <div class="col-md-4 col-sm-6 order-3">
+                            <div class="card border-0 shadow-sm p-4 text-center h-100 bg-white" style="border-radius: 14px; border-top: 4px solid #B45309 !important;">
+                                <div class="mb-2">
+                                    <span class="badge rounded-pill bg-dark-subtle text-dark px-3 py-1 fw-bold">
+                                        <i class="bi bi-trophy me-1"></i>Rank #3
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-center my-3">
+                                    <a href="{% url 'member_profile' member.user.username %}" class="text-decoration-none">
+                                        {% if member.user.profile.profile_picture %}
+                                            <img src="{{ member.user.profile.profile_picture.url }}" alt="{{ member.user.username }}" class="rounded-circle shadow-sm" style="width: 72px; height: 72px; object-fit: cover;">
+                                        {% else %}
+                                            <div class="rounded-circle shadow-sm d-inline-flex align-items-center justify-content-center bg-dark text-white fw-bold fs-4" style="width: 72px; height: 72px;">
+                                                {{ member.user.first_name|first|default:member.user.username|first|upper }}
+                                            </div>
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                <h5 class="fw-bold mb-1">
+                                    <a href="{% url 'member_profile' member.user.username %}" class="text-dark text-decoration-none">
+                                        {{ member.user.get_full_name|default:member.user.username }}
+                                    </a>
+                                </h5>
+                                <p class="text-muted small mb-2">@{{ member.user.username }} &middot; {{ member.user.profile.department|default:"CS" }}</p>
+                                <div class="badge bg-light border text-dark fw-semibold py-2 px-3 mb-3">
+                                    <i class="bi bi-check2-circle text-success me-1"></i>{{ member.submission_count }} Solved
+                                </div>
+                                <div class="d-flex flex-wrap gap-1 justify-content-center">
+                                    {% for badge in member.badges %}
+                                        <span class="badge bg-{{ badge.color }}-subtle text-{{ badge.color }} border" title="{{ badge.description }}">
+                                            <i class="bi {{ badge.icon }} me-1"></i>{{ badge.name }}
+                                        </span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endwith %}
+                {% endif %}
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- Full Rankings Table -->
+    <section class="card border-0 shadow-sm overflow-hidden mb-4" style="border-radius: 14px;">
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h3 class="h6 fw-bold mb-0 text-dark">Society Solvers Rankings</h3>
+                <small class="text-muted">Rankings update automatically with each submitted challenge solution</small>
+            </div>
+            <span class="badge bg-light border text-secondary">{{ ranked_members|length }} Members Listed</span>
+        </div>
+
+        {% if ranked_members %}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col" style="width: 80px;" class="ps-4">Rank</th>
+                            <th scope="col">Member</th>
+                            <th scope="col">Year &amp; Department</th>
+                            <th scope="col">Achievement Badges</th>
+                            <th scope="col" class="text-center">Solved</th>
+                            <th scope="col" class="text-end pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in ranked_members %}
+                            <tr {% if user.is_authenticated and item.user.id == user.id %}class="table-primary-subtle fw-semibold"{% endif %}>
+                                <td class="ps-4">
+                                    {% if item.rank == 1 %}
+                                        <span class="badge bg-warning text-dark fw-bold px-2 py-1"><i class="bi bi-award-fill me-1"></i>1</span>
+                                    {% elif item.rank == 2 %}
+                                        <span class="badge bg-secondary text-white fw-bold px-2 py-1"><i class="bi bi-award-fill me-1"></i>2</span>
+                                    {% elif item.rank == 3 %}
+                                        <span class="badge text-white fw-bold px-2 py-1" style="background-color: #B45309;"><i class="bi bi-award-fill me-1"></i>3</span>
+                                    {% else %}
+                                        <span class="text-muted fw-bold ps-1">#{{ item.rank }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        <a href="{% url 'member_profile' item.user.username %}" class="text-decoration-none">
+                                            {% if item.user.profile.profile_picture %}
+                                                <img src="{{ item.user.profile.profile_picture.url }}" alt="{{ item.user.username }}" class="rounded-circle shadow-sm" style="width: 38px; height: 38px; object-fit: cover;">
+                                            {% else %}
+                                                <div class="rounded-circle shadow-sm d-inline-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 38px; height: 38px; font-size: 0.95rem;">
+                                                    {{ item.user.first_name|first|default:item.user.username|first|upper }}
+                                                </div>
+                                            {% endif %}
+                                        </a>
+                                        <div>
+                                            <a href="{% url 'member_profile' item.user.username %}" class="text-decoration-none text-dark fw-bold d-block">
+                                                {{ item.user.get_full_name|default:item.user.username }}
+                                                {% if user.is_authenticated and item.user.id == user.id %}
+                                                    <span class="badge bg-primary text-white ms-1 small">You</span>
+                                                {% endif %}
+                                            </a>
+                                            <small class="text-muted">@{{ item.user.username }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <small class="text-dark d-block">{{ item.user.profile.department|default:"Computer Science" }}</small>
+                                    <small class="text-muted">Year {{ item.user.profile.year|default:"1" }}</small>
+                                </td>
+                                <td>
+                                    <div class="d-flex flex-wrap gap-1">
+                                        {% for badge in item.badges %}
+                                            <span class="badge bg-{{ badge.color }}-subtle text-{{ badge.color }} border" title="{{ badge.description }}">
+                                                <i class="bi {{ badge.icon }} me-1"></i>{{ badge.name }}
+                                            </span>
+                                        {% empty %}
+                                            <span class="text-muted small">No badges yet</span>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <span class="badge bg-light border text-dark fw-bold px-3 py-2">
+                                        {{ item.submission_count }}
+                                    </span>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <a href="{% url 'member_profile' item.user.username %}" class="btn btn-outline-secondary btn-sm">
+                                        View Profile <i class="bi bi-arrow-right ms-1"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-5 text-center text-muted">
+                <i class="bi bi-trophy fs-1 mb-2 text-secondary"></i>
+                <h5 class="fw-bold">No Ranked Solvers Yet</h5>
+                <p class="mb-3">Be the first student to solve an active challenge and claim the #1 spot on the leaderboard!</p>
+                <a href="{% url 'challenge' %}" class="btn btn-primary btn-sm px-4">
+                    Explore Active Challenges
+                </a>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Privacy & Settings Notice -->
+    <div class="alert alert-light border shadow-sm p-3 d-flex align-items-center justify-content-between flex-wrap gap-2" style="border-radius: 12px;">
+        <div class="d-flex align-items-center gap-3">
+            <div class="rounded-circle bg-light text-muted p-2 d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                <i class="bi bi-shield-check text-primary"></i>
+            </div>
+            <div>
+                <span class="fw-bold small d-block">Leaderboard Privacy Controls</span>
+                <span class="text-muted small">Only members who choose to appear publicly on the leaderboard are listed. You can change this anytime in your privacy preferences.</span>
+            </div>
+        </div>
+        {% if user.is_authenticated %}
+            <a href="{% url 'settings' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-gear me-1"></i>Account Settings
+            </a>
+        {% endif %}
+    </div>
+</main>
+
+{% endblock content %}
+

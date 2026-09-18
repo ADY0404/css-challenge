@@ -1,0 +1,476 @@
+{% extends "homepage/base2.html" %}
+{% load static %}
+{% block content %}
+
+<!-- Header Banner -->
+<section class="bg-primary text-white py-5 mb-5">
+    <div class="container">
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <img src="{% static 'images/com.png' %}" alt="CSS Crest" style="width: 32px; height: 32px; object-fit: contain;" class="bg-white rounded-circle p-1">
+            <p class="text-uppercase fw-semibold mb-0" style="letter-spacing: .08em; font-size: 0.85rem;">Computer Science Society &middot; Student Technical Support</p>
+        </div>
+        <h1 class="display-5 fw-bold">PC Clinic &amp; Diagnostic Sessions</h1>
+        <p class="lead mb-0" style="max-width: 780px;">
+            Free hardware diagnostics, Linux dual-boot installations, developer environment setup, and thermal maintenance run by senior CS student technicians.
+        </p>
+    </div>
+</section>
+
+<main class="container pb-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'programs' %}" class="text-decoration-none">Programs</a></li>
+            <li class="breadcrumb-item active" aria-current="page">PC Clinic Dates</li>
+        </ol>
+    </nav>
+
+    <!-- Clinic Key Stats & Location Strip -->
+    <div class="row g-3 mb-5">
+        <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm p-3 h-100" style="border-radius: 12px; background-color: #F8FAFC;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-primary-subtle text-primary p-2 rounded-3 fs-4 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="bi bi-geo-alt"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Clinic Location</small>
+                        <h6 class="fw-bold mb-0 text-dark">Software Lab 204</h6>
+                        <small class="text-muted">CS Building &middot; 2nd Floor</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm p-3 h-100" style="border-radius: 12px; background-color: #F8FAFC;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-success-subtle text-success p-2 rounded-3 fs-4 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Standard Schedule</small>
+                        <h6 class="fw-bold mb-0 text-dark">Wed &amp; Fri Afternoons</h6>
+                        <small class="text-muted">2:00 PM – 6:00 PM</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm p-3 h-100" style="border-radius: 12px; background-color: #F8FAFC;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-info-subtle text-info-emphasis p-2 rounded-3 fs-4 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Service Cost</small>
+                        <h6 class="fw-bold mb-0 text-dark">100% Free Service</h6>
+                        <small class="text-muted">All students &amp; faculty</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-6 col-lg-3">
+            <div class="card border-0 shadow-sm p-3 h-100" style="border-radius: 12px; background-color: #F8FAFC;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="bg-warning-subtle text-warning-emphasis p-2 rounded-3 fs-4 d-flex align-items-center justify-content-center" style="width: 44px; height: 44px;">
+                        <i class="bi bi-cpu"></i>
+                    </div>
+                    <div>
+                        <small class="text-muted text-uppercase fw-semibold" style="font-size: 0.72rem; letter-spacing: 0.05em;">Diagnostic Benches</small>
+                        <h6 class="fw-bold mb-0 text-dark">12 Workstations</h6>
+                        <small class="text-muted">High-speed mirrors &amp; tools</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Clinic Sessions Schedule -->
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-end mb-3 flex-wrap gap-2">
+            <div>
+                <h2 class="h4 text-dark fw-bold mb-1">Upcoming Clinic Dates &amp; Sessions</h2>
+                <p class="text-muted small mb-0">Walk-ins are welcomed, but pre-booking guarantees an assigned student technician and reserved workstation.</p>
+            </div>
+            <a href="#bookingFormCard" class="btn btn-primary btn-sm px-3 fw-semibold">
+                <i class="bi bi-calendar-plus me-1"></i>Reserve a Workstation
+            </a>
+        </div>
+        <div class="border-bottom mb-4"></div>
+
+        <div class="d-flex flex-column gap-3">
+            {% for session in sessions %}
+                <article class="card border-0 shadow-sm p-4" style="border-radius: 12px; background-color: #FFFFFF;">
+                    <div class="row align-items-center g-3">
+                        <!-- Date & Time Column -->
+                        <div class="col-md-3">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <span class="badge {{ session.badge_class }} small">{{ session.badge }}</span>
+                            </div>
+                            <h3 class="h5 fw-bold text-dark mb-1">{{ session.date }}</h3>
+                            <p class="text-secondary small mb-0">
+                                <i class="bi bi-clock me-1 text-primary"></i>{{ session.time }}
+                            </p>
+                        </div>
+
+                        <!-- Focus & Details Column -->
+                        <div class="col-md-6 border-md-start ps-md-4">
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <i class="bi bi-geo-alt-fill text-muted small"></i>
+                                <span class="text-muted small fw-semibold">{{ session.venue }}</span>
+                            </div>
+                            <h4 class="h6 fw-bold text-dark mb-1">{{ session.focus }}</h4>
+                            <p class="text-muted small mb-0">
+                                <strong>Lead Technicians:</strong> {{ session.leads }}
+                            </p>
+                        </div>
+
+                        <!-- Capacity & Action Column -->
+                        <div class="col-md-3 text-md-end">
+                            <div class="mb-2">
+                                <span class="badge text-bg-light border text-secondary py-1 px-2">
+                                    <i class="bi bi-person-check me-1 text-success"></i><strong>{{ session.available_slots }}</strong> of {{ session.capacity }} slots left
+                                </span>
+                            </div>
+                            {% if session.is_open %}
+                                <a href="#bookingFormCard" onclick="selectSession('{{ session.id }}')" class="btn btn-outline-primary btn-sm fw-semibold px-3">
+                                    Book This Date <i class="bi bi-arrow-right ms-1"></i>
+                                </a>
+                            {% else %}
+                                <span class="badge bg-secondary py-2 px-3">Fully Booked</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Main 2-Column: Services / Prep (Left) & Booking Form (Right) -->
+    <div class="row g-5">
+        <!-- Left Column: Services Offered, Prep, and Technician Leads -->
+        <div class="col-lg-7">
+            <!-- Services Offered -->
+            <section class="mb-5">
+                <h3 class="h4 fw-bold text-dark mb-1">Services Offered at the Clinic</h3>
+                <p class="text-muted small mb-4">Our volunteer technicians provide assistance across hardware and software systems:</p>
+
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="card h-100 border-0 shadow-sm p-3" style="border-radius: 12px; background-color: #F8FAFC;">
+                            <div class="d-flex gap-3">
+                                <div class="text-success fs-3"><i class="bi bi-terminal"></i></div>
+                                <div>
+                                    <h5 class="h6 fw-bold mb-1">Linux Dual-Boot &amp; OS</h5>
+                                    <p class="text-secondary small mb-0">
+                                        Proper partitioning, GRUB setup, Ubuntu 24.04 LTS / Fedora 40 installations alongside Windows, and EFI boot recovery.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="card h-100 border-0 shadow-sm p-3" style="border-radius: 12px; background-color: #F8FAFC;">
+                            <div class="d-flex gap-3">
+                                <div class="text-primary fs-3"><i class="bi bi-code-slash"></i></div>
+                                <div>
+                                    <h5 class="h6 fw-bold mb-1">Dev Toolchains &amp; IDEs</h5>
+                                    <p class="text-secondary small mb-0">
+                                        Configuration of Docker Desktop, WSL2, Python/Pip/Venv, Node.js, Git &amp; SSH keys, C/C++ GCC compilers, and VS Code.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="card h-100 border-0 shadow-sm p-3" style="border-radius: 12px; background-color: #F8FAFC;">
+                            <div class="d-flex gap-3">
+                                <div class="text-warning-emphasis fs-3"><i class="bi bi-tools"></i></div>
+                                <div>
+                                    <h5 class="h6 fw-bold mb-1">Hardware Diagnostics</h5>
+                                    <p class="text-secondary small mb-0">
+                                        RAM/SSD installation, thermal paste repasting, cooling fan de-dusting, battery cycle health checks, and drive health reports.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <div class="card h-100 border-0 shadow-sm p-3" style="border-radius: 12px; background-color: #F8FAFC;">
+                            <div class="d-flex gap-3">
+                                <div class="text-danger fs-3"><i class="bi bi-shield-x"></i></div>
+                                <div>
+                                    <h5 class="h6 fw-bold mb-1">Malware &amp; Cleanup</h5>
+                                    <p class="text-secondary small mb-0">
+                                        Adware and crypto-miner elimination, background process optimization, drive defragmentation/TRIM, and browser resetting.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- What to Bring / Preparation Checklist -->
+            <section class="card border-0 shadow-sm p-4 mb-5" style="border-radius: 14px; background-color: #F0FDF4; border-left: 4px solid #16A34A !important;">
+                <h4 class="h5 fw-bold text-success-emphasis mb-2"><i class="bi bi-check2-square me-2"></i>What to Bring to Your Session</h4>
+                <ul class="text-secondary small mb-0 ps-3">
+                    <li class="mb-2"><strong>Laptop Charger:</strong> Always bring your original power brick and cord. Diagnostic tests and OS installs require uninterrupted power.</li>
+                    <li class="mb-2"><strong>Data Backup:</strong> Back up your coursework, projects, and personal documents to Google Drive, GitHub, or an external drive before your appointment.</li>
+                    <li class="mb-2"><strong>Empty USB Drive (16GB+):</strong> If you are requesting a Linux dual-boot or clean OS installation, please bring a blank flash drive.</li>
+                    <li><strong>Account Passwords &amp; BitLocker Keys:</strong> Have your Windows Administrator password or BitLocker recovery key ready if disk encryption is active.</li>
+                </ul>
+            </section>
+
+            <!-- Technician Leads Spotlight -->
+            <section class="mb-5">
+                <h4 class="h5 fw-bold text-dark mb-3">Meet the Lead Student Technicians</h4>
+                <div class="row g-3">
+                    <div class="col-sm-4">
+                        <div class="card border-0 shadow-sm p-3 text-center h-100" style="border-radius: 12px;">
+                            <img src="{% static 'images/man2.jpg' %}" alt="David Koomson" class="rounded-circle mx-auto mb-2 shadow-sm" style="width: 68px; height: 68px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0">David Koomson</h6>
+                            <p class="text-primary small fw-semibold mb-1">Hardware &amp; Systems Lead</p>
+                            <small class="text-muted">Year 4 &middot; Computer Engineering</small>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="card border-0 shadow-sm p-3 text-center h-100" style="border-radius: 12px;">
+                            <img src="{% static 'images/man4.jpg' %}" alt="Zainab Adeleke" class="rounded-circle mx-auto mb-2 shadow-sm" style="width: 68px; height: 68px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0">Zainab Adeleke</h6>
+                            <p class="text-primary small fw-semibold mb-1">Linux &amp; OS Architect</p>
+                            <small class="text-muted">Year 3 &middot; Computer Science</small>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-4">
+                        <div class="card border-0 shadow-sm p-3 text-center h-100" style="border-radius: 12px;">
+                            <img src="{% static 'images/man6.jpg' %}" alt="Emmanuel Tetteh" class="rounded-circle mx-auto mb-2 shadow-sm" style="width: 68px; height: 68px; object-fit: cover;">
+                            <h6 class="fw-bold mb-0">Emmanuel Tetteh</h6>
+                            <p class="text-primary small fw-semibold mb-1">Toolchains &amp; Security</p>
+                            <small class="text-muted">Year 4 &middot; Computer Science</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Right Column: Booking Form & Active User Appointments -->
+        <div class="col-lg-5">
+            <!-- User Existing Bookings (If Any) -->
+            {% if user_appointments %}
+                <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius: 14px; background-color: #F8FAFC;">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h4 class="h6 fw-bold mb-0 text-dark"><i class="bi bi-ticket-detailed me-2 text-primary"></i>Your Clinic Bookings</h4>
+                        <span class="badge bg-primary">{{ user_appointments.count }}</span>
+                    </div>
+                    {% for appt in user_appointments %}
+                        <div class="border rounded-3 p-3 mb-2 bg-white">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <strong class="text-dark small">{{ appt.ticket_id }}</strong>
+                                <span class="badge bg-success-subtle text-success small">{{ appt.status }}</span>
+                            </div>
+                            <p class="small text-secondary mb-1"><strong>Device:</strong> {{ appt.device_brand }} {{ appt.device_model }}</p>
+                            <p class="small text-secondary mb-1"><strong>Service:</strong> {{ appt.get_service_type_display }}</p>
+                            <small class="text-muted"><i class="bi bi-calendar-event me-1"></i>{{ appt.get_preferred_session_display }}</small>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Booking Form Card -->
+            <div class="card border-0 shadow-sm p-4 p-md-4" id="bookingFormCard" style="border-radius: 16px;">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="bg-success text-white rounded p-2 me-3 d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                        <i class="bi bi-calendar-check fs-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="h5 fw-bold mb-0">Reserve Clinic Session</h3>
+                        <small class="text-muted">Free slot reservation for students &amp; staff</small>
+                    </div>
+                </div>
+                <hr class="my-3">
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <!-- Student Info -->
+                    <div class="mb-3">
+                        <label for="fullNameInput" class="form-label small fw-bold">Full Name</label>
+                        <input type="text" class="form-control form-control-sm" id="fullNameInput" name="full_name" required
+                            value="{% if user.is_authenticated %}{{ user.first_name }} {{ user.last_name|default:user.username }}{% endif %}"
+                            placeholder="e.g. Alan Turing">
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-7">
+                            <label for="studentEmailInput" class="form-label small fw-bold">Student Email</label>
+                            <input type="email" class="form-control form-control-sm" id="studentEmailInput" name="student_email" required
+                                value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
+                                placeholder="student@university.edu">
+                        </div>
+                        <div class="col-sm-5">
+                            <label for="studentIdInput" class="form-label small fw-bold">Student ID <span class="text-muted fw-normal">(Opt)</span></label>
+                            <input type="text" class="form-control form-control-sm" id="studentIdInput" name="student_id" placeholder="e.g. 20849201">
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-7">
+                            <label for="departmentInput" class="form-label small fw-bold">Department</label>
+                            <input type="text" class="form-control form-control-sm" id="departmentInput" name="department" 
+                                value="{% if user.is_authenticated and user.profile.department %}{{ user.profile.department }}{% else %}Computer Science{% endif %}">
+                        </div>
+                        <div class="col-sm-5">
+                            <label for="academicYearSelect" class="form-label small fw-bold">Academic Year</label>
+                            <select class="form-select form-select-sm" id="academicYearSelect" name="academic_year">
+                                <option value="Year 1" selected>Year 1</option>
+                                <option value="Year 2">Year 2</option>
+                                <option value="Year 3">Year 3</option>
+                                <option value="Year 4">Year 4</option>
+                                <option value="Postgraduate">Postgraduate</option>
+                                <option value="Faculty/Staff">Faculty / Staff</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Device Info -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-6">
+                            <label for="deviceBrandInput" class="form-label small fw-bold">Device Brand</label>
+                            <input type="text" class="form-control form-control-sm" id="deviceBrandInput" name="device_brand" required placeholder="e.g. Dell, Lenovo, HP, Apple">
+                        </div>
+                        <div class="col-sm-6">
+                            <label for="deviceModelInput" class="form-label small fw-bold">Model</label>
+                            <input type="text" class="form-control form-control-sm" id="deviceModelInput" name="device_model" required placeholder="e.g. ThinkPad T480, XPS 13">
+                        </div>
+                    </div>
+
+                    <!-- Service & Preferred Session -->
+                    <div class="mb-3">
+                        <label for="serviceTypeSelect" class="form-label small fw-bold">Primary Service Needed</label>
+                        <select class="form-select form-select-sm" id="serviceTypeSelect" name="service_type">
+                            <option value="linux" selected>Linux Dual-Boot &amp; OS Installation (Ubuntu/Fedora)</option>
+                            <option value="dev-env">Developer Environment (Docker, Python, Git, C++, VS Code)</option>
+                            <option value="hardware">Hardware Diagnostics, Fan Cleaning &amp; Thermal Paste</option>
+                            <option value="malware">Malware Removal &amp; System Optimization</option>
+                            <option value="general">General Troubleshooting / Driver Support</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="preferredSessionSelect" class="form-label small fw-bold">Select Clinic Session Date</label>
+                        <select class="form-select form-select-sm" id="preferredSessionSelect" name="preferred_session">
+                            {% for s in sessions %}
+                                <option value="{{ s.id }}" {% if not s.is_open %}disabled{% endif %}>
+                                    {{ s.date }} ({{ s.time }}) {% if not s.is_open %}[FULL]{% endif %}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="issueDescriptionText" class="form-label small fw-bold">Describe Your Issue or Request</label>
+                        <textarea class="form-control form-control-sm" id="issueDescriptionText" name="issue_description" rows="3" required
+                            placeholder="Please mention any error messages, desired Linux distribution, or specific problems."></textarea>
+                    </div>
+
+                    <!-- Data Backup Checkbox -->
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="backupCheck" name="backup_acknowledged" required>
+                        <label class="form-check-label small text-muted" for="backupCheck">
+                            I understand that I am responsible for backing up my files, and I will bring my laptop charger to Room 204.
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+                        Confirm Clinic Reservation <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clinic FAQs Accordion -->
+    <section class="mt-5 pt-4 border-top">
+        <h3 class="h4 fw-bold mb-4">Frequently Asked Questions</h3>
+        <div class="accordion" id="clinicFaqAccordion">
+            <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 8px;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#cfaq1">
+                        Do I need to be a Computer Science major to use the PC Clinic?
+                    </button>
+                </h2>
+                <div id="cfaq1" class="accordion-collapse collapse" data-bs-parent="#clinicFaqAccordion">
+                    <div class="accordion-body text-muted">
+                        No. The PC Clinic is an initiative of the Computer Science Society open to <strong>all students and university staff</strong> across every department and faculty. Whether you need an operating system install for engineering courses or virus cleaning for general studies, our doors are open.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 8px;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#cfaq2">
+                        Do you supply replacement hardware parts (RAM, SSDs, batteries)?
+                    </button>
+                </h2>
+                <div id="cfaq2" class="accordion-collapse collapse" data-bs-parent="#clinicFaqAccordion">
+                    <div class="accordion-body text-muted">
+                        All diagnostics, installation labor, thermal cleaning, and software installations are <strong>100% free of charge</strong>. If your computer requires new hardware parts (such as a larger SSD or additional RAM), you bring the compatible component, and our student technicians will safely install and configure it with you.
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 8px;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#cfaq3">
+                        Can I drop off my laptop and pick it up later?
+                    </button>
+                </h2>
+                <div id="cfaq3" class="accordion-collapse collapse" data-bs-parent="#clinicFaqAccordion">
+                    <div class="accordion-body text-muted">
+                        For security and accountability, we encourage students to stay with their laptop while our technicians work on it. This also gives you a chance to learn how the diagnostics, terminal commands, or partitioning tools work so you can troubleshoot your machine in the future!
+                    </div>
+                </div>
+            </div>
+
+            <div class="accordion-item border-0 shadow-sm mb-3" style="border-radius: 8px;">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed fw-semibold" type="button" data-bs-toggle="collapse" data-bs-target="#cfaq4">
+                        How can I volunteer as a student technician?
+                    </button>
+                </h2>
+                <div id="cfaq4" class="accordion-collapse collapse" data-bs-parent="#clinicFaqAccordion">
+                    <div class="accordion-body text-muted">
+                        We welcome students who are comfortable with hardware diagnostics, Linux environments, or troubleshooting. Reach out to David Koomson or any member of the CSS Executive Committee, or email <strong>clinic@css.community</strong> to join our technician volunteer roster.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+function selectSession(sessionId) {
+    const select = document.getElementById('preferredSessionSelect');
+    if (select) {
+        select.value = sessionId;
+        const formCard = document.getElementById('bookingFormCard');
+        if (formCard) {
+            formCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+}
+</script>
+
+{% endblock content %}
+
