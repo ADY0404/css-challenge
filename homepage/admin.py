@@ -261,10 +261,29 @@ class CommunityChannelAdmin(admin.ModelAdmin):
 
 @admin.register(SiteConfiguration)
 class SiteConfigurationAdmin(admin.ModelAdmin):
-    list_display = ('site_name', 'announcement_active', 'announcement_preview', 'contact_email')
+    list_display = (
+        'site_name',
+        'announcement_active',
+        'recaptcha_enabled',
+        'require_email_verification',
+        'allow_user_registration',
+        'max_login_attempts',
+        'lockout_duration_minutes',
+        'contact_email',
+    )
     fieldsets = (
         ('Top Announcement Banner', {
             'fields': ('announcement_active', 'announcement_text', 'announcement_link_url', 'announcement_link_text')
+        }),
+        ('Platform Security & Access Controls', {
+            'fields': (
+                'recaptcha_enabled',
+                'require_email_verification',
+                'allow_user_registration',
+                'max_login_attempts',
+                'lockout_duration_minutes',
+            ),
+            'description': 'Configure platform-wide security policies, Google reCAPTCHA, and student registration.'
         }),
         ('Branding & Hero Content', {
             'fields': ('site_name', 'hero_tagline', 'hero_title', 'hero_description')

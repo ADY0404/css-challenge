@@ -1,6 +1,10 @@
 {% extends "homepage/base.html" %}
 {% load static %}
+{% block messages %}{% endblock messages %}
 {% block content %}
+{% if RECAPTCHA_ENABLED %}
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endif %}
 <div class="d-flex justify-content-center align-items-center py-5 bg-light" style="min-height: 80vh;">
     <div class="card border-0 shadow-sm p-4 p-md-5" style="width: 100%; max-width: 420px; border-radius: 16px; background-color: #FFFFFF;">
         <!-- Logo & Title -->
@@ -9,6 +13,70 @@
             <h2 class="fw-bold text-dark mb-1" style="font-size: 1.5rem;">Sign In</h2>
             <p class="text-secondary small mb-0">Access challenges, community channels, and your profile</p>
         </div>
+
+        <!-- In-Card Error & Status Alerts (Never as top-of-page toast) -->
+        {% if messages %}
+            {% for message in messages %}
+                {% if not is_locked and not unverified_account or 'error' not in message.tags and 'danger' not in message.tags %}
+                <div class="alert alert-{{ message.tags|default:'info' }} small mb-3">
+                    <div class="d-flex align-items-center">
+                        {% if 'error' in message.tags or 'danger' in message.tags %}
+                            <i class="bi bi-exclamation-circle-fill fs-5 me-2 flex-shrink-0"></i>
+                        {% elif 'success' in message.tags %}
+                            <i class="bi bi-check-circle-fill fs-5 me-2 flex-shrink-0"></i>
+                        {% else %}
+                            <i class="bi bi-info-circle-fill fs-5 me-2 flex-shrink-0"></i>
+                        {% endif %}
+                        <div>{{ message }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <!-- Account Lockout Notice -->
+        {% if is_locked %}
+        <div class="alert alert-danger small mb-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-shield-slash-fill fs-5 me-2"></i>
+                <div>
+                    <strong>Account Locked:</strong>
+                    {% if remaining_mins %}
+                        Security cooldown active. Your account will open in <strong>{{ remaining_mins }} minute(s)</strong>.
+                    {% else %}
+                        Account is locked. Kindly reset your password to regain access.
+                    {% endif %}
+                </div>
+            </div>
+            {% if not remaining_mins %}
+            <div class="mt-2 text-end">
+                <a href="{% url 'password_reset' %}" class="btn btn-sm btn-outline-danger">Reset Password</a>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Unverified Account Notice -->
+        {% if unverified_account %}
+        <div class="alert alert-warning small mb-3">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-envelope-exclamation-fill fs-5 me-2"></i>
+                <div>
+                    <strong>Verification Required:</strong>
+                    Your email address is not verified yet. Please check your inbox and click the confirmation link to activate your account.
+                </div>
+            </div>
+            {% if unverified_email %}
+            <div class="mt-2 text-end">
+                <form method="POST" action="{% url 'resend_verification' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="email" value="{{ unverified_email }}">
+                    <button type="submit" class="btn btn-sm btn-outline-warning">Resend Confirmation Link</button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
 
         <!-- Login Form -->
         <form method="POST" novalidate>
@@ -34,6 +102,12 @@
                     </button>
                 </div>
             </div>
+
+            {% if RECAPTCHA_ENABLED and RECAPTCHA_SITE_KEY %}
+            <div class="mb-3 d-flex justify-content-center">
+                <div class="g-recaptcha" data-sitekey="{{ RECAPTCHA_SITE_KEY }}"></div>
+            </div>
+            {% endif %}
 
             <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold mt-2">Sign In</button>
         </form>

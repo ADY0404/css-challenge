@@ -1,11 +1,20 @@
+import datetime
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.test import TestCase
 from django.urls import reverse
+from django.core import mail
+from django.core.exceptions import ValidationError
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.contrib.auth.tokens import default_token_generator
+from django.core.cache import cache
 from .models import Profile
 
 
 class AuthenticationFlowTests(TestCase):
     def setUp(self):
+        cache.clear()
         self.user = User.objects.create_user(
             username='teststudent',
             email='student@example.edu',
@@ -18,7 +27,11 @@ class AuthenticationFlowTests(TestCase):
             year=3,
             department='Computer Science',
             bio='Lover of compilers and systems.',
+            email_verified=True,
         )
+
+    def tearDown(self):
+        cache.clear()
 
     def test_signup_creates_user_profile_and_signs_user_in(self):
         response = self.client.post(reverse('signup'), {
@@ -74,6 +87,46 @@ class AuthenticationFlowTests(TestCase):
         self.assertEqual(self.profile.bio, 'Updated bio text')
         self.assertEqual(self.profile.github_url, 'https://github.com/ghopper')
 
+    def test_profile_password_change_requires_old_password(self):
+        self.client.login(username='teststudent', password='Password123!')
+        response = self.client.post(reverse('profile'), {
+            'first_name': 'Grace',
+            'last_name': 'Hopper',
+            'password': 'NewPassword123!',
+            # old_password omitted
+        })
+        self.assertRedirects(response, reverse('profile'))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('Password123!'))
+        self.assertFalse(self.user.check_password('NewPassword123!'))
+
+    def test_profile_password_change_wrong_old_password(self):
+        self.client.login(username='teststudent', password='Password123!')
+        response = self.client.post(reverse('profile'), {
+            'first_name': 'Grace',
+            'last_name': 'Hopper',
+            'old_password': 'WrongPassword999!',
+            'password': 'NewPassword123!',
+        })
+        self.assertRedirects(response, reverse('profile'))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('Password123!'))
+        self.assertFalse(self.user.check_password('NewPassword123!'))
+
+    def test_profile_password_change_success(self):
+        self.client.login(username='teststudent', password='Password123!')
+        response = self.client.post(reverse('profile'), {
+            'first_name': 'Grace',
+            'last_name': 'Hopper',
+            'old_password': 'Password123!',
+            'password': 'NewPassword123!',
+        })
+        self.assertRedirects(response, reverse('profile'))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.check_password('NewPassword123!'))
+        # Ensure session auth hash was updated so user remains logged in
+        self.assertEqual(self.client.session['_auth_user_id'], str(self.user.pk))
+
     def test_settings_save_notifications_and_privacy(self):
         self.client.login(username='teststudent', password='Password123!')
 
@@ -122,4 +175,242 @@ class AuthenticationFlowTests(TestCase):
         self.assertEqual(resp_owner.status_code, 200)
         self.assertContains(resp_owner, 'Grace Hopper')
         self.assertContains(resp_owner, 'Edit My Profile')
+
+    def test_duplicate_email_signup_rejected(self):
+        # Case-insensitive duplicate email
+        response = self.client.post(reverse('signup'), {
+            'first_name': 'Grace',
+            'last_name': 'Hopper',
+            'email': 'STUDENT@EXAMPLE.EDU',
+            'username': 'grace_dup',
+            'year': '1',
+            'password1': 'ValidPassword123!',
+            'password2': 'ValidPassword123!',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "You already have an account. kindly reset your password")
+        self.assertFalse(User.objects.filter(username='grace_dup').exists())
+
+    def test_duplicate_email_orm_rejected(self):
+        with self.assertRaises(ValidationError):
+            User.objects.create_user(
+                username='second_student',
+                email='student@example.edu',
+                password='AnotherPassword123!',
+            )
+
+    def test_signup_sends_verification_email_and_marks_unverified(self):
+        mail.outbox.clear()
+        response = self.client.post(reverse('signup'), {
+            'first_name': 'Katherine',
+            'last_name': 'Johnson',
+            'email': 'kjohnson@example.edu',
+            'username': 'kjohnson',
+            'year': '3',
+            'password1': 'SafePassword123!',
+            'password2': 'SafePassword123!',
+        })
+        self.assertRedirects(response, reverse('home'))
+        user = User.objects.get(username='kjohnson')
+        self.assertFalse(user.profile.email_verified)
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Confirm Ownership of Your Email Address', mail.outbox[0].subject)
+        self.assertIn('/activate/', mail.outbox[0].body)
+
+    def test_activate_account_valid_token(self):
+        new_user = User.objects.create_user(
+            username='margaret',
+            email='mhamilton@example.edu',
+            password='Password123!',
+        )
+        profile = Profile.objects.create(user=new_user, year=4)
+        self.assertFalse(profile.email_verified)
+
+        uidb64 = urlsafe_base64_encode(force_bytes(new_user.pk))
+        token = default_token_generator.make_token(new_user)
+        activate_url = reverse('activate_account', kwargs={'uidb64': uidb64, 'token': token})
+
+        response = self.client.get(activate_url)
+        self.assertRedirects(response, reverse('home'))
+        profile.refresh_from_db()
+        self.assertTrue(profile.email_verified)
+
+    def test_activate_account_invalid_token(self):
+        new_user = User.objects.create_user(
+            username='hedy',
+            email='hlamarr@example.edu',
+            password='Password123!',
+        )
+        profile = Profile.objects.create(user=new_user, year=1)
+        uidb64 = urlsafe_base64_encode(force_bytes(new_user.pk))
+        bad_token = 'invalid-token-12345'
+        activate_url = reverse('activate_account', kwargs={'uidb64': uidb64, 'token': bad_token})
+
+        response = self.client.get(activate_url)
+        self.assertRedirects(response, reverse('login'))
+        profile.refresh_from_db()
+        self.assertFalse(profile.email_verified)
+
+    def test_resend_verification_email(self):
+        mail.outbox.clear()
+        self.client.login(username='teststudent', password='Password123!')
+        self.profile.email_verified = False
+        self.profile.save()
+
+        response = self.client.get(reverse('resend_verification'))
+        self.assertRedirects(response, reverse('profile'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn(self.user.email, mail.outbox[0].to)
+
+    def test_account_lockout_after_five_failed_attempts(self):
+        login_url = reverse('login')
+        # 4 incorrect attempts
+        for attempt in range(1, 5):
+            resp = self.client.post(login_url, {
+                'username': 'teststudent',
+                'password': 'WrongPassword!',
+            })
+            self.assertEqual(resp.status_code, 200)
+            self.profile.refresh_from_db()
+            self.assertEqual(self.profile.failed_login_attempts, attempt)
+            self.assertFalse(self.profile.is_locked)
+
+        # 5th incorrect attempt must lock the account
+        resp = self.client.post(login_url, {
+            'username': 'teststudent',
+            'password': 'WrongPassword!',
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.profile.refresh_from_db()
+        self.assertEqual(self.profile.failed_login_attempts, 5)
+        self.assertTrue(self.profile.is_locked)
+        self.assertContains(resp, "Your account is locked due to 5 incorrect login attempts")
+
+        # Clear IP rate limit before the 6th attempt so we specifically test account lockout
+        cache.clear()
+        # 6th attempt (even with valid password) is blocked due to active lock
+        resp_blocked = self.client.post(login_url, {
+            'username': 'teststudent',
+            'password': 'Password123!',
+        })
+        self.assertEqual(resp_blocked.status_code, 200)
+        self.assertContains(resp_blocked, "Kindly reset your password to regain access")
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_post_reset_ten_minute_cooldown(self):
+        login_url = reverse('login')
+        # Simulate completed password reset
+        self.profile.schedule_post_reset_cooldown(minutes=10)
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.is_locked)
+
+        cache.clear()
+        # Immediate login attempt is rejected with cooldown remaining time
+        resp = self.client.post(login_url, {
+            'username': 'teststudent',
+            'password': 'Password123!',
+        })
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "will open in")
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+        # Fast forward time beyond the 10-minute cooldown
+        self.profile.unlock_at = timezone.now() - datetime.timedelta(seconds=5)
+        self.profile.save()
+
+        cache.clear()
+        # Login now succeeds automatically
+        resp_success = self.client.post(login_url, {
+            'username': 'teststudent',
+            'password': 'Password123!',
+        })
+        self.assertRedirects(resp_success, reverse('home'))
+        self.profile.refresh_from_db()
+        self.assertFalse(self.profile.is_locked)
+        self.assertEqual(self.profile.failed_login_attempts, 0)
+        self.assertEqual(self.client.session['_auth_user_id'], str(self.user.pk))
+
+    def test_admin_unlock_and_verify_actions(self):
+        from users.admin import ProfileAdmin
+        from django.contrib.admin.sites import AdminSite
+
+        self.profile.is_locked = True
+        self.profile.failed_login_attempts = 5
+        self.profile.email_verified = False
+        self.profile.save()
+
+        admin_instance = ProfileAdmin(Profile, AdminSite())
+        qs = Profile.objects.filter(pk=self.profile.pk)
+
+        # Unlock action
+        admin_instance.unlock_accounts(None, qs)
+        self.profile.refresh_from_db()
+        self.assertFalse(self.profile.is_locked)
+        self.assertEqual(self.profile.failed_login_attempts, 0)
+
+        # Verify email action
+        admin_instance.verify_emails(None, qs)
+        self.profile.refresh_from_db()
+        self.assertTrue(self.profile.email_verified)
+
+    def test_unverified_user_cannot_login(self):
+        unverified_user = User.objects.create_user(
+            username='unverified_student',
+            email='unverified@example.edu',
+            password='Password123!',
+        )
+        Profile.objects.create(
+            user=unverified_user,
+            year=1,
+            email_verified=False,
+        )
+
+        cache.clear()
+        response = self.client.post(reverse('login'), {
+            'username': 'unverified_student',
+            'password': 'Password123!',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Your email address is not verified")
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_admin_can_login_even_if_unverified(self):
+        admin_user = User.objects.create_user(
+            username='admin_boss',
+            email='admin@example.edu',
+            password='AdminPassword123!',
+            is_staff=True,
+        )
+        Profile.objects.create(
+            user=admin_user,
+            year=4,
+            email_verified=False,
+        )
+
+        cache.clear()
+        response = self.client.post(reverse('login'), {
+            'username': 'admin_boss',
+            'password': 'AdminPassword123!',
+        })
+        self.assertRedirects(response, reverse('home'))
+        self.assertEqual(self.client.session['_auth_user_id'], str(admin_user.pk))
+
+    def test_unauthenticated_resend_verification_email(self):
+        mail.outbox.clear()
+        unverified_user = User.objects.create_user(
+            username='need_resend',
+            email='resend@example.edu',
+            password='Password123!',
+        )
+        Profile.objects.create(user=unverified_user, year=2, email_verified=False)
+
+        cache.clear()
+        response = self.client.post(reverse('resend_verification'), {
+            'email': 'resend@example.edu'
+        })
+        self.assertRedirects(response, reverse('login'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('resend@example.edu', mail.outbox[0].to)
+
+
 

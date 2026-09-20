@@ -11,6 +11,7 @@ from django.db import models
 from django.db.models import Count, Q, Max
 from django.utils.text import slugify
 from django.contrib.auth.models import User
+from .ratelimit import ratelimit
 from .validators import validate_image_upload
 from .models import (
     Challenge,
@@ -251,6 +252,7 @@ def internships_list(request):
     return render(request, 'homepage/internships.html', context)
 
 
+@ratelimit(rate='3/h', action='share_opportunity')
 def share_opportunity(request):
     """Allow students and alumni to submit career opportunities."""
     if request.method == 'POST':
@@ -283,6 +285,7 @@ def share_opportunity(request):
 # -----------------------------------------------------------------------------
 # Newsletter
 # -----------------------------------------------------------------------------
+@ratelimit(rate='5/h', action='newsletter_subscribe')
 def newsletter_subscribe(request):
     """Handle newsletter subscriptions across all templates."""
     if request.method == 'POST':

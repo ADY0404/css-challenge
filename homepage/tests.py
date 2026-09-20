@@ -580,6 +580,48 @@ class CommunityPageAndImageUploadTests(TestCase):
         self.assertEqual(fav_resp.status_code, 301)
         self.assertEqual(fav_resp.url, '/static/images/com.png')
 
+    def test_ratelimit_enforcement(self):
+        from django.core.cache import cache
+        cache.clear()
+
+        # share_opportunity allows 3 POSTs per hour per IP
+        url = reverse('share_opportunity')
+        data = {
+            'title': 'Security Analyst Intern',
+            'company': 'Guard Cyber',
+            'location': 'Remote',
+            'role_type': 'Internship',
+            'description': 'Network security and auditing.',
+        }
+
+        # 3 requests within threshold
+        for _ in range(3):
+            resp = self.client.post(url, data, REMOTE_ADDR='192.168.1.50')
+            self.assertIn(resp.status_code, (200, 302))
+
+        # 4th request must be rejected with 429 Too Many Requests
+        blocked_resp = self.client.post(url, data, REMOTE_ADDR='192.168.1.50')
+        self.assertEqual(blocked_resp.status_code, 429)
+        self.assertTrue(blocked_resp.has_header('Retry-After'))
+        self.assertIn('Too many requests', blocked_resp.content.decode())
+
+        # Cleanup cache after test
+        cache.clear()
+
+
+class SecuritySettingsTests(TestCase):
+    def test_security_headers_on_responses(self):
+        resp = self.client.get(reverse('home'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.headers.get('X-Content-Type-Options'), 'nosniff')
+        self.assertEqual(resp.headers.get('X-Frame-Options'), 'DENY')
+
+    def test_secure_proxy_ssl_header_configured(self):
+        from django.conf import settings
+        self.assertEqual(settings.SECURE_PROXY_SSL_HEADER, ('HTTP_X_FORWARDED_PROTO', 'https'))
+
+
+
 
 
 

@@ -10,28 +10,44 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import sys
 from pathlib import Path
 from decouple import config
+from django.core.exceptions import ImproperlyConfigured
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY', default='django-insecure-development-key-change-me')
+# Detect execution context
+IS_RUNNING_TESTS = 'test' in sys.argv
+IS_RUNNING_DEV_SERVER = 'runserver' in sys.argv
 
 # SECURITY WARNING: don't run with debug turned on in production!
+# Secure by default: DEBUG is False unless explicitly set to True/1
 raw_debug = config('DJANGO_DEBUG', default=None)
 if raw_debug is not None:
-    DEBUG = str(raw_debug).lower() in ('true', '1', 'yes', 'on')
+    DEBUG = str(raw_debug).strip().lower() in ('true', '1', 'yes', 'on', 't')
 else:
-    DEBUG = str(config('DEBUG', default='True')).lower() not in ('false', '0', 'no', 'off', 'prod', 'production')
+    debug_val = config('DEBUG', default=None)
+    if debug_val is not None:
+        DEBUG = str(debug_val).strip().lower() in ('true', '1', 'yes', 'on', 't')
+    else:
+        # Secure by default: False for WSGI/production/deployment, True for local dev server
+        DEBUG = True if IS_RUNNING_DEV_SERVER else False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com']
+# SECURITY WARNING: keep the secret key used in production secret!
+# Fail hard if SECRET_KEY is not set when running in production (DEBUG=False)
+SECRET_KEY = config('SECRET_KEY', default='')
+if not SECRET_KEY:
+    if DEBUG or IS_RUNNING_TESTS or IS_RUNNING_DEV_SERVER:
+        SECRET_KEY = 'django-insecure-development-test-key-do-not-use-in-production-css-society-2026'
+    else:
+        raise ImproperlyConfigured(
+            "SECRET_KEY environment variable must be set in production when DEBUG=False."
+        )
+
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com', 'testserver']
 RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default=None)
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -39,6 +55,31 @@ if RENDER_EXTERNAL_HOSTNAME:
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onrender.com',
 ]
+
+# Security Headers & Reverse-Proxy Configuration
+# Render terminates SSL at reverse proxy and forwards proto
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# SSL Redirect: redirect HTTP to HTTPS in production
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=(not DEBUG and not IS_RUNNING_TESTS), cast=bool)
+
+# Cookie Security
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=(not DEBUG and not IS_RUNNING_TESTS), cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=(not DEBUG and not IS_RUNNING_TESTS), cast=bool)
+
+# HTTP Strict Transport Security (HSTS)
+if not DEBUG and not IS_RUNNING_TESTS:
+    SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = config('SECURE_HSTS_INCLUDE_SUBDOMAINS', default=True, cast=bool)
+    SECURE_HSTS_PRELOAD = config('SECURE_HSTS_PRELOAD', default=True, cast=bool)
+else:
+    SECURE_HSTS_SECONDS = 0
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+
+# Content sniffing and frame defense
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
 
 
 # Application definition
@@ -95,6 +136,8 @@ WSGI_APPLICATION = 'myfirst.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+# TODO(security-audit): SQLite on Render is ephemeral without persistent disks.
+# In production, migrate to managed PostgreSQL (e.g., Render Postgres) to prevent data loss across deploys.
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -138,6 +181,8 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
+# TODO(security-audit): Static image assets are duplicated between homepage/static/ and root static/.
+# Consolidate into a single static directory to reduce repo footprint and avoid build conflicts.
 STATICFILES_DIRS = [BASE_DIR / "homepage/static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_ROOT.mkdir(exist_ok=True)
@@ -187,6 +232,75 @@ else:
     EMAIL_HOST = config('EMAIL_HOST', default='localhost')
     EMAIL_PORT = config('EMAIL_PORT', default=25, cast=int)
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=False, cast=bool)
     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@localhost')
+
+
+# reCAPTCHA Configuration
+# Google provides official test keys which always pass for local dev:
+# Site key: 6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
+# Secret key: 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+RECAPTCHA_ENABLED = config('RECAPTCHA_ENABLED', default=True, cast=bool)
+RECAPTCHA_SITE_KEY = config('RECAPTCHA_SITE_KEY', default='6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI')
+RECAPTCHA_SECRET_KEY = config('RECAPTCHA_SECRET_KEY', default='6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')
+
+# Terminal & Server Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} [{name}] {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        'server': {
+            'format': '[{asctime}] {message}',
+            'style': '{',
+            'datefmt': '%H:%M:%S',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+            'formatter': 'verbose',
+        },
+        'server_console': {
+            'class': 'logging.StreamHandler',
+            'stream': sys.stdout,
+            'formatter': 'server',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.server': {
+            'handlers': ['server_console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'users': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'homepage': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
+

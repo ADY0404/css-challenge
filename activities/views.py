@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from .models import Event, GuestSpeaker, SocialMedia, Program, EventRegistration
 from collections import defaultdict
 from django.utils.timezone import now
+from homepage.ratelimit import ratelimit
 
 
 SAMPLE_EVENTS = [
@@ -69,6 +70,7 @@ def event_detail(request, id):
     return render(request, 'events/event.html', context)
 
 
+@ratelimit(rate='3/h', action='event_register')
 def event_register(request, id):
     """Process event registration and persist attendee in database."""
     event = get_object_or_404(Event, id=id)

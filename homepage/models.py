@@ -353,6 +353,17 @@ class SiteConfiguration(models.Model):
     twitter_url = models.URLField(default="https://twitter.com", blank=True)
     instagram_url = models.URLField(default="https://instagram.com", blank=True)
 
+    # Platform Security & Access Controls (Editable by Admin)
+    recaptcha_enabled = models.BooleanField(default=True, help_text="Enable or disable Google reCAPTCHA v2 on forms")
+    max_login_attempts = models.IntegerField(default=5, help_text="Number of failed logins before locking an account")
+    lockout_duration_minutes = models.IntegerField(default=10, help_text="Cooldown duration in minutes after password reset")
+    allow_user_registration = models.BooleanField(default=True, help_text="Allow new students to register on the platform")
+    require_email_verification = models.BooleanField(
+        default=True,
+        help_text="Require email verification before regular users can log in (admins are exempt)"
+    )
+
+
     class Meta:
         verbose_name = "Site Configuration & Content"
         verbose_name_plural = "Site Configuration & Content"

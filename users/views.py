@@ -1,54 +1,297 @@
+import logging
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import views as auth_views
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.conf import settings
+from django.urls import reverse
 from .forms import SignUpForm
 from .models import Profile
 from homepage.validators import validate_image_upload
+from homepage.ratelimit import ratelimit, get_client_ip
+from homepage.recaptcha import verify_recaptcha
+
+logger = logging.getLogger(__name__)
 
 
+def send_verification_email(request, user):
+    """Generate a secure verification token and send ownership confirmation link to user's email."""
+    token = default_token_generator.make_token(user)
+    uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
+    activation_url = request.build_absolute_uri(
+        reverse('activate_account', kwargs={'uidb64': uidb64, 'token': token})
+    )
+    subject = "Confirm Ownership of Your Email Address - CSS Society"
+    message = (
+        f"Hello {user.first_name or user.username},\n\n"
+        f"Thank you for joining the Computer Science Society! Please confirm that you are the owner of this email address by clicking the link below:\n\n"
+        f"{activation_url}\n\n"
+        f"If you did not create this account, you can safely ignore this email.\n\n"
+        f"Best regards,\nComputer Science Society Team"
+    )
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@localhost')
+    logger.info("Dispatching email ownership confirmation to '%s' (user: %s).", user.email, user.username)
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+        logger.info("Confirmation email sent to '%s'.", user.email)
+    except Exception as exc:
+        logger.error("Failed to send verification email to '%s': %s", user.email, exc)
+
+
+@ratelimit(rate='5/m', action='login')
 def login_view(request):
-    """Handle user authentication and sign in."""
+    """Handle user authentication, 5-strike account lockout, and 10-minute cooldown enforcement."""
     if request.user.is_authenticated:
         return redirect("home")
 
+    context = {}
+
     if request.method == "POST":
+        # 1. reCAPTCHA verification
+        recaptcha_token = request.POST.get('g-recaptcha-response', '').strip()
+        client_ip = get_client_ip(request)
+        is_recaptcha_valid, recaptcha_err = verify_recaptcha(recaptcha_token, remote_ip=client_ip)
+        if not is_recaptcha_valid:
+            logger.warning("reCAPTCHA failed on login from IP %s", client_ip)
+            messages.error(request, recaptcha_err)
+            return render(request, "users/login.html", context)
+
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "").strip()
+
+        # Check if account exists by username or email
+        user_match = User.objects.filter(username__iexact=username).first()
+        if not user_match:
+            user_match = User.objects.filter(email__iexact=username).first()
+
+        # 2. Check if account is locked or in cooldown
+        if user_match:
+            profile, _ = Profile.objects.get_or_create(user=user_match)
+            is_locked, lock_reason, remaining_mins = profile.get_lock_status()
+            if is_locked:
+                logger.warning("Blocked login attempt for locked account '%s'. Reason: %s", user_match.username, lock_reason)
+                messages.error(request, lock_reason)
+                context["is_locked"] = True
+                context["remaining_mins"] = remaining_mins
+                return render(request, "users/login.html", context)
+
+        # 3. Authenticate
         user = authenticate(request, username=username, password=password)
+        if user is None and user_match:
+            user = authenticate(request, username=user_match.username, password=password)
 
         if user is not None:
+            profile, _ = Profile.objects.get_or_create(user=user)
+
+            # 4. Check email verification (admin / staff / superuser exempt)
+            is_admin = user.is_staff or user.is_superuser
+            require_verification = True
+            try:
+                from homepage.models import SiteConfiguration
+                site_config = SiteConfiguration.get_solo()
+                if site_config:
+                    require_verification = site_config.require_email_verification
+            except Exception:
+                pass
+
+            if not is_admin and require_verification and not profile.email_verified:
+                logger.warning("Blocked login attempt for unverified user '%s'.", user.username)
+                messages.error(
+                    request,
+                    "Your email address is not verified. Please check your inbox and verify your email before logging in."
+                )
+                context["unverified_account"] = True
+                context["unverified_email"] = user.email
+                return render(request, "users/login.html", context)
+
+            profile.register_successful_login()
             login(request, user)
-            messages.success(request, f"Welcome back, {user.first_name or username}!")
+            logger.info("User '%s' logged in successfully.", user.username)
+            messages.success(request, f"Welcome back, {user.first_name or user.username}!")
             next_url = request.GET.get('next')
             return redirect(next_url if next_url else "home")
         else:
-            messages.error(request, "Invalid username or password. Please try again.")
+            max_attempts = 5
+            try:
+                from homepage.models import SiteConfiguration
+                site_config = SiteConfiguration.get_solo()
+                if site_config:
+                    max_attempts = site_config.max_login_attempts
+            except Exception:
+                pass
 
-    return render(request, "users/login.html")
+            if user_match:
+                profile, _ = Profile.objects.get_or_create(user=user_match)
+                profile.register_failed_login(max_attempts=max_attempts)
+                if profile.is_locked:
+                    logger.warning("Account '%s' locked after %d failed login attempts.", user_match.username, max_attempts)
+                    messages.error(
+                        request,
+                        f"Your account is locked due to {max_attempts} incorrect login attempts. Kindly reset your password to regain access."
+                    )
+                    context["is_locked"] = True
+                else:
+                    remaining = max_attempts - profile.failed_login_attempts
+                    logger.info("Failed login for user '%s'. %d attempts remaining.", user_match.username, remaining)
+                    messages.error(
+                        request,
+                        f"Invalid username or password. You have {remaining} attempt(s) remaining before account lockout."
+                    )
+            else:
+                logger.info("Failed login attempt for nonexistent user '%s'.", username)
+                messages.error(request, "Invalid username or password. Please try again.")
+
+    return render(request, "users/login.html", context)
 
 
+@ratelimit(rate='3/h', action='signup')
 def signup_view(request):
-    """Handle new user registration with profile creation."""
+    """Handle new user registration with profile creation and token-based email ownership confirmation."""
     if request.user.is_authenticated:
         return redirect("home")
 
+    try:
+        from homepage.models import SiteConfiguration
+        site_config = SiteConfiguration.get_solo()
+        if site_config and not site_config.allow_user_registration:
+            messages.warning(request, "Student registration is currently closed by the platform administrator.")
+            return redirect("login")
+    except Exception:
+        pass
+
     if request.method == "POST":
+        # 1. reCAPTCHA verification
+        recaptcha_token = request.POST.get('g-recaptcha-response', '').strip()
+        client_ip = get_client_ip(request)
+        is_recaptcha_valid, recaptcha_err = verify_recaptcha(recaptcha_token, remote_ip=client_ip)
+        if not is_recaptcha_valid:
+            logger.warning("reCAPTCHA failed on signup from IP %s", client_ip)
+            messages.error(request, recaptcha_err)
+            form = SignUpForm(request.POST)
+            return render(request, "users/signup.html", {"form": form})
+
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.year = form.cleaned_data.get("year")
+            profile.email_verified = False
             profile.save()
+
+            # Dispatch ownership confirmation email
+            send_verification_email(request, user)
+
             login(request, user)
-            messages.success(request, "Your account has been created. Welcome to CSS!")
+            logger.info("New user '%s' signed up successfully. Verification email dispatched.", user.username)
+            messages.success(request, "Your account has been created. A verification link has been sent to confirm email ownership!")
             return redirect("home")
-        messages.error(request, "Please correct the errors in the registration form below.")
+        else:
+            # Form validation errors are displayed inline with each form field inside signup.html
+            pass
     else:
         form = SignUpForm()
     return render(request, "users/signup.html", {"form": form})
+
+
+class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
+    """
+    Password reset confirmation view:
+    Resets credentials, puts account in 10-minute cooldown, and prevents immediate login.
+    """
+    template_name = "users/password_reset_confirm.html"
+
+    def form_valid(self, form):
+        user = form.save()
+        profile, _ = Profile.objects.get_or_create(user=user)
+        cooldown_mins = 10
+        try:
+            from homepage.models import SiteConfiguration
+            site_config = SiteConfiguration.get_solo()
+            if site_config:
+                cooldown_mins = site_config.lockout_duration_minutes
+        except Exception:
+            pass
+
+        # Put account in security cooldown (default 10 mins)
+        profile.schedule_post_reset_cooldown(minutes=cooldown_mins)
+        logger.info("Password reset completed for '%s'. Account in %d-minute cooldown.", user.username, cooldown_mins)
+        messages.success(
+            self.request,
+            f"Your password has been reset successfully! For your security, your account will open in {cooldown_mins} minutes. You cannot log in immediately."
+        )
+        return redirect("password_reset_complete")
+
+
+
+
+def activate_account(request, uidb64, token):
+    """Activate user account / mark email verified after token validation."""
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        profile, _ = Profile.objects.get_or_create(user=user)
+        profile.email_verified = True
+        profile.save()
+        messages.success(request, "Your email has been verified successfully! Welcome to CSS.")
+        if not request.user.is_authenticated:
+            login(request, user)
+        return redirect("home")
+    else:
+        messages.error(request, "The activation link is invalid or has expired.")
+        return redirect("login")
+
+
+@ratelimit(rate='3/h', action='resend_verification')
+def resend_verification(request):
+    """Resend account verification email for authenticated users or unverified users requesting via email."""
+    if request.user.is_authenticated:
+        profile, _ = Profile.objects.get_or_create(user=request.user)
+        if profile.email_verified:
+            messages.info(request, "Your email address is already verified.")
+        else:
+            send_verification_email(request, request.user)
+            messages.success(request, f"A new verification link has been sent to {request.user.email}.")
+        return redirect(request.META.get('HTTP_REFERER') or 'profile')
+
+    # Unauthenticated user requesting a verification link
+    email = (request.POST.get('email', '') or request.GET.get('email', '')).strip()
+    if email:
+        try:
+            target_user = User.objects.filter(email__iexact=email).first()
+            if target_user:
+                target_profile, _ = Profile.objects.get_or_create(user=target_user)
+                if target_profile.email_verified:
+                    messages.info(request, "Your email address is already verified. You can log in directly.")
+                else:
+                    send_verification_email(request, target_user)
+                    messages.success(request, f"A new verification link has been sent to {target_user.email}.")
+            else:
+                messages.info(request, "If an account exists with that email address, a verification link has been sent.")
+        except Exception as e:
+            logger.exception("Error resending verification email: %s", e)
+            messages.error(request, "Unable to send verification email. Please try again later.")
+    else:
+        messages.warning(request, "Please provide your email address to receive a verification link.")
+
+    return redirect("login")
+
 
 
 @login_required
@@ -91,13 +334,20 @@ def update_profile(request):
         profile.github_url = request.POST.get('github_url', profile.github_url or '').strip() or None
         profile.linkedin_url = request.POST.get('linkedin_url', profile.linkedin_url or '').strip() or None
 
+        old_password = request.POST.get('old_password', '').strip()
         password = request.POST.get('password', '').strip()
         password_changed = False
         if password:
+            if not old_password:
+                messages.error(request, "Current password is required to set a new password.")
+                return redirect('profile')
+            if not user.check_password(old_password):
+                messages.error(request, "Incorrect current password. Password change aborted.")
+                return redirect('profile')
             if len(password) < 6:
                 messages.error(request, "New password must be at least 6 characters long.")
                 return redirect('profile')
-            user.password = make_password(password)
+            user.set_password(password)
             password_changed = True
 
         user.save()
