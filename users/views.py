@@ -9,7 +9,7 @@ from django.contrib.auth import views as auth_views
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
-from django.core.mail import send_mail
+from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 from django.urls import reverse
 from .forms import SignUpForm
@@ -22,31 +22,91 @@ logger = logging.getLogger(__name__)
 
 
 def send_verification_email(request, user):
-    """Generate a secure verification token and send ownership confirmation link to user's email."""
+    """Generate a secure verification token and send a branded HTML confirmation email."""
     token = default_token_generator.make_token(user)
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     activation_url = request.build_absolute_uri(
         reverse('activate_account', kwargs={'uidb64': uidb64, 'token': token})
     )
+    display_name = user.first_name or user.username
     subject = "Confirm Ownership of Your Email Address - CSS Society"
-    message = (
-        f"Hello {user.first_name or user.username},\n\n"
-        f"Thank you for joining the Computer Science Society! Please confirm that you are the owner of this email address by clicking the link below:\n\n"
+    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@localhost')
+
+    # Plain-text fallback
+    text_body = (
+        f"Hi {display_name},\n\n"
+        f"Thank you for joining the Computer Science Society!\n\n"
+        f"Please confirm your email address by visiting this link:\n"
         f"{activation_url}\n\n"
-        f"If you did not create this account, you can safely ignore this email.\n\n"
+        f"This link expires in 24 hours.\n"
+        f"If you didn't create this account, you can safely ignore this email.\n\n"
         f"Best regards,\nComputer Science Society Team"
     )
-    from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@localhost')
-    logger.info("Dispatching email ownership confirmation to '%s' (user: %s).", user.email, user.username)
+
+    # HTML body — gradient header, button + fallback link, plain expiry, proper footer
+    html_body = f"""<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Confirm Your Email</title></head>
+<body style="margin:0;padding:0;background:#f0f0f0;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;background:#f0f0f0;">
+  <tr><td align="center">
+    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:560px;width:100%;">
+      <!-- Gradient header -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);padding:32px 40px;text-align:center;">
+          <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">Computer Science Society</h1>
+          <p style="margin:6px 0 0;color:#a0aec0;font-size:12px;">Email Verification</p>
+        </td>
+      </tr>
+      <!-- Body -->
+      <tr>
+        <td style="padding:36px 40px 28px;">
+          <p style="margin:0 0 16px;font-size:15px;color:#222222;line-height:1.6;">Hi {display_name},</p>
+          <p style="margin:0 0 28px;font-size:15px;color:#444444;line-height:1.7;">
+            Thanks for signing up. Click below to confirm your email and activate your account.
+          </p>
+          <table cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="background:#0f3460;border-radius:6px;">
+                <a href="{activation_url}" target="_blank"
+                   style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;border-radius:6px;">
+                  Confirm Email
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:20px 0 0;font-size:13px;color:#888888;word-break:break-all;">
+            Or copy this link into your browser:<br/>
+            <a href="{activation_url}" style="color:#0f3460;font-size:12px;">{activation_url}</a>
+          </p>
+          <p style="margin:20px 0 0;font-size:13px;color:#888888;">
+            This link expires in 24 hours. If you didn't sign up, just ignore this.
+          </p>
+        </td>
+      </tr>
+      <!-- Footer -->
+      <tr>
+        <td style="background:#f7fafc;border-top:1px solid #e2e8f0;padding:20px 40px;text-align:center;">
+          <p style="margin:0 0 4px;color:#718096;font-size:12px;">
+            This email was sent to <strong>{user.email}</strong>
+          </p>
+          <p style="margin:0;color:#a0aec0;font-size:11px;">
+            &copy; Computer Science Society &nbsp;&middot;&nbsp; All rights reserved
+          </p>
+        </td>
+      </tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>"""
+
+    logger.info("Dispatching email verification to '%s' (user: %s).", user.email, user.username)
     try:
-        send_mail(
-            subject=subject,
-            message=message,
-            from_email=from_email,
-            recipient_list=[user.email],
-            fail_silently=True,
-        )
-        logger.info("Confirmation email sent to '%s'.", user.email)
+        msg = EmailMultiAlternatives(subject, text_body, from_email, [user.email])
+        msg.attach_alternative(html_body, "text/html")
+        msg.send(fail_silently=False)
+        logger.info("Verification email sent to '%s'.", user.email)
     except Exception as exc:
         logger.error("Failed to send verification email to '%s': %s", user.email, exc)
 
@@ -77,8 +137,13 @@ def login_view(request):
         if not user_match:
             user_match = User.objects.filter(email__iexact=username).first()
 
-        # 2. Check if account is locked or in cooldown
+        # 2. Check if account is deactivated, locked or in cooldown
         if user_match:
+            if not user_match.is_active:
+                logger.warning("Blocked login attempt for deactivated user '%s'.", user_match.username)
+                messages.error(request, "This account has been deactivated. Please contact society administration to reactivate your account.")
+                return render(request, "users/login.html", context)
+
             profile, _ = Profile.objects.get_or_create(user=user_match)
             is_locked, lock_reason, remaining_mins = profile.get_lock_status()
             if is_locked:
@@ -382,6 +447,18 @@ def settings_view(request):
             profile.public_profile = 'public_profile' in request.POST
             profile.save()
             messages.success(request, 'Your community privacy settings have been updated.')
+        elif action == 'deactivate':
+            confirm_password = request.POST.get('confirm_password', '')
+            if not user.check_password(confirm_password):
+                messages.error(request, 'Incorrect password. Account deactivation cancelled.')
+                return redirect('settings')
+            user.is_active = False
+            user.save()
+            from django.contrib.auth import logout
+            logout(request)
+            logger.info("User '%s' deactivated their account.", user.username)
+            messages.info(request, 'Your account has been deactivated. If you wish to reactivate in the future, please contact society administration.')
+            return redirect('home')
         return redirect('settings')
 
     return render(request, 'users/settings.html')

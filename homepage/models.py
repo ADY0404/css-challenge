@@ -335,10 +335,22 @@ class CommunityChannel(models.Model):
 
 class SiteConfiguration(models.Model):
     site_name = models.CharField(max_length=150, default="Computer Science Society")
+    site_logo = models.ImageField(upload_to='site_config/', blank=True, null=True, help_text="Site navbar logo (fallback: static/images/com.png)")
     hero_tagline = models.CharField(max_length=200, default="Official Student Chapter")
     hero_title = models.CharField(max_length=200, default="Computer Science Society")
     hero_description = models.TextField(
         default="Empowering students to learn, build, and lead in computing. Join specialized study cohorts, tackle hands-on weekly coding challenges, and connect with peer developers."
+    )
+    future_lab_image = models.ImageField(
+        upload_to='site_config/',
+        blank=True,
+        null=True,
+        help_text="Future Lab or Hero section photo (fallback: static/images/images (1).jpeg)"
+    )
+    future_lab_badge = models.CharField(
+        max_length=150,
+        default="Future Lab · Ideas Happen Here",
+        help_text="Badge text overlaid on the Future Lab photo"
     )
     announcement_active = models.BooleanField(default=True, help_text="Show or hide the top site announcement banner")
     announcement_text = models.CharField(
@@ -363,6 +375,84 @@ class SiteConfiguration(models.Model):
         help_text="Require email verification before regular users can log in (admins are exempt)"
     )
 
+    # Core Pillars (Learn, Connect, Grow)
+    pillar1_title = models.CharField(max_length=100, default="Learn")
+    pillar1_description = models.TextField(
+        default="Follow curated tracks from beginner syntax to production system architecture and cloud deployments."
+    )
+    pillar2_title = models.CharField(max_length=100, default="Connect")
+    pillar2_description = models.TextField(
+        default="Network with senior mentors, alumni engineers, and like-minded peers who share your career ambitions."
+    )
+    pillar3_title = models.CharField(max_length=100, default="Grow")
+    pillar3_description = models.TextField(
+        default="Expand your portfolio through hackathons, student tech clinics, and verified challenge submissions."
+    )
+
+    # Community Guidelines Banner
+    guidelines_heading = models.CharField(max_length=200, default="Society Guidelines & Community Norms")
+    guidelines_description = models.TextField(
+        default="We maintain an inclusive, supportive, and harassment-free environment for all computer science students across all physical and digital spaces."
+    )
+    guidelines_button_text = models.CharField(max_length=80, default="Read Community Guidelines")
+
+    # Challenges Highlight Section
+    challenges_heading = models.CharField(max_length=200, default="Hands-on Coding Challenges")
+    challenges_subheading = models.TextField(
+        default="Sharpen your practical skills, build real projects, and showcase your code."
+    )
+
+    # Spotlight Section
+    spotlight_heading = models.CharField(max_length=200, default="CSS Spotlight & Journal")
+    spotlight_subheading = models.CharField(max_length=255, default="Insights, project writeups, and student reflections.")
+
+    # Speaker Series / Student Stage Banner
+    speaker_series_badge = models.CharField(max_length=80, default="Speaker Series")
+    speaker_series_title = models.CharField(max_length=200, default="Tell Your Story · Bi-Weekly Student Stage")
+    speaker_series_description = models.TextField(
+        default="Hear how fellow CS students build notable projects, secure internships, and prepare for tech careers."
+    )
+
+    # Newsletter Box
+    newsletter_heading = models.CharField(max_length=200, default="Subscribe to the CSS Newsletter")
+    newsletter_subheading = models.CharField(
+        max_length=255,
+        default="Stay updated on weekly challenge releases, campus workshops, and internship openings."
+    )
+
+    # Homepage Activities Section Heading
+    activities_heading = models.CharField(max_length=200, default="Upcoming Activities")
+    activities_subheading = models.CharField(max_length=255, default="Workshops, study jams, and community sessions.")
+
+    # Page Headers (Customise All Pages)
+    activities_page_title = models.CharField(max_length=200, default="Activities & Events")
+    activities_page_lead = models.TextField(default="Learn together, meet new people, and put your skills into practice.")
+
+    challenges_page_title = models.CharField(max_length=200, default="Coding & Design Challenges")
+    challenges_page_lead = models.TextField(default="Build real projects, solve engineering prompts, and showcase your GitHub repositories.")
+
+    leaderboard_page_title = models.CharField(max_length=200, default="Society Leaderboard")
+    leaderboard_page_lead = models.TextField(default="Top contributors, active challenge solvers, and community champions.")
+
+    executives_page_title = models.CharField(max_length=200, default="Meet the Executives")
+    executives_page_lead = models.TextField(default="These passionate leaders guide the society's mission, organize technical programs, foster partnerships, and champion initiatives that benefit our members.")
+
+    blog_page_title = models.CharField(max_length=200, default="The CSS Journal")
+    blog_page_lead = models.TextField(default="Tutorials, learning notes, engineering insights, and career stories from our student builders.")
+
+    internships_page_title = models.CharField(max_length=200, default="Internships & Career Opportunities")
+    internships_page_lead = models.TextField(default="Verified student roles, internships, and entry-level engineering opportunities shared with CSS members.")
+
+    clinic_page_title = models.CharField(max_length=200, default="PC Clinic & Diagnostic Sessions")
+    clinic_page_lead = models.TextField(default="Free hardware diagnostics, Linux dual-boot installations, developer environment setup, and thermal maintenance run by senior CS student technicians.")
+
+    community_page_title = models.CharField(max_length=200, default="Join a Technical Community")
+    community_page_lead = models.TextField(default="Explore specialized engineering tracks, participate in hands-on study groups, work on open-source projects, and accelerate your tech career alongside peer builders.")
+
+    # Footer About Blurb
+    footer_about_text = models.TextField(
+        default="The official student computing organization supporting student engineers, developers, and researchers."
+    )
 
     class Meta:
         verbose_name = "Site Configuration & Content"

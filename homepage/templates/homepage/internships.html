@@ -4,13 +4,13 @@
 
 <!-- Header Banner -->
 <section class="bg-primary text-white py-5 mb-5">
-    <div class="container">
-        <div class="d-flex align-items-center gap-2 mb-2">
-            <img src="{% static 'images/com.png' %}" alt="CSS Crest" style="width: 32px; height: 32px; object-fit: contain;" class="bg-white rounded-circle p-1">
-            <p class="text-uppercase fw-semibold mb-0" style="letter-spacing: .08em; font-size: 0.85rem;">Computer Science Society</p>
+    <div class="container text-center">
+        <div class="d-inline-flex align-items-center gap-2 mb-2 bg-white bg-opacity-10 px-3 py-1 rounded-pill">
+            <img src="{% if site_config and site_config.site_logo %}{{ site_config.site_logo.url }}{% else %}{% static 'images/com.png' %}{% endif %}" alt="CSS Crest" style="width: 28px; height: 28px; object-fit: contain;" class="bg-white rounded-circle p-1">
+            <span class="text-uppercase fw-semibold small" style="letter-spacing: .08em;">Computer Science Society</span>
         </div>
-        <h1 class="display-5 fw-bold">Internships &amp; Career Opportunities</h1>
-        <p class="lead mb-0">Verified student roles, internships, and entry-level engineering opportunities shared with CSS members.</p>
+        <h1 class="display-5 fw-bold mt-2">{{ site_config.internships_page_title|default:"Internships &amp; Career Opportunities" }}</h1>
+        <p class="lead mb-0 mx-auto" style="max-width: 720px;">{{ site_config.internships_page_lead|default:"Verified student roles, internships, and entry-level engineering opportunities shared with CSS members." }}</p>
     </div>
 </section>
 

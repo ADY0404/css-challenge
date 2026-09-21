@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.html import format_html
+from django.templatetags.static import static
 from .models import (
     Challenge,
     ChallengeSubmission,
@@ -271,6 +273,8 @@ class SiteConfigurationAdmin(admin.ModelAdmin):
         'lockout_duration_minutes',
         'contact_email',
     )
+    readonly_fields = ('future_lab_image_preview', 'site_logo_preview')
+
     fieldsets = (
         ('Top Announcement Banner', {
             'fields': ('announcement_active', 'announcement_text', 'announcement_link_url', 'announcement_link_text')
@@ -285,13 +289,103 @@ class SiteConfigurationAdmin(admin.ModelAdmin):
             ),
             'description': 'Configure platform-wide security policies, Google reCAPTCHA, and student registration.'
         }),
-        ('Branding & Hero Content', {
-            'fields': ('site_name', 'hero_tagline', 'hero_title', 'hero_description')
+        ('Branding & Site Logo', {
+            'fields': (
+                'site_name',
+                'site_logo',
+                'site_logo_preview',
+            ),
+            'description': 'Configure society title and brand mark displayed in the navigation and headers.'
         }),
-        ('Contact & Social Media Links', {
-            'fields': ('contact_email', 'github_url', 'linkedin_url', 'twitter_url', 'instagram_url')
+        ('Hero Section & Future Lab Picture', {
+            'fields': (
+                'hero_tagline',
+                'hero_title',
+                'hero_description',
+                'future_lab_image',
+                'future_lab_image_preview',
+                'future_lab_badge',
+            ),
+            'description': 'Customise the main homepage hero banner, including the Future Lab photograph and badge caption.'
+        }),
+        ('Core Pillars (Learn, Connect, Grow)', {
+            'fields': (
+                ('pillar1_title', 'pillar1_description'),
+                ('pillar2_title', 'pillar2_description'),
+                ('pillar3_title', 'pillar3_description'),
+            ),
+            'description': 'Configure the three core pillars displayed on the homepage.'
+        }),
+        ('Homepage Activities Section', {
+            'fields': ('activities_heading', 'activities_subheading'),
+            'description': 'Customise the heading and description for the upcoming activities preview on the homepage.'
+        }),
+        ('Page Headers (Customise All Main Pages)', {
+            'fields': (
+                ('activities_page_title', 'activities_page_lead'),
+                ('challenges_page_title', 'challenges_page_lead'),
+                ('leaderboard_page_title', 'leaderboard_page_lead'),
+                ('executives_page_title', 'executives_page_lead'),
+                ('blog_page_title', 'blog_page_lead'),
+                ('internships_page_title', 'internships_page_lead'),
+                ('clinic_page_title', 'clinic_page_lead'),
+                ('community_page_title', 'community_page_lead'),
+            ),
+            'description': 'Customise the page title and subtitle lead for each top-level public page.'
+        }),
+        ('Community Guidelines Banner', {
+            'fields': ('guidelines_heading', 'guidelines_description', 'guidelines_button_text')
+        }),
+        ('Challenges Highlight Section (Homepage)', {
+            'fields': ('challenges_heading', 'challenges_subheading')
+        }),
+        ('CSS Spotlight & Journal Section', {
+            'fields': ('spotlight_heading', 'spotlight_subheading')
+        }),
+        ('Student Speaker Series Banner', {
+            'fields': ('speaker_series_badge', 'speaker_series_title', 'speaker_series_description')
+        }),
+        ('Newsletter Subscription Box', {
+            'fields': ('newsletter_heading', 'newsletter_subheading')
+        }),
+        ('Contact, Social Links & Footer', {
+            'fields': ('footer_about_text', 'contact_email', 'github_url', 'linkedin_url', 'twitter_url', 'instagram_url')
         }),
     )
+
+    @admin.display(description="Future Lab Image Preview")
+    def future_lab_image_preview(self, obj):
+        if obj and obj.future_lab_image:
+            img_url = obj.future_lab_image.url
+            caption = "Custom uploaded Future Lab image active."
+        else:
+            img_url = static('images/images (1).jpeg')
+            caption = "Default Future Lab image active (/static/images/images (1).jpeg). Upload a new photo above to replace it."
+        return format_html(
+            '<div style="margin-top: 6px;">'
+            '<img src="{}" alt="Future Lab Preview" style="max-height: 220px; max-width: 380px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: block; margin-bottom: 6px;" />'
+            '<span style="font-size: 0.82rem; color: #64748b; font-weight: 500;">{}</span>'
+            '</div>',
+            img_url,
+            caption
+        )
+
+    @admin.display(description="Site Logo Preview")
+    def site_logo_preview(self, obj):
+        if obj and obj.site_logo:
+            img_url = obj.site_logo.url
+            caption = "Custom uploaded logo active."
+        else:
+            img_url = static('images/com.png')
+            caption = "Default CSS logo active (/static/images/com.png). Upload a new logo above to replace it."
+        return format_html(
+            '<div style="margin-top: 6px;">'
+            '<img src="{}" alt="Site Logo Preview" style="max-height: 60px; object-fit: contain; background: #f8fafc; padding: 6px; border: 1px solid #e2e8f0; border-radius: 8px; display: block; margin-bottom: 6px;" />'
+            '<span style="font-size: 0.82rem; color: #64748b; font-weight: 500;">{}</span>'
+            '</div>',
+            img_url,
+            caption
+        )
 
     @admin.display(description='Announcement')
     def announcement_preview(self, obj):

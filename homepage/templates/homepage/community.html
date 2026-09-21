@@ -240,10 +240,10 @@
     <!-- Hero Section -->
     <div class="communities-hero">
         <div class="container text-center">
-            <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="bg-white p-2 rounded-circle shadow-sm mb-3" style="width: 56px; height: 56px; object-fit: contain;">
-            <h1 class="text-center fw-bold">Join a Technical Community</h1>
+            <img src="{% if site_config and site_config.site_logo %}{{ site_config.site_logo.url }}{% else %}{% static 'images/com.png' %}{% endif %}" alt="CSS Logo" class="bg-white p-2 rounded-circle shadow-sm mb-3" style="width: 56px; height: 56px; object-fit: contain;">
+            <h1 class="text-center fw-bold">{{ site_config.community_page_title|default:"Join a Technical Community" }}</h1>
             <p class="text-center subtitle">
-                Explore specialized engineering tracks, participate in hands-on study groups, work on open-source projects, and accelerate your tech career alongside peer builders.
+                {{ site_config.community_page_lead|default:"Explore specialized engineering tracks, participate in hands-on study groups, work on open-source projects, and accelerate your tech career alongside peer builders." }}
             </p>
 
             <!-- Search Bar -->

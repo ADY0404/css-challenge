@@ -7,14 +7,17 @@ from django.views.generic.base import RedirectView
 from homepage import views
 from users.views import login_view, signup_view
 
-# Custom Django Admin Site Branding
+# Custom Django Admin Site Branding & Layout
 admin.site.site_header = "Computer Science Society Administration"
 admin.site.site_title = "CSS Admin Portal"
 admin.site.index_title = "Society Management & Operations Portal"
 
+from homepage.admin_site import setup_custom_admin_dashboard
+setup_custom_admin_dashboard(admin.site)
+
 urlpatterns = [
     path('favicon.ico', RedirectView.as_view(url='/static/images/com.png', permanent=True)),
-    path('admin/', admin.site.urls),
+    path('adcs/', admin.site.urls),
     path('login/', login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
     path('signup/', signup_view, name='signup'),
@@ -55,10 +58,15 @@ urlpatterns = [
     path('terms/', views.info_page, {'page': 'terms'}, name='terms'),
     path('privacy/', views.info_page, {'page': 'privacy'}, name='privacy'),
 
+    # Legacy / exploratory route masks
+    path('home/', RedirectView.as_view(url='/', permanent=False)),
+    path('home/users/', RedirectView.as_view(pattern_name='profile', permanent=False)),
+    path('users/', RedirectView.as_view(pattern_name='profile', permanent=False)),
+
     # App includes
     path('executives/', include('executives.urls', namespace='executives')),
     path('activities/', include('activities.urls', namespace='act')),
-    path('users/', include('users.urls')),
+    path('', include('users.urls')),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

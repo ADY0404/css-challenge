@@ -5,11 +5,11 @@
 <!-- Header Banner -->
 <section class="bg-primary text-white py-5 mb-4">
     <div class="container text-center">
-        <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="img-fluid mb-3 bg-white p-2 rounded-circle shadow-sm" style="width: 58px; height: 58px; object-fit: contain;">
+        <img src="{% if site_config and site_config.site_logo %}{{ site_config.site_logo.url }}{% else %}{% static 'images/com.png' %}{% endif %}" alt="CSS Logo" class="img-fluid mb-3 bg-white p-2 rounded-circle shadow-sm" style="width: 58px; height: 58px; object-fit: contain;">
         <p class="text-uppercase fw-semibold mb-2" style="letter-spacing: .08em;">Computer Science Society</p>
-        <h1 class="display-5 fw-bold">Meet the Executives</h1>
+        <h1 class="display-5 fw-bold">{{ site_config.executives_page_title|default:"Meet the Executives" }}</h1>
         <p class="lead mb-0 mx-auto" style="max-width: 680px;">
-            These passionate leaders guide the society's mission, organize technical programs, foster partnerships, and champion initiatives that benefit our members.
+            {{ site_config.executives_page_lead|default:"These passionate leaders guide the society's mission, organize technical programs, foster partnerships, and champion initiatives that benefit our members." }}
         </p>
     </div>
 </section>

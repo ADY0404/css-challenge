@@ -2,10 +2,13 @@
 {% load static %}
 {% block content %}
 <section class="bg-primary text-white py-5 mb-5">
-    <div class="container">
-        <p class="text-uppercase fw-semibold mb-2" style="letter-spacing: .08em;">Computer Science Society</p>
-        <h1 class="display-5 fw-bold">Activities &amp; events</h1>
-        <p class="lead mb-0">Learn together, meet new people, and put your skills into practice.</p>
+    <div class="container text-center">
+        <div class="d-inline-flex align-items-center gap-2 mb-2 bg-white bg-opacity-10 px-3 py-1 rounded-pill">
+            <img src="{% if site_config and site_config.site_logo %}{{ site_config.site_logo.url }}{% else %}{% static 'images/com.png' %}{% endif %}" alt="CSS Logo" class="bg-white p-1 rounded-circle shadow-sm" style="width: 28px; height: 28px; object-fit: contain;">
+            <span class="text-uppercase fw-semibold small" style="letter-spacing: .08em;">Computer Science Society</span>
+        </div>
+        <h1 class="display-5 fw-bold mt-2">{{ site_config.activities_page_title|default:"Activities &amp; Events" }}</h1>
+        <p class="lead mb-0 mx-auto" style="max-width: 720px;">{{ site_config.activities_page_lead|default:"Learn together, meet new people, and put your skills into practice." }}</p>
     </div>
 </section>
 

@@ -367,9 +367,18 @@ class AdminPortalTests(TestCase):
         self.client.login(username='admin_lead', password='AdminPassword123!')
 
     def test_admin_index_renders_custom_branding(self):
-        resp = self.client.get('/admin/')
+        resp = self.client.get('/adcs/')
         self.assertEqual(resp.status_code, 200)
         self.assertContains(resp, 'Computer Science Society Administration')
+
+    def test_admin_index_renders_organized_sections(self):
+        resp = self.client.get('/adcs/')
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Site Governance &amp; Security')
+        self.assertContains(resp, 'Coding Challenges &amp; Leaderboard')
+        self.assertContains(resp, 'Community Channels &amp; Discussions')
+        self.assertContains(resp, 'Activities, Events &amp; Programs')
+        self.assertContains(resp, 'Career, Clinic &amp; Student Support')
 
     def test_all_models_registered_and_accessible(self):
         from django.contrib import admin
@@ -388,7 +397,7 @@ class AdminPortalTests(TestCase):
             'siteconfiguration',
         ]
         for model_name in registered_models:
-            url = f'/admin/homepage/{model_name}/'
+            url = f'/adcs/homepage/{model_name}/'
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 200, f"Failed to access admin changelist for {model_name}")
 
@@ -401,14 +410,14 @@ class AdminPortalTests(TestCase):
             ('activities', 'program'),
             ('executives', 'executive'),
         ]:
-            url = f'/admin/{app}/{model}/'
+            url = f'/adcs/{app}/{model}/'
             resp = self.client.get(url)
             self.assertEqual(resp.status_code, 200, f"Failed to access admin for {app}.{model}")
 
     def test_user_and_profile_accessible_in_admin(self):
-        resp_user = self.client.get('/admin/auth/user/')
+        resp_user = self.client.get('/adcs/auth/user/')
         self.assertEqual(resp_user.status_code, 200)
-        resp_profile = self.client.get('/admin/users/profile/')
+        resp_profile = self.client.get('/adcs/users/profile/')
         self.assertEqual(resp_profile.status_code, 200)
 
     def test_site_configuration_singleton_and_channel_creation(self):
@@ -421,6 +430,14 @@ class AdminPortalTests(TestCase):
         home_resp = self.client.get(reverse('home'))
         self.assertEqual(home_resp.status_code, 200)
         self.assertContains(home_resp, 'Midsemester Hackathon Registrations Open!')
+
+        # Verify updating page content via SiteConfiguration changes the homepage
+        config.pillar1_title = 'Deep Learning Cohort'
+        config.guidelines_heading = 'Our Sacred Core Values'
+        config.save()
+        home_resp2 = self.client.get(reverse('home'))
+        self.assertContains(home_resp2, 'Deep Learning Cohort')
+        self.assertContains(home_resp2, 'Our Sacred Core Values')
 
         # Test creating a new community channel via admin/ORM
         new_channel = CommunityChannel.objects.create(

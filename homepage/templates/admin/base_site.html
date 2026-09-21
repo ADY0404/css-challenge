@@ -1,0 +1,167 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+  #header {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%) !important;
+    color: #ffffff !important;
+    padding: 14px 32px !important;
+    border-bottom: 2px solid #2563eb !important;
+  }
+  #header #branding h1 {
+    font-size: 1.15rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.3px;
+  }
+  #header #branding h1 a:link, #header #branding h1 a:visited {
+    color: #ffffff !important;
+  }
+  #header #user-tools {
+    font-size: 0.82rem !important;
+  }
+  #header #user-tools a {
+    color: #93c5fd !important;
+    border-bottom: 1px dotted rgba(147, 197, 253, 0.4);
+  }
+  #header #user-tools a:hover {
+    color: #ffffff !important;
+  }
+
+  /* Centered, balanced container across all screen sizes */
+  #container {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  .main {
+    justify-content: center !important;
+    width: 100% !important;
+  }
+  .main > .content {
+    max-width: 1360px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    padding: 24px 32px !important;
+    box-sizing: border-box !important;
+  }
+  #content {
+    width: 100% !important;
+    max-width: 1360px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+  }
+
+  /* Fix dashboard 600px width lock and left-alignment */
+  .dashboard #content {
+    width: 100% !important;
+    max-width: 1360px !important;
+    margin: 0 auto !important;
+  }
+  .dashboard #content.colMS {
+    margin-right: 0 !important;
+  }
+
+  /* Two-column dashboard on larger screens: modules on left/center, recent actions on right */
+  @media (min-width: 1100px) {
+    .dashboard #content.colMS {
+      display: grid !important;
+      grid-template-columns: minmax(0, 1fr) 300px !important;
+      gap: 28px !important;
+      align-items: start !important;
+    }
+    .dashboard #content-related {
+      float: none !important;
+      width: 100% !important;
+      margin-right: 0 !important;
+      position: static !important;
+    }
+  }
+  @media (max-width: 1099px) {
+    .dashboard #content.colMS {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 24px !important;
+    }
+    .dashboard #content-related {
+      float: none !important;
+      width: 100% !important;
+      margin-right: 0 !important;
+      position: static !important;
+    }
+  }
+
+  /* App list cards: multi-column responsive grid instead of stacked narrow column */
+  .dashboard #content-main.app-list {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)) !important;
+    gap: 20px !important;
+    float: none !important;
+    width: 100% !important;
+  }
+
+  .dashboard #content-main .module {
+    margin-bottom: 0 !important;
+  }
+
+  /* Centered changeform and changelist */
+  .change-form #content-main, .change-list #content-main {
+    float: none !important;
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+  .change-form .aligned label {
+    min-width: 180px !important;
+  }
+  .breadcrumbs {
+    max-width: 1360px !important;
+    margin: 0 auto !important;
+    padding: 10px 32px !important;
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    .breadcrumbs {
+      background: #0f172a !important;
+      border-bottom: 1px solid #1e293b !important;
+    }
+  }
+
+  .module caption, .module h2 {
+    font-size: 0.88rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.2px;
+    padding: 10px 16px !important;
+    background: #f1f5f9 !important;
+    color: #0f3460 !important;
+    border-bottom: 2px solid #cbd5e1 !important;
+  }
+  @media (prefers-color-scheme: dark) {
+    .module caption, .module h2 {
+      background: #1e293b !important;
+      color: #93c5fd !important;
+      border-bottom: 2px solid #334155 !important;
+    }
+  }
+  .dashboard .module table {
+    border-radius: 8px !important;
+    overflow: hidden !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+    margin-bottom: 0 !important;
+  }
+  .button, input[type=submit], input[type=button], .submit-row input, a.button {
+    background: #0f3460 !important;
+    border-radius: 5px !important;
+  }
+  .button:hover, input[type=submit]:hover, input[type=button]:hover {
+    background: #16213e !important;
+  }
+  .button.default, input[type=submit].default, .submit-row input.default {
+    background: #2563eb !important;
+  }
+  .button.default:hover, input[type=submit].default:hover {
+    background: #1d4ed8 !important;
+  }
+</style>
+{% endblock %}

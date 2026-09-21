@@ -16,7 +16,11 @@
     <header class="navbar navbar-expand-lg navbar-light bg-light border-bottom sticky-top py-2">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center fw-bold" href="{% url 'home' %}">
-                <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="img-fluid rounded me-2" style="max-height: 40px;">
+                {% if site_config and site_config.site_logo %}
+                    <img src="{{ site_config.site_logo.url }}" alt="{{ site_config.site_name|default:'CSS Logo' }}" class="img-fluid rounded me-2" style="max-height: 40px;">
+                {% else %}
+                    <img src="{% static 'images/com.png' %}" alt="CSS Logo" class="img-fluid rounded me-2" style="max-height: 40px;">
+                {% endif %}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>

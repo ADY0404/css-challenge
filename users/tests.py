@@ -215,7 +215,7 @@ class AuthenticationFlowTests(TestCase):
         self.assertFalse(user.profile.email_verified)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Confirm Ownership of Your Email Address', mail.outbox[0].subject)
-        self.assertIn('/activate/', mail.outbox[0].body)
+        self.assertIn('/u/a-3e7b/', mail.outbox[0].body)
 
     def test_activate_account_valid_token(self):
         new_user = User.objects.create_user(
@@ -411,6 +411,90 @@ class AuthenticationFlowTests(TestCase):
         self.assertRedirects(response, reverse('login'))
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('resend@example.edu', mail.outbox[0].to)
+
+    def test_password_reset_page_renders_username_or_email_options(self):
+        response = self.client.get(reverse('password_reset'))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'opt_email')
+        self.assertContains(response, 'opt_username')
+        self.assertContains(response, 'username_or_email')
+
+    def test_password_reset_by_email_dispatches_email(self):
+        mail.outbox.clear()
+        response = self.client.post(reverse('password_reset'), {
+            'username_or_email': 'student@example.edu',
+        })
+        self.assertRedirects(response, reverse('password_reset_done'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('student@example.edu', mail.outbox[0].to)
+        self.assertIn('password', mail.outbox[0].body.lower())
+        self.assertTrue(any('Reset Password' in alt[0] for alt in getattr(mail.outbox[0], 'alternatives', [])))
+
+    def test_password_reset_by_username_dispatches_to_associated_email(self):
+        mail.outbox.clear()
+        response = self.client.post(reverse('password_reset'), {
+            'username_or_email': 'teststudent',
+        })
+        self.assertRedirects(response, reverse('password_reset_done'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('student@example.edu', mail.outbox[0].to)
+
+    def test_admin_route_is_adcs_and_old_admin_is_404(self):
+        # /adcs/ should render the admin login page
+        resp_adcs = self.client.get('/adcs/')
+        self.assertIn(resp_adcs.status_code, [200, 302])
+        # /admin/ should now return 404
+        resp_old = self.client.get('/admin/')
+        self.assertEqual(resp_old.status_code, 404)
+
+    def test_account_deactivation_with_valid_password(self):
+        self.client.login(username='teststudent', password='Password123!')
+        response = self.client.post(reverse('settings'), {
+            'action': 'deactivate',
+            'confirm_password': 'Password123!',
+        })
+        self.assertRedirects(response, reverse('home'))
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+        # Session is logged out
+        self.assertNotIn('_auth_user_id', self.client.session)
+
+    def test_account_deactivation_fails_with_invalid_password(self):
+        self.client.login(username='teststudent', password='Password123!')
+        response = self.client.post(reverse('settings'), {
+            'action': 'deactivate',
+            'confirm_password': 'WrongPassword!',
+        })
+        self.assertRedirects(response, reverse('settings'))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+
+    def test_deactivated_account_login_is_blocked_with_message(self):
+        self.user.is_active = False
+        self.user.save()
+        cache.clear()
+        response = self.client.post(reverse('login'), {
+            'username': 'teststudent',
+            'password': 'Password123!',
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'This account has been deactivated')
+
+    def test_obfuscated_urls_resolve_properly(self):
+        self.assertEqual(reverse('profile'), '/u/p-8f2a7b/')
+        self.assertEqual(reverse('settings'), '/u/s-4d91ae/')
+        self.assertEqual(reverse('password_reset'), '/u/r-5b2f9a/')
+        self.assertEqual(reverse('member_profile', kwargs={'username': 'teststudent'}), '/u/m-6c3e81/teststudent/')
+
+    def test_legacy_and_home_users_redirect_to_obfuscated_routes(self):
+        resp_home_users = self.client.get('/home/users/')
+        self.assertRedirects(resp_home_users, '/u/p-8f2a7b/', fetch_redirect_response=False)
+
+        resp_old_profile = self.client.get('/users/profile/')
+        self.assertRedirects(resp_old_profile, '/u/p-8f2a7b/', fetch_redirect_response=False)
+
+        resp_old_settings = self.client.get('/users/settings/')
+        self.assertRedirects(resp_old_settings, '/u/s-4d91ae/', fetch_redirect_response=False)
 
 
 

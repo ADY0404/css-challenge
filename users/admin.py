@@ -44,7 +44,13 @@ class CustomUserAdmin(BaseUserAdmin):
         'is_active',
     )
     list_select_related = ('profile',)
-    actions = ['unlock_selected_users', 'lock_selected_users', 'verify_selected_emails']
+    actions = [
+        'unlock_selected_users',
+        'lock_selected_users',
+        'verify_selected_emails',
+        'activate_selected_users',
+        'deactivate_selected_users',
+    ]
 
     @admin.display(description='Department')
     def get_department(self, instance):
@@ -100,6 +106,18 @@ class CustomUserAdmin(BaseUserAdmin):
                 user.profile.save()
         if request:
             self.message_user(request, f"Marked {queryset.count()} users as email verified.")
+
+    @admin.action(description='Deactivate selected user accounts')
+    def deactivate_selected_users(self, request, queryset):
+        count = queryset.update(is_active=False)
+        if request:
+            self.message_user(request, f"Successfully deactivated {count} user accounts.")
+
+    @admin.action(description='Reactivate selected user accounts')
+    def activate_selected_users(self, request, queryset):
+        count = queryset.update(is_active=True)
+        if request:
+            self.message_user(request, f"Successfully reactivated {count} user accounts.")
 
 
 # Re-register UserAdmin

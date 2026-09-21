@@ -33,9 +33,13 @@
             </div>
             <div class="col-lg-5">
                 <div class="position-relative">
-                    <img src="{% static 'images/images (1).jpeg' %}" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
+                    {% if site_config and site_config.future_lab_image %}
+                        <img src="{{ site_config.future_lab_image.url }}" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
+                    {% else %}
+                        <img src="{% static 'images/images (1).jpeg' %}" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
+                    {% endif %}
                     <div class="position-absolute bottom-0 start-0 m-3 px-3 py-2 bg-dark bg-opacity-75 text-white rounded-3 small">
-                        <i class="bi bi-geo-alt-fill text-warning me-1"></i> Future Lab &middot; Ideas Happen Here
+                        <i class="bi bi-geo-alt-fill text-warning me-1"></i> {{ site_config.future_lab_badge|default:"Future Lab &middot; Ideas Happen Here" }}
                     </div>
                 </div>
             </div>
@@ -50,8 +54,8 @@
                     <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary mb-3" style="width: 56px; height: 56px;">
                         <i class="bi bi-journal-code fs-3"></i>
                     </div>
-                    <h3 class="h5 fw-bold">Learn</h3>
-                    <p class="text-secondary small mb-0">Follow curated tracks from beginner syntax to production system architecture and cloud deployments.</p>
+                    <h3 class="h5 fw-bold">{{ site_config.pillar1_title|default:"Learn" }}</h3>
+                    <p class="text-secondary small mb-0">{{ site_config.pillar1_description|default:"Follow curated tracks from beginner syntax to production system architecture and cloud deployments." }}</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -59,8 +63,8 @@
                     <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success mb-3" style="width: 56px; height: 56px;">
                         <i class="bi bi-people fs-3"></i>
                     </div>
-                    <h3 class="h5 fw-bold">Connect</h3>
-                    <p class="text-secondary small mb-0">Network with senior mentors, alumni engineers, and like-minded peers who share your career ambitions.</p>
+                    <h3 class="h5 fw-bold">{{ site_config.pillar2_title|default:"Connect" }}</h3>
+                    <p class="text-secondary small mb-0">{{ site_config.pillar2_description|default:"Network with senior mentors, alumni engineers, and like-minded peers who share your career ambitions." }}</p>
                 </div>
             </div>
             <div class="col-md-4">
@@ -68,8 +72,8 @@
                     <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-warning-subtle text-warning mb-3" style="width: 56px; height: 56px;">
                         <i class="bi bi-rocket-takeoff fs-3"></i>
                     </div>
-                    <h3 class="h5 fw-bold">Grow</h3>
-                    <p class="text-secondary small mb-0">Expand your portfolio through hackathons, student tech clinics, and verified challenge submissions.</p>
+                    <h3 class="h5 fw-bold">{{ site_config.pillar3_title|default:"Grow" }}</h3>
+                    <p class="text-secondary small mb-0">{{ site_config.pillar3_description|default:"Expand your portfolio through hackathons, student tech clinics, and verified challenge submissions." }}</p>
                 </div>
             </div>
         </div>
@@ -80,8 +84,8 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <h2 class="h3 fw-bold mb-1">Upcoming Activities</h2>
-                    <p class="text-muted small mb-0">Workshops, study jams, and community sessions.</p>
+                    <h2 class="h3 fw-bold mb-1">{{ site_config.activities_heading|default:"Upcoming Activities" }}</h2>
+                    <p class="text-muted small mb-0">{{ site_config.activities_subheading|default:"Workshops, study jams, and community sessions." }}</p>
                 </div>
                 <a href="{% url 'act:activities_list' %}" class="btn btn-outline-primary btn-sm">View All Activities</a>
             </div>
@@ -128,12 +132,12 @@
     <!-- Society Guidelines Banner -->
     <section class="bg-primary text-white text-center py-5">
         <div class="container py-2">
-            <h2 class="fw-bold mb-2">Society Guidelines &amp; Community Norms</h2>
+            <h2 class="fw-bold mb-2">{{ site_config.guidelines_heading|default:"Society Guidelines & Community Norms" }}</h2>
             <p class="mx-auto mb-4 text-white-50" style="max-width: 620px;">
-                We maintain an inclusive, supportive, and harassment-free environment for all computer science students across all physical and digital spaces.
+                {{ site_config.guidelines_description|default:"We maintain an inclusive, supportive, and harassment-free environment for all computer science students across all physical and digital spaces." }}
             </p>
             <a href="{% url 'guidelines' %}" class="btn btn-light fw-semibold text-primary px-4 py-2 shadow-sm">
-                Read Community Guidelines
+                {{ site_config.guidelines_button_text|default:"Read Community Guidelines" }}
             </a>
         </div>
     </section>
@@ -151,12 +155,12 @@
                 <img src="{% static 'images/man6.jpg' %}" alt="Member" class="rounded-circle shadow-sm border border-2 border-white" style="width: 56px; height: 56px; object-fit: cover;">
             </div>
 
-            <h2 class="h2 fw-bold text-dark mb-2">Hands-on Coding Challenges</h2>
+            <h2 class="h2 fw-bold text-dark mb-2">{{ site_config.challenges_heading|default:"Hands-on Coding Challenges" }}</h2>
             <p class="lead text-secondary mx-auto mb-4" style="max-width: 600px;">
                 {% if featured_challenge %}
                     Current Featured: <strong>{{ featured_challenge.title }}</strong> &middot; {{ featured_challenge.deadline_text }}
                 {% else %}
-                    Sharpen your practical skills, build real projects, and showcase your code.
+                    {{ site_config.challenges_subheading|default:"Sharpen your practical skills, build real projects, and showcase your code." }}
                 {% endif %}
             </p>
             <a href="{% url 'challenge' %}" class="btn btn-primary px-4 py-2 fw-semibold">View Active Challenges</a>
@@ -167,8 +171,8 @@
     <section class="container my-5 py-3">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="h3 fw-bold mb-1">CSS Spotlight &amp; Journal</h2>
-                <p class="text-muted small mb-0">Insights, project writeups, and student reflections.</p>
+                <h2 class="h3 fw-bold mb-1">{{ site_config.spotlight_heading|default:"CSS Spotlight & Journal" }}</h2>
+                <p class="text-muted small mb-0">{{ site_config.spotlight_subheading|default:"Insights, project writeups, and student reflections." }}</p>
             </div>
             <a href="{% url 'blog' %}" class="btn btn-outline-primary btn-sm">View All Stories</a>
         </div>
@@ -228,9 +232,9 @@
                     <img src="{% static 'images/images.jpeg' %}" alt="CSS Student Speaker" class="rounded-4 shadow-sm" style="width: 140px; height: 100px; object-fit: cover;">
                 </div>
                 <div class="col-md">
-                    <span class="badge bg-primary-subtle text-primary fw-semibold mb-1">Speaker Series</span>
-                    <h4 class="h5 fw-bold mb-1">Tell Your Story &middot; Bi-Weekly Student Stage</h4>
-                    <p class="text-secondary small mb-0">Hear how fellow CS students build notable projects, secure internships, and prepare for tech careers.</p>
+                    <span class="badge bg-primary-subtle text-primary fw-semibold mb-1">{{ site_config.speaker_series_badge|default:"Speaker Series" }}</span>
+                    <h4 class="h5 fw-bold mb-1">{{ site_config.speaker_series_title|default:"Tell Your Story &middot; Bi-Weekly Student Stage" }}</h4>
+                    <p class="text-secondary small mb-0">{{ site_config.speaker_series_description|default:"Hear how fellow CS students build notable projects, secure internships, and prepare for tech careers." }}</p>
                 </div>
                 <div class="col-md-auto">
                     <a href="{% url 'programs' %}" class="btn btn-outline-primary btn-sm">Explore Programs</a>
@@ -242,8 +246,8 @@
     <!-- Newsletter Section -->
     <section class="bg-primary text-white py-5">
         <div class="container text-center">
-            <h2 class="fw-bold mb-1">Subscribe to the CSS Newsletter</h2>
-            <p class="text-white-50 mb-4">Stay updated on weekly challenge releases, campus workshops, and internship openings.</p>
+            <h2 class="fw-bold mb-1">{{ site_config.newsletter_heading|default:"Subscribe to the CSS Newsletter" }}</h2>
+            <p class="text-white-50 mb-4">{{ site_config.newsletter_subheading|default:"Stay updated on weekly challenge releases, campus workshops, and internship openings." }}</p>
             <form method="post" action="{% url 'newsletter_subscribe' %}" class="d-flex justify-content-center mt-3 mx-auto" style="max-width: 520px;">
                 {% csrf_token %}
                 <input type="email" name="email" class="form-control me-2" placeholder="Enter your student email" required>
@@ -262,7 +266,7 @@
                         <h5 class="fw-bold mb-0">Computer Science Society</h5>
                     </div>
                     <p class="text-secondary small mb-3">
-                        The official student computing organization supporting student engineers, developers, and researchers.
+                        {{ site_config.footer_about_text|default:"The official student computing organization supporting student engineers, developers, and researchers." }}
                     </p>
                     <div class="d-flex gap-3 fs-5 text-primary">
                         <a href="{{ site_config.github_url|default:'https://github.com' }}" target="_blank" class="text-decoration-none text-primary" aria-label="CSS GitHub"><i class="bi bi-github"></i></a>

@@ -656,13 +656,13 @@
         {% endif %}
 
         row.innerHTML = `
-            <a href="/users/member/${escapeHtml(msg.username)}/" class="text-decoration-none me-3" title="View ${escapeHtml(msg.username)}'s profile">
+            <a href="/u/m-6c3e81/${escapeHtml(msg.username)}/" class="text-decoration-none me-3" title="View ${escapeHtml(msg.username)}'s profile">
                 ${avatarHtml}
             </a>
             <div class="flex-grow-1">
                 <div class="d-flex align-items-center justify-content-between mb-1">
                     <p class="mb-0">
-                        <a href="/users/member/${escapeHtml(msg.username)}/" class="msg-author text-decoration-none text-dark" title="View profile">
+                        <a href="/u/m-6c3e81/${escapeHtml(msg.username)}/" class="msg-author text-decoration-none text-dark" title="View profile">
                             ${escapeHtml(msg.full_name || msg.username)}
                         </a>
                         ${deptHtml}
