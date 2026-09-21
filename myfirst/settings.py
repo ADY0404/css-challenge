@@ -134,16 +134,38 @@ WSGI_APPLICATION = 'myfirst.wsgi.application'
 
 
 # Database
-# https://docs.djangoproject.com/en/4.2/ref/settings/#databases
+# ─────────────────────────────────────────────────────────────────────────────
+# Production (Render): set the DATABASE_URL environment variable to the
+# internal connection string from your Render PostgreSQL database.
+# Local development: falls back to SQLite so no extra setup is needed.
+DATABASE_URL = config('DATABASE_URL', default='')
 
-# TODO(security-audit): SQLite on Render is ephemeral without persistent disks.
-# In production, migrate to managed PostgreSQL (e.g., Render Postgres) to prevent data loss across deploys.
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DATABASE_URL:
+    # Parse postgres://user:pass@host:port/dbname  (Render provides this format)
+    import urllib.parse as _urlparse
+    _url = _urlparse.urlparse(DATABASE_URL)
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': _url.path.lstrip('/'),
+            'USER': _url.username,
+            'PASSWORD': _url.password,
+            'HOST': _url.hostname,
+            'PORT': _url.port or 5432,
+            'OPTIONS': {
+                'sslmode': 'require',   # Render requires SSL on external connections
+            },
+            'CONN_MAX_AGE': 60,         # Reuse connections for 60 s (reduces overhead)
+        }
     }
-}
+else:
+    # Local development — SQLite, no extra setup needed
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -206,21 +228,28 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_REDIRECT_URL = ''
 LOGIN_URL = 'login'
 
-# Password-reset mail is printed in the runserver console unless a Resend API
-# key is supplied through the environment. The key is never stored in source.
-RESEND_API_KEY = config('RESEND_API_KEY', default='')
+# ─── Email Configuration ────────────────────────────────────────────────────
+# Brevo (formerly Sendinblue) SMTP relay is used for transactional emails.
+# Set BREVO_API_KEY and BREVO_SMTP_LOGIN in your .env to enable real sending.
+# Without the key the app falls back to console output (safe for local dev).
+BREVO_API_KEY = config('BREVO_API_KEY', default='')
+BREVO_SMTP_LOGIN = config('BREVO_SMTP_LOGIN', default='')
 
-if RESEND_API_KEY:
-    # Resend SMTP: https://resend.com/docs/send-with-smtp
+if BREVO_API_KEY and BREVO_SMTP_LOGIN:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.resend.com'
-    EMAIL_PORT = 465
-    EMAIL_HOST_USER = 'resend'
-    EMAIL_HOST_PASSWORD = RESEND_API_KEY
-    EMAIL_USE_SSL = True
-    EMAIL_USE_TLS = False
-    DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='CSS <onboarding@resend.dev>')
+    EMAIL_HOST = 'smtp-relay.brevo.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+    EMAIL_USE_SSL = False
+    EMAIL_HOST_USER = BREVO_SMTP_LOGIN    # Your Brevo account email address
+    EMAIL_HOST_PASSWORD = BREVO_API_KEY   # Your Brevo SMTP key (from Brevo → SMTP & API)
+    DEFAULT_FROM_EMAIL = config(
+        'DEFAULT_FROM_EMAIL',
+        default=f'CSS Society <{BREVO_SMTP_LOGIN}>'
+    )
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
 else:
+    # Fallback: print emails to terminal during local dev; require SMTP in prod
     EMAIL_BACKEND = config(
         'EMAIL_BACKEND',
         default=(
@@ -229,10 +258,13 @@ else:
             else 'django.core.mail.backends.smtp.EmailBackend'
         ),
     )
-    EMAIL_HOST = config('EMAIL_HOST', default='localhost')
-    EMAIL_PORT = config('EMAIL_PORT', default=25, cast=int)
+    EMAIL_HOST = config('EMAIL_HOST', default='smtp-relay.brevo.com')
+    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@localhost')
+    SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 
 # reCAPTCHA Configuration

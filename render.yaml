@@ -11,4 +11,11 @@ services:
         generateValue: true
       - key: WEB_CONCURRENCY
         value: "4"
-
+        fromDatabase:
+          name: css-society-db
+          property: connectionString
+databases:
+  - name: css-society-db
+    databaseName: css_society
+    user: css_society
+    plan: free
