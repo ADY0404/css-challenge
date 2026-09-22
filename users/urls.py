@@ -10,6 +10,7 @@ from .views import (
     member_profile,
     activate_account,
     resend_verification,
+    email_verification_pending,
     CustomPasswordResetConfirmView,
 )
 
@@ -20,6 +21,7 @@ urlpatterns = [
     path("u/m-6c3e81/<str:username>/", member_profile, name="member_profile"),
     path("u/a-3e7b/<str:uidb64>/<str:token>/", activate_account, name="activate_account"),
     path("u/v-9c2a/", resend_verification, name="resend_verification"),
+    path("u/v-pending/", email_verification_pending, name="email_verification_pending"),
     path(
         "u/r-5b2f9a/",
         auth_views.PasswordResetView.as_view(

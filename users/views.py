@@ -11,6 +11,7 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail, EmailMultiAlternatives
+from django.template.loader import render_to_string
 from django.conf import settings
 from django.urls import reverse
 from .forms import SignUpForm
@@ -39,78 +40,16 @@ def send_verification_email(request, user):
     activation_url = request.build_absolute_uri(
         reverse('activate_account', kwargs={'uidb64': uidb64, 'token': token})
     )
-    display_name = user.first_name or user.username
     subject = "Confirm Ownership of Your Email Address - CSS Society"
     from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@localhost')
 
-    # Plain-text fallback
-    text_body = (
-        f"Hi {display_name},\n\n"
-        f"Thank you for joining the Computer Science Society!\n\n"
-        f"Please confirm your email address by visiting this link:\n"
-        f"{activation_url}\n\n"
-        f"This link expires in 24 hours.\n"
-        f"If you didn't create this account, you can safely ignore this email.\n\n"
-        f"Best regards,\nComputer Science Society Team"
-    )
+    context = {
+        'user': user,
+        'activation_url': activation_url,
+    }
 
-    # HTML body — gradient header, button + fallback link, plain expiry, proper footer
-    html_body = f"""<!DOCTYPE html>
-<html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Confirm Your Email</title></head>
-<body style="margin:0;padding:0;background:#f0f0f0;font-family:Arial,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;background:#f0f0f0;">
-  <tr><td align="center">
-    <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;max-width:560px;width:100%;">
-      <!-- Gradient header -->
-      <tr>
-        <td style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 60%,#0f3460 100%);padding:32px 40px;text-align:center;">
-          <h1 style="margin:0;color:#ffffff;font-size:20px;font-weight:700;">Computer Science Society</h1>
-          <p style="margin:6px 0 0;color:#a0aec0;font-size:12px;">Email Verification</p>
-        </td>
-      </tr>
-      <!-- Body -->
-      <tr>
-        <td style="padding:36px 40px 28px;">
-          <p style="margin:0 0 16px;font-size:15px;color:#222222;line-height:1.6;">Hi {display_name},</p>
-          <p style="margin:0 0 28px;font-size:15px;color:#444444;line-height:1.7;">
-            Thanks for signing up. Click below to confirm your email and activate your account.
-          </p>
-          <table cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="background:#0f3460;border-radius:6px;">
-                <a href="{activation_url}" target="_blank"
-                   style="display:inline-block;padding:12px 28px;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;border-radius:6px;">
-                  Confirm Email
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="margin:20px 0 0;font-size:13px;color:#888888;word-break:break-all;">
-            Or copy this link into your browser:<br/>
-            <a href="{activation_url}" style="color:#0f3460;font-size:12px;">{activation_url}</a>
-          </p>
-          <p style="margin:20px 0 0;font-size:13px;color:#888888;">
-            This link expires in 24 hours. If you didn't sign up, just ignore this.
-          </p>
-        </td>
-      </tr>
-      <!-- Footer -->
-      <tr>
-        <td style="background:#f7fafc;border-top:1px solid #e2e8f0;padding:20px 40px;text-align:center;">
-          <p style="margin:0 0 4px;color:#718096;font-size:12px;">
-            This email was sent to <strong>{user.email}</strong>
-          </p>
-          <p style="margin:0;color:#a0aec0;font-size:11px;">
-            &copy; Computer Science Society &nbsp;&middot;&nbsp; All rights reserved
-          </p>
-        </td>
-      </tr>
-    </table>
-  </td></tr>
-</table>
-</body></html>"""
+    text_body = render_to_string("users/email_verification.txt", context, request=request)
+    html_body = render_to_string("users/email_verification.html", context, request=request)
 
     logger.info("Dispatching email verification to '%s' (user: %s).", user.email, user.username)
     try:
@@ -271,19 +210,49 @@ def signup_view(request):
             profile.email_verified = False
             profile.save()
 
-            # Dispatch ownership confirmation email
-            send_verification_email(request, user)
+            # Check if email verification is required before granting access
+            require_verification = True
+            try:
+                from homepage.models import SiteConfiguration
+                site_config = SiteConfiguration.get_solo()
+                if site_config:
+                    require_verification = site_config.require_email_verification
+            except Exception:
+                pass
 
-            login(request, user)
-            logger.info("New user '%s' signed up successfully. Verification email dispatched.", user.username)
-            messages.success(request, "Your account has been created. A verification link has been sent to confirm email ownership!")
-            return redirect("home")
+            if require_verification:
+                send_verification_email(request, user)
+                request.session['pending_verification_email'] = user.email
+                logger.info("New user '%s' signed up successfully. Verification email dispatched.", user.username)
+                messages.success(request, "Your account has been created! Kindly confirm your email to activate your account.")
+                return redirect("email_verification_pending")
+            else:
+                profile.email_verified = True
+                profile.save()
+                login(request, user)
+                logger.info("New user '%s' signed up and logged in (email verification disabled).", user.username)
+                messages.success(request, f"Welcome to the Computer Science Society, {user.first_name or user.username}!")
+                return redirect("home")
         else:
             # Form validation errors are displayed inline with each form field inside signup.html
             pass
     else:
         form = SignUpForm()
     return render(request, "users/signup.html", {"form": form})
+
+
+def email_verification_pending(request):
+    """Display an instruction screen requesting the user to confirm their email before gaining access."""
+    if request.user.is_authenticated:
+        profile = getattr(request.user, 'profile', None)
+        if profile and profile.email_verified:
+            return redirect("home")
+
+    email = request.session.get('pending_verification_email', '')
+    if not email and request.GET.get('email'):
+        email = request.GET.get('email').strip()
+
+    return render(request, "users/email_confirmation_pending.html", {"email": email})
 
 
 class CustomPasswordResetConfirmView(auth_views.PasswordResetConfirmView):
@@ -361,25 +330,33 @@ def resend_verification(request):
 
     # Unauthenticated user requesting a verification link
     email = (request.POST.get('email', '') or request.GET.get('email', '')).strip()
+    next_dest = request.META.get('HTTP_REFERER') or "login"
     if email:
         try:
             target_user = User.objects.filter(email__iexact=email).first()
+            if not target_user:
+                target_user = User.objects.filter(username__iexact=email).first()
             if target_user:
                 target_profile, _ = Profile.objects.get_or_create(user=target_user)
                 if target_profile.email_verified:
                     messages.info(request, "Your email address is already verified. You can log in directly.")
+                    return redirect("login")
                 else:
                     send_verification_email(request, target_user)
+                    request.session['pending_verification_email'] = target_user.email
                     messages.success(request, f"A new verification link has been sent to {target_user.email}.")
+                    return redirect(next_dest)
             else:
                 messages.info(request, "If an account exists with that email address, a verification link has been sent.")
+                return redirect(next_dest)
         except Exception as e:
             logger.exception("Error resending verification email: %s", e)
             messages.error(request, "Unable to send verification email. Please try again later.")
+            return redirect(next_dest)
     else:
         messages.warning(request, "Please provide your email address to receive a verification link.")
 
-    return redirect("login")
+    return redirect(next_dest)
 
 
 

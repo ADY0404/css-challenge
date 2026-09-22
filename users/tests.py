@@ -33,7 +33,7 @@ class AuthenticationFlowTests(TestCase):
     def tearDown(self):
         cache.clear()
 
-    def test_signup_creates_user_profile_and_signs_user_in(self):
+    def test_signup_creates_user_profile_and_redirects_to_verification_pending(self):
         response = self.client.post(reverse('signup'), {
             'first_name': 'Ada',
             'last_name': 'Lovelace',
@@ -44,10 +44,12 @@ class AuthenticationFlowTests(TestCase):
             'password2': 'A-secure-password-123',
         })
 
-        self.assertRedirects(response, reverse('home'))
+        self.assertRedirects(response, reverse('email_verification_pending'))
         user = User.objects.get(username='ada')
         self.assertTrue(Profile.objects.filter(user=user, year=2).exists())
-        self.assertEqual(self.client.session['_auth_user_id'], str(user.pk))
+        self.assertFalse(user.profile.email_verified)
+        self.assertNotIn('_auth_user_id', self.client.session)
+        self.assertEqual(self.client.session['pending_verification_email'], 'ada@example.com')
 
     def test_login_and_logout(self):
         # Successful login
@@ -210,12 +212,27 @@ class AuthenticationFlowTests(TestCase):
             'password1': 'SafePassword123!',
             'password2': 'SafePassword123!',
         })
-        self.assertRedirects(response, reverse('home'))
+        self.assertRedirects(response, reverse('email_verification_pending'))
         user = User.objects.get(username='kjohnson')
         self.assertFalse(user.profile.email_verified)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Confirm Ownership of Your Email Address', mail.outbox[0].subject)
         self.assertIn('/u/a-3e7b/', mail.outbox[0].body)
+
+        # Test the email confirmation pending page renders cleanly
+        pending_resp = self.client.get(reverse('email_verification_pending'))
+        self.assertEqual(pending_resp.status_code, 200)
+        self.assertContains(pending_resp, "Kindly Confirm Your Email")
+        self.assertContains(pending_resp, "kjohnson@example.edu")
+
+        # Test resending verification with pending page referer stays on pending page
+        resend_resp = self.client.post(
+            reverse('resend_verification'),
+            {'email': 'kjohnson@example.edu'},
+            HTTP_REFERER=reverse('email_verification_pending')
+        )
+        self.assertRedirects(resend_resp, reverse('email_verification_pending'))
+        self.assertEqual(len(mail.outbox), 2)
 
     def test_activate_account_valid_token(self):
         new_user = User.objects.create_user(

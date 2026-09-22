@@ -1,0 +1,54 @@
+{% extends "homepage/base.html" %}
+{% load static %}
+
+{% block title %}Kindly Confirm Your Email | Computer Science Society{% endblock %}
+
+{% block content %}
+<main class="container my-5 d-flex justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="card border-0 shadow-sm p-4 p-md-5 text-center" style="width: 100%; max-width: 500px; border-radius: 16px; background-color: #FFFFFF;">
+        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary mx-auto mb-3" style="width: 68px; height: 68px;">
+            <i class="bi bi-envelope-check-fill fs-1"></i>
+        </div>
+        
+        <h2 class="fw-bold mb-2 text-dark" style="font-size: 1.5rem;">Kindly Confirm Your Email</h2>
+        
+        <p class="text-secondary small mb-3 lh-base">
+            {% if email %}
+                We've sent an account activation link to <strong class="text-dark">{{ email }}</strong>.<br>
+            {% else %}
+                We've sent an account activation link to your email address.<br>
+            {% endif %}
+            Please check your inbox (and spam folder) and click the confirmation link to activate your account.
+        </p>
+
+        <div class="alert alert-light border small text-muted text-start mb-4 py-2 px-3" style="border-radius: 10px; background-color: #f8fafc;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-shield-lock text-primary fs-5 me-2"></i>
+                <div>
+                    Account activation is required before you can sign in and access student challenges, events, and society resources.
+                </div>
+            </div>
+        </div>
+
+        <div class="d-grid gap-2 mb-3">
+            {% if email %}
+            <form method="POST" action="{% url 'resend_verification' %}">
+                {% csrf_token %}
+                <input type="hidden" name="email" value="{{ email }}">
+                <button type="submit" class="btn btn-outline-primary w-100 py-2 fw-semibold">
+                    <i class="bi bi-arrow-repeat me-1"></i> Resend Verification Email
+                </button>
+            </form>
+            {% endif %}
+            <a class="btn btn-primary py-2 fw-semibold" href="{% url 'login' %}">
+                Return to Sign In
+            </a>
+        </div>
+
+        <p class="text-muted small mt-3 mb-0" style="font-size: 0.8rem;">
+            Didn't receive the email? Please wait a minute, check your spam or junk folder, or request another link above.
+        </p>
+    </div>
+</main>
+{% endblock %}
+

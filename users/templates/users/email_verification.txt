@@ -1,0 +1,12 @@
+Hello {{ user.first_name|default:user.username }},
+
+Thank you for joining the Computer Science Society!
+
+Click the link below to confirm your email address and activate your account:
+{{ activation_url }}
+
+This link will expire in 24 hours. If you did not create an account, you can safely ignore this email.
+
+Best regards,
+Computer Science Society Team
+
