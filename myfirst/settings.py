@@ -135,12 +135,65 @@ WSGI_APPLICATION = 'myfirst.wsgi.application'
 
 # Database
 # ─────────────────────────────────────────────────────────────────────────────
-# Production (Render): set the DATABASE_URL environment variable to the
-# internal connection string from your Render PostgreSQL database.
-# Local development: falls back to SQLite so no extra setup is needed.
+# Supports MariaDB, MySQL, PostgreSQL, and SQLite:
+# - MariaDB / MySQL: set DATABASE_URL (e.g. mysql://user:pass@host:3306/dbname)
+#   or MARIADB_NAME, MARIADB_USER, MARIADB_PASSWORD, MARIADB_HOST, MARIADB_PORT
+# - PostgreSQL: set DATABASE_URL (e.g. postgres://user:pass@host:5432/dbname)
+# - Default fallback: SQLite (db.sqlite3) for local development
 DATABASE_URL = config('DATABASE_URL', default='')
+DB_ENGINE = config('DB_ENGINE', default='').lower()
 
-if DATABASE_URL:
+if DATABASE_URL.startswith(('mysql://', 'mariadb://')) or DB_ENGINE in ('mysql', 'mariadb'):
+    try:
+        import pymysql
+        pymysql.install_as_MySQLdb()
+    except ImportError:
+        pass
+    import urllib.parse as _urlparse
+    if DATABASE_URL:
+        _clean_url = DATABASE_URL
+        if _clean_url.startswith('mariadb://'):
+            _clean_url = 'mysql://' + _clean_url[len('mariadb://'):]
+        _url = _urlparse.urlparse(_clean_url)
+        _db_name = _urlparse.unquote(_url.path.lstrip('/'))
+        _db_user = _urlparse.unquote(_url.username or '')
+        _db_password = _urlparse.unquote(_url.password or '')
+        _db_host = _url.hostname or '127.0.0.1'
+        _db_port = _url.port or 3306
+    else:
+        _db_name = config('MARIADB_NAME', default=config('MYSQL_NAME', default='css_challenge'))
+        _db_user = config('MARIADB_USER', default=config('MYSQL_USER', default='root'))
+        _db_password = config('MARIADB_PASSWORD', default=config('MYSQL_PASSWORD', default=''))
+        _db_host = config('MARIADB_HOST', default=config('MYSQL_HOST', default='127.0.0.1'))
+        _db_port = config('MARIADB_PORT', default=config('MYSQL_PORT', default=3306, cast=int))
+
+    _mariadb_options = {
+        'charset': 'utf8mb4',
+        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+    }
+    _use_ssl = config('MARIADB_SSL', default=False, cast=bool)
+    if DATABASE_URL and ('ssl' in _clean_url.lower() or 'skysql' in _db_host.lower() or 'mariadb.com' in _db_host.lower()):
+        _use_ssl = True
+    if _use_ssl:
+        _ssl_dict = {}
+        _ca_cert = config('MARIADB_SSL_CA', default='')
+        if _ca_cert:
+            _ssl_dict['ca'] = _ca_cert
+        _mariadb_options['ssl'] = _ssl_dict
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': _db_name,
+            'USER': _db_user,
+            'PASSWORD': _db_password,
+            'HOST': _db_host,
+            'PORT': _db_port,
+            'OPTIONS': _mariadb_options,
+            'CONN_MAX_AGE': 60,
+        }
+    }
+elif DATABASE_URL.startswith(('postgres://', 'postgresql://')):
     # Parse postgres://user:pass@host:port/dbname  (Render provides this format)
     import urllib.parse as _urlparse
     _url = _urlparse.urlparse(DATABASE_URL)
@@ -159,13 +212,32 @@ if DATABASE_URL:
         }
     }
 else:
-    # Local development — SQLite, no extra setup needed
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+    # Check for direct MariaDB / MySQL configuration via environment variables
+    _mariadb_name = config('MARIADB_NAME', default=config('MYSQL_NAME', default=''))
+    if _mariadb_name:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': _mariadb_name,
+                'USER': config('MARIADB_USER', default=config('MYSQL_USER', default='root')),
+                'PASSWORD': config('MARIADB_PASSWORD', default=config('MYSQL_PASSWORD', default='')),
+                'HOST': config('MARIADB_HOST', default=config('MYSQL_HOST', default='127.0.0.1')),
+                'PORT': config('MARIADB_PORT', default=config('MYSQL_PORT', default=3306, cast=int)),
+                'OPTIONS': {
+                    'charset': 'utf8mb4',
+                    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                },
+                'CONN_MAX_AGE': 60,
+            }
         }
-    }
+    else:
+        # Local development fallback — SQLite, no extra setup needed
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
+            }
+        }
 
 
 # Password validation
