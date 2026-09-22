@@ -15,6 +15,7 @@ from django.conf import settings
 from django.urls import reverse
 from .forms import SignUpForm
 from .models import Profile
+from .tokens import email_verification_token_generator
 from homepage.validators import validate_image_upload
 from homepage.ratelimit import ratelimit, get_client_ip
 from homepage.recaptcha import verify_recaptcha
@@ -33,7 +34,7 @@ def _send_email_async(msg, recipient_email):
 
 def send_verification_email(request, user):
     """Generate a secure verification token and send a branded HTML confirmation email."""
-    token = default_token_generator.make_token(user)
+    token = email_verification_token_generator.make_token(user)
     uidb64 = urlsafe_base64_encode(force_bytes(user.pk))
     activation_url = request.build_absolute_uri(
         reverse('activate_account', kwargs={'uidb64': uidb64, 'token': token})
@@ -324,17 +325,26 @@ def activate_account(request, uidb64, token):
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         user = None
 
-    if user is not None and default_token_generator.check_token(user, token):
+    if user is not None:
         profile, _ = Profile.objects.get_or_create(user=user)
-        profile.email_verified = True
-        profile.save()
-        messages.success(request, "Your email has been verified successfully! Welcome to CSS.")
-        if not request.user.is_authenticated:
-            login(request, user)
-        return redirect("home")
-    else:
-        messages.error(request, "The activation link is invalid or has expired.")
-        return redirect("login")
+        # If the account has already been verified, inform the user and log them in
+        if profile.email_verified:
+            messages.info(request, "Your email address has already been verified! Welcome back.")
+            if not request.user.is_authenticated:
+                login(request, user)
+            return redirect("home")
+
+        # Validate token using dedicated email verification generator or fallback to default
+        if email_verification_token_generator.check_token(user, token) or default_token_generator.check_token(user, token):
+            profile.email_verified = True
+            profile.save()
+            messages.success(request, "Your email has been verified successfully! Welcome to CSS.")
+            if not request.user.is_authenticated:
+                login(request, user)
+            return redirect("home")
+
+    messages.error(request, "The activation link is invalid or has expired.")
+    return redirect("login")
 
 
 @ratelimit(rate='3/h', action='resend_verification')

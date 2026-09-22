@@ -235,6 +235,29 @@ class AuthenticationFlowTests(TestCase):
         profile.refresh_from_db()
         self.assertTrue(profile.email_verified)
 
+    def test_activate_account_after_login_succeeds(self):
+        """Verify activation token remains valid even after user logs in and last_login updates."""
+        from users.tokens import email_verification_token_generator
+        new_user = User.objects.create_user(
+            username='adabugfix',
+            email='adabugfix@example.edu',
+            password='Password123!',
+        )
+        profile = Profile.objects.create(user=new_user, year=2)
+        self.assertFalse(profile.email_verified)
+
+        uidb64 = urlsafe_base64_encode(force_bytes(new_user.pk))
+        token = email_verification_token_generator.make_token(new_user)
+
+        # User logs in, updating last_login
+        self.client.login(username='adabugfix', password='Password123!')
+
+        activate_url = reverse('activate_account', kwargs={'uidb64': uidb64, 'token': token})
+        response = self.client.get(activate_url)
+        self.assertRedirects(response, reverse('home'))
+        profile.refresh_from_db()
+        self.assertTrue(profile.email_verified)
+
     def test_activate_account_invalid_token(self):
         new_user = User.objects.create_user(
             username='hedy',
