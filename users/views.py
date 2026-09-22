@@ -1,4 +1,5 @@
 import logging
+import threading
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, update_session_auth_hash
 from django.contrib.auth.models import User
@@ -19,6 +20,15 @@ from homepage.ratelimit import ratelimit, get_client_ip
 from homepage.recaptcha import verify_recaptcha
 
 logger = logging.getLogger(__name__)
+
+
+def _send_email_async(msg, recipient_email):
+    """Background worker that delivers transactional emails without blocking the web worker thread."""
+    try:
+        msg.send(fail_silently=False)
+        logger.info("Verification email delivered successfully to '%s'.", recipient_email)
+    except Exception as exc:
+        logger.error("Failed to deliver verification email to '%s': %s", recipient_email, exc)
 
 
 def send_verification_email(request, user):
@@ -105,10 +115,14 @@ def send_verification_email(request, user):
     try:
         msg = EmailMultiAlternatives(subject, text_body, from_email, [user.email])
         msg.attach_alternative(html_body, "text/html")
-        msg.send(fail_silently=False)
-        logger.info("Verification email sent to '%s'.", user.email)
+        is_test_env = 'locmem' in getattr(settings, 'EMAIL_BACKEND', '')
+        if is_test_env:
+            _send_email_async(msg, user.email)
+        else:
+            t = threading.Thread(target=_send_email_async, args=(msg, user.email), daemon=True)
+            t.start()
     except Exception as exc:
-        logger.error("Failed to send verification email to '%s': %s", user.email, exc)
+        logger.error("Failed to prepare verification email for '%s': %s", user.email, exc)
 
 
 @ratelimit(rate='5/m', action='login')

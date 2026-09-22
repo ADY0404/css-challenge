@@ -232,15 +232,17 @@ LOGIN_URL = 'login'
 # Brevo (formerly Sendinblue) SMTP relay is used for transactional emails.
 # Set BREVO_API_KEY and BREVO_SMTP_LOGIN in your .env to enable real sending.
 # Without the key the app falls back to console output (safe for local dev).
+# Brevo supports port 587 (TLS) and port 2525 (TLS alternative if host blocks 587).
 BREVO_API_KEY = config('BREVO_API_KEY', default='')
 BREVO_SMTP_LOGIN = config('BREVO_SMTP_LOGIN', default='')
+EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=(EMAIL_PORT != 465), cast=bool)
+EMAIL_USE_SSL = config('EMAIL_USE_SSL', default=(EMAIL_PORT == 465), cast=bool)
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=10, cast=int)
 
 if BREVO_API_KEY and BREVO_SMTP_LOGIN:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp-relay.brevo.com'
-    EMAIL_PORT = 587
-    EMAIL_USE_TLS = True
-    EMAIL_USE_SSL = False
+    EMAIL_HOST = config('EMAIL_HOST', default='smtp-relay.brevo.com')
     EMAIL_HOST_USER = BREVO_SMTP_LOGIN    # Your Brevo account email address
     EMAIL_HOST_PASSWORD = BREVO_API_KEY   # Your Brevo SMTP key (from Brevo → SMTP & API)
     DEFAULT_FROM_EMAIL = config(
@@ -259,8 +261,6 @@ else:
         ),
     )
     EMAIL_HOST = config('EMAIL_HOST', default='smtp-relay.brevo.com')
-    EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-    EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
     EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
     EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
     DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@localhost')
