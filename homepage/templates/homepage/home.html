@@ -33,10 +33,11 @@
             </div>
             <div class="col-lg-5">
                 <div class="position-relative">
+                    {% static 'images/lab.jpg' as default_lab_img %}
                     {% if site_config and site_config.future_lab_image %}
-                        <img src="{{ site_config.future_lab_image.url }}" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
+                        <img src="{{ site_config.future_lab_image.url }}" onerror="this.onerror=null; this.src='{{ default_lab_img }}';" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
                     {% else %}
-                        <img src="{% static 'images/lab.jpg' %}" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
+                        <img src="{{ default_lab_img }}" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
                     {% endif %}
                     <div class="position-absolute bottom-0 start-0 m-3 px-3 py-2 bg-dark bg-opacity-75 text-white rounded-3 small">
                         <i class="bi bi-geo-alt-fill text-warning me-1"></i> {{ site_config.future_lab_badge|default:"Future Lab &middot; Ideas Happen Here" }}
@@ -212,7 +213,7 @@
                                         </a>
                                     </h4>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="{% static 'images/man' %}{{ forloop.counter|default:1 }}.jpg" alt="{{ article.author_name }}" class="rounded-circle shadow-sm" style="width: 20px; height: 20px; object-fit: cover;">
+                                        <img src="{% static 'images/man1.jpg' %}" alt="{{ article.author_name }}" class="rounded-circle shadow-sm" style="width: 20px; height: 20px; object-fit: cover;">
                                         <small class="text-muted"><i class="bi bi-clock me-1"></i>{{ article.read_time }} &middot; By {{ article.author_name }}</small>
                                     </div>
                                 </div>

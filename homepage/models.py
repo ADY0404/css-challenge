@@ -345,7 +345,7 @@ class SiteConfiguration(models.Model):
         upload_to='site_config/',
         blank=True,
         null=True,
-        help_text="Future Lab or Hero section photo (fallback: static/images/images (1).jpeg)"
+        help_text="Future Lab or Hero section photo (fallback: static/images/lab.jpg)"
     )
     future_lab_badge = models.CharField(
         max_length=150,

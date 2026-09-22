@@ -359,8 +359,8 @@ class SiteConfigurationAdmin(admin.ModelAdmin):
             img_url = obj.future_lab_image.url
             caption = "Custom uploaded Future Lab image active."
         else:
-            img_url = static('images/images (1).jpeg')
-            caption = "Default Future Lab image active (/static/images/images (1).jpeg). Upload a new photo above to replace it."
+            img_url = static('images/lab.jpg')
+            caption = "Default Future Lab image active (/static/images/lab.jpg). Upload a new photo above to replace it."
         return format_html(
             '<div style="margin-top: 6px;">'
             '<img src="{}" alt="Future Lab Preview" style="max-height: 220px; max-width: 380px; object-fit: cover; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); display: block; margin-bottom: 6px;" />'
