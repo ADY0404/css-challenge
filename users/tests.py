@@ -551,5 +551,40 @@ class AuthenticationFlowTests(TestCase):
         resp_old_settings = self.client.get('/users/settings/')
         self.assertRedirects(resp_old_settings, '/u/s-4d91ae/', fetch_redirect_response=False)
 
+    def test_admin_can_reactivate_deactivated_account(self):
+        admin_user = User.objects.create_superuser('admin_tester', 'admin@example.edu', 'AdminPass123!')
+        self.user.is_active = False
+        self.user.save()
+        self.profile.is_locked = True
+        self.profile.failed_login_attempts = 5
+        self.profile.save()
+
+        self.client.login(username='admin_tester', password='AdminPass123!')
+        reactivate_url = reverse('admin:user_reactivate', args=[self.user.pk])
+        response = self.client.get(reactivate_url)
+        self.assertIn(response.status_code, [200, 302])
+
+        self.user.refresh_from_db()
+        self.profile.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+        self.assertFalse(self.profile.is_locked)
+        self.assertEqual(self.profile.failed_login_attempts, 0)
+
+    def test_admin_can_deactivate_and_unlock_via_views(self):
+        admin_user = User.objects.create_superuser('admin_tester2', 'admin2@example.edu', 'AdminPass123!')
+        self.client.login(username='admin_tester2', password='AdminPass123!')
+
+        deactivate_url = reverse('admin:user_deactivate', args=[self.user.pk])
+        self.client.get(deactivate_url)
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.is_active)
+
+        unlock_url = reverse('admin:user_unlock', args=[self.user.pk])
+        self.client.get(unlock_url)
+        self.user.refresh_from_db()
+        self.profile.refresh_from_db()
+        self.assertTrue(self.user.is_active)
+        self.assertFalse(self.profile.is_locked)
+
 
 
