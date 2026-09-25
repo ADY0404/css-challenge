@@ -76,3 +76,9 @@ class EventRegistration(models.Model):
 
     def __str__(self):
         return f"{self.full_name} ({self.email}) - {self.event.title}"
+
+    @property
+    def year_display(self):
+        if self.year == 5:
+            return "Postgrad"
+        return f"Year {self.year}"

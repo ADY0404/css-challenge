@@ -9,8 +9,16 @@ class SignUpForm(UserCreationForm):
     first_name = forms.CharField(max_length=150)
     last_name = forms.CharField(max_length=150)
     email = forms.EmailField()
+    YEAR_CHOICES = [
+        ("", "Year"),
+        ("1", "Year 1"),
+        ("2", "Year 2"),
+        ("3", "Year 3"),
+        ("4", "Year 4"),
+        ("5", "Postgrad"),
+    ]
     year = forms.TypedChoiceField(
-        choices=[("", "Year")] + [(str(year), f"Year {year}") for year in range(1, 11)],
+        choices=YEAR_CHOICES,
         coerce=int,
     )
 

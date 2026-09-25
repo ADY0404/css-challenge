@@ -63,7 +63,7 @@ class GuestSpeakerAdmin(admin.ModelAdmin):
 
 @admin.register(EventRegistration)
 class EventRegistrationAdmin(admin.ModelAdmin):
-    list_display = ('full_name', 'email', 'year', 'event', 'registered_at')
+    list_display = ('full_name', 'email', 'get_year', 'event', 'registered_at')
     list_filter = ('event', 'year', 'registered_at')
     search_fields = ('full_name', 'email', 'notes', 'user__username')
     readonly_fields = ('registered_at',)
@@ -75,6 +75,10 @@ class EventRegistrationAdmin(admin.ModelAdmin):
             'fields': ('notes',)
         }),
     )
+
+    @admin.display(description='Year')
+    def get_year(self, obj):
+        return obj.year_display
 
 
 @admin.register(SocialMedia)

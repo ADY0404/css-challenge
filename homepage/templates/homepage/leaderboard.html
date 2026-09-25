@@ -241,7 +241,7 @@
                                 </td>
                                 <td>
                                     <small class="text-dark d-block">{{ item.user.profile.department|default:"Computer Science" }}</small>
-                                    <small class="text-muted">Year {{ item.user.profile.year|default:"1" }}</small>
+                                    <small class="text-muted">{{ item.user.profile.year_display }}</small>
                                 </td>
                                 <td>
                                     <div class="d-flex flex-wrap gap-1">

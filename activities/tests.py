@@ -41,3 +41,15 @@ class ActivitiesTests(TestCase):
         reg = EventRegistration.objects.get(event=self.event, email='kemi@university.edu')
         self.assertEqual(reg.full_name, 'Kemi Adeleke')
         self.assertEqual(reg.year, 2)
+
+    def test_event_registration_postgrad(self):
+        response = self.client.post(reverse('act:event_register', kwargs={'id': self.event.id}), {
+            'full_name': 'Dr. Adaora Okafor',
+            'email': 'adaora@university.edu',
+            'year': 5,
+        })
+        self.assertRedirects(response, reverse('act:event', kwargs={'id': self.event.id}))
+        reg = EventRegistration.objects.get(event=self.event, email='adaora@university.edu')
+        self.assertEqual(reg.year, 5)
+        self.assertEqual(reg.year_display, 'Postgrad')
+

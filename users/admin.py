@@ -61,7 +61,7 @@ class CustomUserAdmin(BaseUserAdmin):
     @admin.display(description='Year')
     def get_year(self, instance):
         if hasattr(instance, 'profile') and instance.profile.year:
-            return f"Year {instance.profile.year}"
+            return instance.profile.year_display
         return '-'
 
     @admin.display(description='Verified', boolean=True)

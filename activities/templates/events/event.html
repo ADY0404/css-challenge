@@ -112,7 +112,7 @@
                                 <option value="2" {% if user.is_authenticated and user.profile.year == 2 %}selected{% endif %}>Year 2</option>
                                 <option value="3" {% if user.is_authenticated and user.profile.year == 3 %}selected{% endif %}>Year 3</option>
                                 <option value="4" {% if user.is_authenticated and user.profile.year == 4 %}selected{% endif %}>Year 4</option>
-                                <option value="5" {% if user.is_authenticated and user.profile.year >= 5 %}selected{% endif %}>Year 5+ / Postgrad</option>
+                                <option value="5" {% if user.is_authenticated and user.profile.year == 5 %}selected{% endif %}>Postgrad</option>
                             </select>
                         </div>
 

@@ -52,7 +52,7 @@
                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle">{{ member_profile.department }}</span>
                     {% endif %}
                     {% if member_profile.year %}
-                        <span class="badge bg-light text-secondary border">Year {{ member_profile.year }}</span>
+                        <span class="badge bg-light text-secondary border">{{ member_profile.year_display }}</span>
                     {% endif %}
                     {% if member_user.is_staff %}
                         <span class="badge bg-warning-subtle text-dark border border-warning-subtle"><i class="bi bi-shield-check me-1"></i>Staff / Exec</span>

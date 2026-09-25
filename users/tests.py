@@ -51,6 +51,21 @@ class AuthenticationFlowTests(TestCase):
         self.assertNotIn('_auth_user_id', self.client.session)
         self.assertEqual(self.client.session['pending_verification_email'], 'ada@example.com')
 
+    def test_signup_with_postgrad_year(self):
+        response = self.client.post(reverse('signup'), {
+            'first_name': 'Alan',
+            'last_name': 'Turing',
+            'email': 'alan@example.com',
+            'username': 'alan',
+            'year': '5',
+            'password1': 'A-secure-password-123',
+            'password2': 'A-secure-password-123',
+        })
+        self.assertRedirects(response, reverse('email_verification_pending'))
+        user = User.objects.get(username='alan')
+        self.assertEqual(user.profile.year, 5)
+        self.assertEqual(user.profile.year_display, 'Postgrad')
+
     def test_login_and_logout(self):
         # Successful login
         response = self.client.post(reverse('login'), {

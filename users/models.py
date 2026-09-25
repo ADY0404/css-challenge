@@ -37,6 +37,14 @@ class Profile(models.Model):
     def __str__(self):
         return self.user.username
 
+    @property
+    def year_display(self):
+        if self.year == 5:
+            return "Postgrad"
+        if self.year:
+            return f"Year {self.year}"
+        return "Year 1"
+
     def register_failed_login(self, max_attempts=5):
         """Record an incorrect login attempt; lock if threshold reached."""
         self.failed_login_attempts += 1

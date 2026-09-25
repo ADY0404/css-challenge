@@ -88,8 +88,13 @@
             <div class="row g-3 mb-3">
                 <div class="col-md-4">
                     <label for="year" class="form-label fw-bold small text-secondary">Academic Year</label>
-                    <input type="number" class="form-control" id="year" name="year" value="{{ user.profile.year|default:1 }}" min="1" max="6" placeholder="e.g. 2">
-                    <small class="text-muted">Year of study (1 - 6).</small>
+                    <select class="form-select" id="year" name="year">
+                        <option value="1" {% if user.profile.year == 1 %}selected{% endif %}>Year 1</option>
+                        <option value="2" {% if user.profile.year == 2 %}selected{% endif %}>Year 2</option>
+                        <option value="3" {% if user.profile.year == 3 %}selected{% endif %}>Year 3</option>
+                        <option value="4" {% if user.profile.year == 4 %}selected{% endif %}>Year 4</option>
+                        <option value="5" {% if user.profile.year == 5 %}selected{% endif %}>Postgrad</option>
+                    </select>
                 </div>
                 <div class="col-md-8">
                     <label for="department" class="form-label fw-bold small text-secondary">Department / Major</label>
