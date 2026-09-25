@@ -162,7 +162,7 @@ class ProfileAdmin(admin.ModelAdmin):
     actions = [
         'reactivate_profiles',
         'deactivate_profiles',
-        'unlock_profiles',
+        'unlock_accounts',
         'verify_emails',
         'reset_failed_attempts',
     ]
@@ -212,12 +212,14 @@ class ProfileAdmin(admin.ModelAdmin):
             self.message_user(request, f"Successfully deactivated {count} account(s).")
 
     @admin.action(description='Unlock selected user accounts (clear lock & reset attempts)')
-    def unlock_profiles(self, request, queryset):
+    def unlock_accounts(self, request, queryset):
         user_ids = list(queryset.values_list('user_id', flat=True))
         User.objects.filter(id__in=user_ids).update(is_active=True)
         updated = queryset.update(is_locked=False, failed_login_attempts=0, locked_at=None, unlock_at=None)
         if request:
             self.message_user(request, f"Successfully unlocked {updated} profile(s).")
+
+    unlock_profiles = unlock_accounts
 
     @admin.action(description='Mark selected profiles as email-verified')
     def verify_emails(self, request, queryset):
