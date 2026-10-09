@@ -39,9 +39,9 @@
                 <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius: 14px;">
                     {% if executive.image %}
                         <div class="skeleton-img-wrapper rounded-circle mx-auto mb-3 shadow-sm" style="width: 110px; height: 110px;">
-                            <img src="{{ executive.image.url }}" class="rounded-circle" alt="{{ executive.name }}" style="width: 110px; height: 110px; object-fit: cover;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none');">
+                            <img src="{{ executive.image.url }}" class="rounded-circle" alt="{{ executive.name }}" style="width: 110px; height: 110px; object-fit: cover;" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');" onerror="var fb='{% static 'images/man' %}' + (({{ forloop.counter0 }} % 6) + 1) + '.jpg'; if(this.src != fb) { this.src = fb; } else { this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none'); }">
                         </div>
-                        <div class="rounded-circle mx-auto mb-3 shadow-sm d-none d-flex align-items-center justify-content-center bg-primary text-white" style="width: 110px; height: 110px; font-size: 2.5rem;">
+                        <div class="rounded-circle mx-auto mb-3 shadow-sm d-none align-items-center justify-content-center bg-primary text-white" style="width: 110px; height: 110px; font-size: 2.5rem;">
                             <i class="bi bi-person-fill"></i>
                         </div>
                     {% else %}

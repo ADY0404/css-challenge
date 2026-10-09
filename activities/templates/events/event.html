@@ -11,13 +11,14 @@
 
 <!-- Event Banner -->
 <div class="container my-4">
-    <div class="skeleton-img-wrapper rounded-4 shadow-sm w-100" style="max-height: 420px;">
+    <div class="skeleton-img-wrapper rounded-4 shadow-sm w-100" style="max-height: 420px; min-height: 220px; width: 100%; display: block;">
+        {% static default_banner|default:'images/gat.jpeg' as fallback_banner_src %}
         {% if event.banner_image %}
-            <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 420px; object-fit: cover;">
+            <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 420px; object-fit: cover;" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');" onerror="this.onerror=null; this.src='{{ fallback_banner_src }}'; this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');">
         {% elif event.image %}
-            <img src="{{ event.image.url }}" alt="{{ event.title }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 420px; object-fit: cover;">
+            <img src="{{ event.image.url }}" alt="{{ event.title }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 420px; object-fit: cover;" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');" onerror="this.onerror=null; this.src='{{ fallback_banner_src }}'; this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');">
         {% else %}
-            <img src="{% static 'images/gat.jpeg' %}" alt="{{ event.title }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 420px; object-fit: cover;">
+            <img src="{{ fallback_banner_src }}" alt="{{ event.title }}" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 420px; object-fit: cover;" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');">
         {% endif %}
     </div>
 </div>
@@ -51,9 +52,9 @@
                             <div class="card border-0 shadow-sm text-center p-3 h-100" style="border-radius: 12px;">
                                 {% if speaker.image_url %}
                                     <div class="skeleton-img-wrapper rounded-circle mx-auto mb-2 shadow-sm" style="width: 72px; height: 72px;">
-                                        <img src="{{ speaker.image_url.url }}" class="rounded-circle shadow-sm" alt="{{ speaker.name }}" style="width: 72px; height: 72px; object-fit: cover;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none');">
+                                        <img src="{{ speaker.image_url.url }}" class="rounded-circle shadow-sm" alt="{{ speaker.name }}" style="width: 72px; height: 72px; object-fit: cover;" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');" onerror="var fb='{% static 'images/man' %}' + (({{ forloop.counter0 }} % 6) + 1) + '.jpg'; if(this.src != fb) { this.src = fb; } else { this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none'); }">
                                     </div>
-                                    <div class="rounded-circle mx-auto mb-2 shadow-sm d-none d-flex align-items-center justify-content-center bg-primary text-white" style="width: 72px; height: 72px; font-size: 1.75rem;">
+                                    <div class="rounded-circle mx-auto mb-2 shadow-sm d-none align-items-center justify-content-center bg-primary text-white" style="width: 72px; height: 72px; font-size: 1.75rem;">
                                         <i class="bi bi-person-fill"></i>
                                     </div>
                                 {% else %}
@@ -140,13 +141,15 @@
                 {% for upcoming in upcoming_events %}
                     <div class="col-md-4">
                         <div class="card h-100 border-0 shadow-sm p-3" style="border-radius: 12px;">
-                            {% if upcoming.banner_image %}
-                                <img src="{{ upcoming.banner_image.url }}" class="rounded mb-2 w-100" style="height: 120px; object-fit: cover;" alt="{{ upcoming.title }}" onerror="this.onerror=null; this.src='{{ fallback_event_banner }}';">
-                            {% elif upcoming.image %}
-                                <img src="{{ upcoming.image.url }}" class="rounded mb-2 w-100" style="height: 120px; object-fit: cover;" alt="{{ upcoming.title }}" onerror="this.onerror=null; this.src='{{ fallback_event_banner }}';">
-                            {% else %}
-                                <img src="{{ fallback_event_banner }}" class="rounded mb-2 w-100" style="height: 120px; object-fit: cover;" alt="{{ upcoming.title }}">
-                            {% endif %}
+                            <div class="skeleton-img-wrapper rounded mb-2 w-100" style="height: 120px; display: block;">
+                                {% if upcoming.banner_image %}
+                                    <img src="{{ upcoming.banner_image.url }}" class="rounded w-100" style="height: 120px; object-fit: cover;" alt="{{ upcoming.title }}" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');" onerror="this.onerror=null; this.src='{{ fallback_event_banner }}'; this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');">
+                                {% elif upcoming.image %}
+                                    <img src="{{ upcoming.image.url }}" class="rounded w-100" style="height: 120px; object-fit: cover;" alt="{{ upcoming.title }}" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');" onerror="this.onerror=null; this.src='{{ fallback_event_banner }}'; this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');">
+                                {% else %}
+                                    <img src="{{ fallback_event_banner }}" class="rounded w-100" style="height: 120px; object-fit: cover;" alt="{{ upcoming.title }}" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');">
+                                {% endif %}
+                            </div>
                             <span class="badge bg-primary-subtle text-primary mb-2 align-self-start">{{ upcoming.date|date:"M d, Y" }}</span>
                             <h5 class="h6 fw-bold mb-2">{{ upcoming.title }}</h5>
                             <p class="text-muted small mb-3">{{ upcoming.description|truncatewords:14 }}</p>

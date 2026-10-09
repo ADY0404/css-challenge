@@ -590,5 +590,37 @@ class Command(BaseCommand):
         site_config.save()
         self.stdout.write("  Ensured SiteConfiguration singleton is initialized.")
 
+        # 12. Seed Media Files from Static Directory
+        self._seed_media_files()
+
         self.stdout.write(self.style.SUCCESS("Successfully seeded all database tables!"))
+
+    def _seed_media_files(self):
+        """Copy static starter images into MEDIA_ROOT so seed events/speakers/executives have valid image files on disk."""
+        import shutil
+        from django.conf import settings
+
+        media_root = settings.MEDIA_ROOT
+        static_images_dir = settings.BASE_DIR / 'static' / 'images'
+
+        if not static_images_dir.exists():
+            return
+
+        copy_specs = [
+            ('events/images', ['gat.jpeg', 'bot.jpeg', 'AI.jpeg', 'man1.jpg', 'man2.jpg', 'man3.jpg']),
+            ('activities', ['gat.jpeg', 'bot.jpeg', 'AI.jpeg']),
+            ('guest_speakers', ['man1.jpg', 'man2.jpg', 'man3.jpg', 'man4.jpg', 'man5.jpg', 'man6.jpg']),
+            ('site_config', ['lap.jpg']),
+        ]
+
+        for sub_dir, files in copy_specs:
+            dest_dir = media_root / sub_dir
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            for fname in files:
+                src_file = static_images_dir / fname
+                dest_file = dest_dir / fname
+                if src_file.exists() and not dest_file.exists():
+                    shutil.copy2(src_file, dest_file)
+
+        self.stdout.write("  Ensured initial seed media assets exist on disk.")
 

@@ -28,13 +28,13 @@
                 <article class="card mb-4 shadow-sm border-0" style="border-radius: 10px;">
                     <div class="row g-0 align-items-center">
                         <div class="col-md-3">
-                            <div class="skeleton-img-wrapper rounded-start w-100" style="height: 180px;">
+                            <div class="skeleton-img-wrapper rounded-start w-100" style="height: 180px; display: block;">
                                 {% if event.image_url %}
-                                    <img src="{{ event.image_url }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onerror="this.onerror=null; this.src='{{ default_act_img }}';">
+                                    <img src="{{ event.image_url }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');" onerror="this.onerror=null; this.src='{{ default_act_img }}'; this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');">
                                 {% elif event.image_path %}
-                                    <img src="{% static event.image_path %}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onerror="this.onerror=null; this.src='{{ default_act_img }}';">
+                                    <img src="{% static event.image_path %}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');" onerror="this.onerror=null; this.src='{{ default_act_img }}'; this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');">
                                 {% else %}
-                                    <img src="{{ default_act_img }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;">
+                                    <img src="{{ default_act_img }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onload="this.classList.add('loaded'); if(this.parentElement) this.parentElement.classList.add('loaded');">
                                 {% endif %}
                             </div>
                         </div>

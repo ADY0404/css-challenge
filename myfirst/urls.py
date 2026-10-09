@@ -69,4 +69,33 @@ urlpatterns = [
     path('', include('users.urls')),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+import os
+import shutil
+from django.http import FileResponse
+from django.views.static import serve
+from django.urls import re_path
+
+def serve_media_with_fallback(request, path):
+    """
+    Serve media files with self-healing fallback to static/images/ if media file is missing.
+    Ensures image serving works identically in both local development and production (Render).
+    """
+    media_path = os.path.join(settings.MEDIA_ROOT, path)
+    if os.path.exists(media_path) and os.path.isfile(media_path):
+        return serve(request, path, document_root=settings.MEDIA_ROOT)
+
+    filename = os.path.basename(path)
+    static_img_path = os.path.join(settings.BASE_DIR, 'static', 'images', filename)
+    if os.path.exists(static_img_path) and os.path.isfile(static_img_path):
+        try:
+            os.makedirs(os.path.dirname(media_path), exist_ok=True)
+            shutil.copy2(static_img_path, media_path)
+        except Exception:
+            pass
+        return FileResponse(open(static_img_path, 'rb'))
+
+    return serve(request, path, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve_media_with_fallback),
+]

@@ -47,6 +47,16 @@ def activities(request):
     })
 
 
+def event_index_redirect(request):
+    """Gracefully redirect /activities/event/ to the upcoming active event or activities list."""
+    first_event = Event.objects.filter(date__gte=now().date()).order_by('date').first()
+    if not first_event:
+        first_event = Event.objects.order_by('-date').first()
+    if first_event:
+        return redirect('act:event', id=first_event.id)
+    return redirect('act:activities_list')
+
+
 def event_detail(request, id):
     """Display single event with guest speakers, outline, and registration form."""
     event = get_object_or_404(Event, id=id)
@@ -54,6 +64,14 @@ def event_detail(request, id):
     guest_speakers = GuestSpeaker.objects.filter(event=event)
     social_links = SocialMedia.objects.all()
     programs = Program.objects.all()
+
+    title_lower = (event.title or '').lower()
+    if 'workshop' in title_lower or 'fullstack' in title_lower or 'django' in title_lower:
+        default_banner = 'images/bot.jpeg'
+    elif 'ai' in title_lower or 'jam' in title_lower or 'machine' in title_lower:
+        default_banner = 'images/AI.jpeg'
+    else:
+        default_banner = 'images/gat.jpeg'
 
     user_registered = False
     if request.user.is_authenticated:
@@ -66,6 +84,7 @@ def event_detail(request, id):
         'social_links': social_links,
         'programs': programs,
         'user_registered': user_registered,
+        'default_banner': default_banner,
     }
     return render(request, 'events/event.html', context)
 

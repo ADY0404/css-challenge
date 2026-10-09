@@ -171,7 +171,7 @@
         (function() {
             function checkSkeletonImages() {
                 document.querySelectorAll('.skeleton-img-wrapper img').forEach(function(img) {
-                    if (img.complete && img.naturalWidth > 0) {
+                    if (img.complete) {
                         img.classList.add('loaded');
                         if (img.parentElement) img.parentElement.classList.add('loaded');
                     } else {
@@ -180,6 +180,7 @@
                             if (this.parentElement) this.parentElement.classList.add('loaded');
                         }, { once: true });
                         img.addEventListener('error', function() {
+                            this.classList.add('loaded');
                             if (this.parentElement) this.parentElement.classList.add('loaded');
                         }, { once: true });
                     }
@@ -190,6 +191,14 @@
             } else {
                 checkSkeletonImages();
             }
+            // Failsafe timer: reveal all images after 1.8s regardless of network hiccups
+            setTimeout(function() {
+                document.querySelectorAll('.skeleton-img-wrapper').forEach(function(wrapper) {
+                    wrapper.classList.add('loaded');
+                    var img = wrapper.querySelector('img');
+                    if (img) img.classList.add('loaded');
+                });
+            }, 1800);
             window.refreshSkeletonImages = checkSkeletonImages;
         })();
     </script>
