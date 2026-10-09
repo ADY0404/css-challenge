@@ -275,9 +275,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = '/static/'
-# TODO(security-audit): Static image assets are duplicated between homepage/static/ and root static/.
-# Consolidate into a single static directory to reduce repo footprint and avoid build conflicts.
-STATICFILES_DIRS = [BASE_DIR / "homepage/static"]
+STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATIC_ROOT.mkdir(exist_ok=True)
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
