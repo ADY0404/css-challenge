@@ -66,7 +66,12 @@
                                 <div class="d-flex justify-content-center my-3">
                                     <a href="{% url 'member_profile' member.user.username %}" class="text-decoration-none">
                                         {% if member.user.profile.profile_picture %}
-                                            <img src="{{ member.user.profile.profile_picture.url }}" alt="{{ member.user.username }}" class="rounded-circle shadow-sm" style="width: 72px; height: 72px; object-fit: cover;">
+                                            <div class="skeleton-img-wrapper rounded-circle shadow-sm" style="width: 72px; height: 72px;">
+                                                <img src="{{ member.user.profile.profile_picture.url }}" alt="{{ member.user.username }}" class="rounded-circle" style="width: 72px; height: 72px; object-fit: cover;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none');">
+                                            </div>
+                                            <div class="rounded-circle shadow-sm d-none d-inline-flex align-items-center justify-content-center bg-secondary text-white fw-bold fs-4" style="width: 72px; height: 72px;">
+                                                {{ member.user.first_name|first|default:member.user.username|first|upper }}
+                                            </div>
                                         {% else %}
                                             <div class="rounded-circle shadow-sm d-inline-flex align-items-center justify-content-center bg-secondary text-white fw-bold fs-4" style="width: 72px; height: 72px;">
                                                 {{ member.user.first_name|first|default:member.user.username|first|upper }}
@@ -107,7 +112,12 @@
                             <div class="d-flex justify-content-center my-3">
                                 <a href="{% url 'member_profile' member.user.username %}" class="text-decoration-none position-relative">
                                     {% if member.user.profile.profile_picture %}
-                                        <img src="{{ member.user.profile.profile_picture.url }}" alt="{{ member.user.username }}" class="rounded-circle shadow" style="width: 88px; height: 88px; object-fit: cover; border: 3px solid #F59E0B;">
+                                        <div class="skeleton-img-wrapper rounded-circle shadow" style="width: 88px; height: 88px; border: 3px solid #F59E0B;">
+                                            <img src="{{ member.user.profile.profile_picture.url }}" alt="{{ member.user.username }}" class="rounded-circle" style="width: 88px; height: 88px; object-fit: cover;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none');">
+                                        </div>
+                                        <div class="rounded-circle shadow d-none d-inline-flex align-items-center justify-content-center bg-warning text-dark fw-bold fs-2" style="width: 88px; height: 88px; border: 3px solid #D97706;">
+                                            {{ member.user.first_name|first|default:member.user.username|first|upper }}
+                                        </div>
                                     {% else %}
                                         <div class="rounded-circle shadow d-inline-flex align-items-center justify-content-center bg-warning text-dark fw-bold fs-2" style="width: 88px; height: 88px; border: 3px solid #D97706;">
                                             {{ member.user.first_name|first|default:member.user.username|first|upper }}
@@ -148,7 +158,12 @@
                                 <div class="d-flex justify-content-center my-3">
                                     <a href="{% url 'member_profile' member.user.username %}" class="text-decoration-none">
                                         {% if member.user.profile.profile_picture %}
-                                            <img src="{{ member.user.profile.profile_picture.url }}" alt="{{ member.user.username }}" class="rounded-circle shadow-sm" style="width: 72px; height: 72px; object-fit: cover;">
+                                            <div class="skeleton-img-wrapper rounded-circle shadow-sm" style="width: 72px; height: 72px;">
+                                                <img src="{{ member.user.profile.profile_picture.url }}" alt="{{ member.user.username }}" class="rounded-circle" style="width: 72px; height: 72px; object-fit: cover;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none');">
+                                            </div>
+                                            <div class="rounded-circle shadow-sm d-none d-inline-flex align-items-center justify-content-center bg-dark text-white fw-bold fs-4" style="width: 72px; height: 72px;">
+                                                {{ member.user.first_name|first|default:member.user.username|first|upper }}
+                                            </div>
                                         {% else %}
                                             <div class="rounded-circle shadow-sm d-inline-flex align-items-center justify-content-center bg-dark text-white fw-bold fs-4" style="width: 72px; height: 72px;">
                                                 {{ member.user.first_name|first|default:member.user.username|first|upper }}
@@ -187,12 +202,18 @@
                 <h3 class="h6 fw-bold mb-0 text-dark">Society Solvers Rankings</h3>
                 <small class="text-muted">Rankings update automatically with each submitted challenge solution</small>
             </div>
-            <span class="badge bg-light border text-secondary">{{ ranked_members|length }} Members Listed</span>
+            <div class="d-flex align-items-center gap-2">
+                <div class="input-group input-group-sm" style="max-width: 250px;">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" id="leaderboardSearchInput" class="form-control border-start-0 ps-1" placeholder="Search members, dept..." aria-label="Filter solvers">
+                </div>
+                <span class="badge bg-light border text-secondary" id="solverCountBadge">{{ ranked_members|length }} Members Listed</span>
+            </div>
         </div>
 
         {% if ranked_members %}
             <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="table table-hover align-middle mb-0" id="leaderboardTable">
                     <thead class="table-light">
                         <tr>
                             <th scope="col" style="width: 80px;" class="ps-4">Rank</th>
@@ -204,8 +225,76 @@
                         </tr>
                     </thead>
                     <tbody>
+                        <!-- Skeleton Loading Rows (Active during search & filter transitions) -->
+                        <tr class="leaderboard-skeleton-row d-none">
+                            <td class="ps-4"><div class="skeleton-badge" style="width: 28px; height: 24px;"></div></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="skeleton-avatar" style="width: 38px; height: 38px;"></div>
+                                    <div style="flex: 1; max-width: 140px;">
+                                        <div class="skeleton-text skeleton-title mb-1" style="width: 100%; height: 16px;"></div>
+                                        <div class="skeleton-text mb-0" style="width: 60%; height: 12px;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="skeleton-text mb-1" style="width: 90px; height: 14px;"></div>
+                                <div class="skeleton-text mb-0" style="width: 50px; height: 12px;"></div>
+                            </td>
+                            <td><div class="skeleton-badge me-1" style="width: 65px; height: 22px;"></div><div class="skeleton-badge" style="width: 55px; height: 22px;"></div></td>
+                            <td class="text-center"><div class="skeleton-badge mx-auto" style="width: 40px; height: 24px;"></div></td>
+                            <td class="text-end pe-4"><div class="skeleton-btn ms-auto" style="width: 95px; height: 30px;"></div></td>
+                        </tr>
+                        <tr class="leaderboard-skeleton-row d-none">
+                            <td class="ps-4"><div class="skeleton-badge" style="width: 28px; height: 24px;"></div></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="skeleton-avatar" style="width: 38px; height: 38px;"></div>
+                                    <div style="flex: 1; max-width: 130px;">
+                                        <div class="skeleton-text skeleton-title mb-1" style="width: 85%; height: 16px;"></div>
+                                        <div class="skeleton-text mb-0" style="width: 50%; height: 12px;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="skeleton-text mb-1" style="width: 80px; height: 14px;"></div>
+                                <div class="skeleton-text mb-0" style="width: 45px; height: 12px;"></div>
+                            </td>
+                            <td><div class="skeleton-badge me-1" style="width: 70px; height: 22px;"></div></td>
+                            <td class="text-center"><div class="skeleton-badge mx-auto" style="width: 40px; height: 24px;"></div></td>
+                            <td class="text-end pe-4"><div class="skeleton-btn ms-auto" style="width: 95px; height: 30px;"></div></td>
+                        </tr>
+                        <tr class="leaderboard-skeleton-row d-none">
+                            <td class="ps-4"><div class="skeleton-badge" style="width: 28px; height: 24px;"></div></td>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="skeleton-avatar" style="width: 38px; height: 38px;"></div>
+                                    <div style="flex: 1; max-width: 150px;">
+                                        <div class="skeleton-text skeleton-title mb-1" style="width: 95%; height: 16px;"></div>
+                                        <div class="skeleton-text mb-0" style="width: 55%; height: 12px;"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="skeleton-text mb-1" style="width: 100px; height: 14px;"></div>
+                                <div class="skeleton-text mb-0" style="width: 50px; height: 12px;"></div>
+                            </td>
+                            <td><div class="skeleton-badge me-1" style="width: 60px; height: 22px;"></div><div class="skeleton-badge" style="width: 65px; height: 22px;"></div></td>
+                            <td class="text-center"><div class="skeleton-badge mx-auto" style="width: 40px; height: 24px;"></div></td>
+                            <td class="text-end pe-4"><div class="skeleton-btn ms-auto" style="width: 95px; height: 30px;"></div></td>
+                        </tr>
+
+                        <!-- No Matching Solvers State -->
+                        <tr id="noMatchingSolversRow" class="d-none">
+                            <td colspan="6" class="text-center py-4 text-muted">
+                                <i class="bi bi-search fs-3 text-secondary d-block mb-1"></i>
+                                <strong>No matching solvers found</strong>
+                                <p class="small mb-0">Try searching with a different name, username, or department.</p>
+                            </td>
+                        </tr>
+
                         {% for item in ranked_members %}
-                            <tr {% if user.is_authenticated and item.user.id == user.id %}class="table-primary-subtle fw-semibold"{% endif %}>
+                            <tr class="solver-row {% if user.is_authenticated and item.user.id == user.id %}table-primary-subtle fw-semibold{% endif %}" data-name="{{ item.user.get_full_name|lower }}" data-username="{{ item.user.username|lower }}" data-dept="{{ item.user.profile.department|default:'computer science'|lower }}">
                                 <td class="ps-4">
                                     {% if item.rank == 1 %}
                                         <span class="badge bg-warning text-dark fw-bold px-2 py-1"><i class="bi bi-award-fill me-1"></i>1</span>
@@ -221,7 +310,12 @@
                                     <div class="d-flex align-items-center gap-3">
                                         <a href="{% url 'member_profile' item.user.username %}" class="text-decoration-none">
                                             {% if item.user.profile.profile_picture %}
-                                                <img src="{{ item.user.profile.profile_picture.url }}" alt="{{ item.user.username }}" class="rounded-circle shadow-sm" style="width: 38px; height: 38px; object-fit: cover;">
+                                                <div class="skeleton-img-wrapper rounded-circle shadow-sm" style="width: 38px; height: 38px;">
+                                                    <img src="{{ item.user.profile.profile_picture.url }}" alt="{{ item.user.username }}" class="rounded-circle" style="width: 38px; height: 38px; object-fit: cover;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none');">
+                                                </div>
+                                                <div class="rounded-circle shadow-sm d-none d-inline-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 38px; height: 38px; font-size: 0.95rem;">
+                                                    {{ item.user.first_name|first|default:item.user.username|first|upper }}
+                                                </div>
                                             {% else %}
                                                 <div class="rounded-circle shadow-sm d-inline-flex align-items-center justify-content-center bg-primary text-white fw-bold" style="width: 38px; height: 38px; font-size: 0.95rem;">
                                                     {{ item.user.first_name|first|default:item.user.username|first|upper }}
@@ -300,5 +394,60 @@
     </div>
 </main>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('leaderboardSearchInput');
+        const solverRows = document.querySelectorAll('.solver-row');
+        const skeletonRows = document.querySelectorAll('.leaderboard-skeleton-row');
+        const countBadge = document.getElementById('solverCountBadge');
+        const noMatchRow = document.getElementById('noMatchingSolversRow');
+
+        if (!searchInput) return;
+
+        let filterTimeout = null;
+
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+
+            // Briefly show skeleton rows to provide responsive feedback
+            skeletonRows.forEach(r => r.classList.remove('d-none'));
+            solverRows.forEach(r => r.style.opacity = '0.2');
+            if (noMatchRow) noMatchRow.classList.add('d-none');
+
+            clearTimeout(filterTimeout);
+            filterTimeout = setTimeout(function() {
+                let matchCount = 0;
+                solverRows.forEach(row => {
+                    const name = row.getAttribute('data-name') || '';
+                    const username = row.getAttribute('data-username') || '';
+                    const dept = row.getAttribute('data-dept') || '';
+
+                    const matches = !query || name.includes(query) || username.includes(query) || dept.includes(query);
+                    if (matches) {
+                        row.classList.remove('d-none');
+                        row.style.opacity = '1';
+                        matchCount++;
+                    } else {
+                        row.classList.add('d-none');
+                    }
+                });
+
+                skeletonRows.forEach(r => r.classList.add('d-none'));
+
+                if (countBadge) {
+                    countBadge.textContent = `${matchCount} Members Listed`;
+                }
+
+                if (noMatchRow) {
+                    if (matchCount === 0) {
+                        noMatchRow.classList.remove('d-none');
+                    } else {
+                        noMatchRow.classList.add('d-none');
+                    }
+                }
+            }, 120);
+        });
+    });
+</script>
 {% endblock content %}
 

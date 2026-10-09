@@ -33,12 +33,14 @@
             </div>
             <div class="col-lg-5">
                 <div class="position-relative">
-                    {% static 'images/lab.jpg' as default_lab_img %}
-                    {% if site_config and site_config.future_lab_image %}
-                        <img src="{{ site_config.future_lab_image.url }}" onerror="this.onerror=null; this.src='{{ default_lab_img }}';" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
-                    {% else %}
-                        <img src="{{ default_lab_img }}" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
-                    {% endif %}
+                    <div class="skeleton-img-wrapper rounded-4 shadow-sm w-100" style="max-height: 360px;">
+                        {% static 'images/lab.jpg' as default_lab_img %}
+                        {% if site_config and site_config.future_lab_image %}
+                            <img src="{{ site_config.future_lab_image.url }}" onerror="this.onerror=null; this.src='{{ default_lab_img }}';" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
+                        {% else %}
+                            <img src="{{ default_lab_img }}" alt="Computer Science Students in the Lab" class="img-fluid rounded-4 shadow-sm w-100" style="max-height: 360px; object-fit: cover;">
+                        {% endif %}
+                    </div>
                     <div class="position-absolute bottom-0 start-0 m-3 px-3 py-2 bg-dark bg-opacity-75 text-white rounded-3 small">
                         <i class="bi bi-geo-alt-fill text-warning me-1"></i> {{ site_config.future_lab_badge|default:"Future Lab &middot; Ideas Happen Here" }}
                     </div>
@@ -98,13 +100,15 @@
                         <article class="card h-100 border-0 shadow-sm overflow-hidden" style="border-radius: 12px;">
                             <div class="row g-0 h-100">
                                 <div class="col-sm-5">
-                                    {% if event.image %}
-                                        <img src="{{ event.image.url }}" alt="{{ event.title }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 180px;" onerror="this.onerror=null; this.src='{{ fallback_event_img }}';">
-                                    {% elif event.banner_image %}
-                                        <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 180px;" onerror="this.onerror=null; this.src='{{ fallback_event_img }}';">
-                                    {% else %}
-                                        <img src="{{ fallback_event_img }}" alt="{{ event.title }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 180px;">
-                                    {% endif %}
+                                    <div class="skeleton-img-wrapper h-100 w-100" style="min-height: 180px;">
+                                        {% if event.image %}
+                                            <img src="{{ event.image.url }}" alt="{{ event.title }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 180px;" onerror="this.onerror=null; this.src='{{ fallback_event_img }}';">
+                                        {% elif event.banner_image %}
+                                            <img src="{{ event.banner_image.url }}" alt="{{ event.title }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 180px;" onerror="this.onerror=null; this.src='{{ fallback_event_img }}';">
+                                        {% else %}
+                                            <img src="{{ fallback_event_img }}" alt="{{ event.title }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 180px;">
+                                        {% endif %}
+                                    </div>
                                 </div>
                                 <div class="col-sm-7">
                                     <div class="card-body p-4 d-flex flex-column justify-content-between h-100">

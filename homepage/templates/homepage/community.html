@@ -288,6 +288,48 @@
         </div>
 
         <div id="communitiesList">
+            <!-- Skeleton Loading State for Community Hubs (Active during search & filter transitions) -->
+            <div id="communitiesSkeletonList" class="d-none">
+                <div class="card community-card shadow-sm mb-4">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto px-4 py-4">
+                            <div class="skeleton-avatar" style="width: 58px; height: 58px; border-radius: 14px;"></div>
+                        </div>
+                        <div class="col py-4 pe-3">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="skeleton-text skeleton-title mb-0" style="width: 45%; height: 20px;"></div>
+                                <div class="skeleton-badge" style="width: 70px;"></div>
+                            </div>
+                            <div class="skeleton-text mb-2" style="width: 90%;"></div>
+                            <div class="skeleton-text mb-3" style="width: 65%;"></div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="skeleton-avatar" style="width: 28px; height: 28px;"></div>
+                                <div class="skeleton-badge" style="width: 95px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card community-card shadow-sm mb-4">
+                    <div class="row g-0 align-items-center">
+                        <div class="col-auto px-4 py-4">
+                            <div class="skeleton-avatar" style="width: 58px; height: 58px; border-radius: 14px;"></div>
+                        </div>
+                        <div class="col py-4 pe-3">
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <div class="skeleton-text skeleton-title mb-0" style="width: 40%; height: 20px;"></div>
+                                <div class="skeleton-badge" style="width: 80px;"></div>
+                            </div>
+                            <div class="skeleton-text mb-2" style="width: 85%;"></div>
+                            <div class="skeleton-text mb-3" style="width: 70%;"></div>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="skeleton-avatar" style="width: 28px; height: 28px;"></div>
+                                <div class="skeleton-badge" style="width: 100px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {% if channels %}
                 {% for ch in channels %}
                 <div class="card community-card shadow-sm mb-4" 
@@ -297,7 +339,9 @@
                     <div class="row g-0 align-items-center">
                         <div class="col-auto px-4 py-4">
                             {% if ch.image %}
-                                <img src="{{ ch.image.url }}" alt="{{ ch.name }}" class="community-avatar-img shadow-sm">
+                                <div class="skeleton-img-wrapper rounded-3 shadow-sm" style="width: 58px; height: 58px;">
+                                    <img src="{{ ch.image.url }}" alt="{{ ch.name }}" class="community-avatar-img shadow-sm" style="width: 58px; height: 58px; object-fit: cover;">
+                                </div>
                             {% else %}
                                 <div class="community-avatar-box shadow-sm avatar-box-{{ ch.category_key }}" data-accent-bg="{{ ch.accent_bg }}" data-accent-color="{{ ch.accent_color }}">
                                     <i class="bi {{ ch.icon_class }}"></i>
@@ -318,7 +362,9 @@
                                         {% if ch.recent_members %}
                                             {% for m in ch.recent_members %}
                                                 {% if m.profile.profile_picture %}
-                                                    <img src="{{ m.profile.profile_picture.url }}" alt="{{ m.username }}" class="rounded-circle border border-2 border-white shadow-sm member-avatar-img{% if not forloop.first %} avatar-overlap{% endif %}" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                                                    <div class="skeleton-img-wrapper rounded-circle border border-2 border-white shadow-sm member-avatar-img{% if not forloop.first %} avatar-overlap{% endif %}" style="width: 30px; height: 30px;">
+                                                        <img src="{{ m.profile.profile_picture.url }}" alt="{{ m.username }}" class="rounded-circle" style="width: 30px; height: 30px; object-fit: cover;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none');">
+                                                    </div>
                                                     <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white border border-2 border-white shadow-sm small fw-bold d-none member-avatar-initials{% if not forloop.first %} avatar-overlap{% endif %}">{{ m.username|first|upper }}</span>
                                                 {% else %}
                                                     <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-secondary text-white border border-2 border-white shadow-sm small fw-bold member-avatar-initials{% if not forloop.first %} avatar-overlap{% endif %}">{{ m.username|first|upper }}</span>
@@ -706,12 +752,13 @@
             const cards = document.querySelectorAll('#communitiesList .community-card');
             const noResults = document.getElementById('noResultsState');
             const hubCount = document.getElementById('hubCount');
+            const skeletonList = document.getElementById('communitiesSkeletonList');
 
             let currentCategory = 'all';
+            let filterTimeout = null;
 
-            function filterCards() {
-                const query = searchInput.value.toLowerCase().trim();
-                let visibleCount = 0;
+            function filterCards(immediate) {
+                const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
 
                 // Toggle search clear button
                 if (clearSearchBtn) {
@@ -722,56 +769,72 @@
                     }
                 }
 
-                cards.forEach(card => {
-                    const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
-                    const cardSlug = (card.getAttribute('data-slug') || '').toLowerCase();
-                    const keywords = (card.getAttribute('data-keywords') || '').toLowerCase();
-                    const titleEl = card.querySelector('.community-title');
-                    const descEl = card.querySelector('.community-description');
-                    const title = titleEl ? titleEl.textContent.toLowerCase() : '';
-                    const desc = descEl ? descEl.textContent.toLowerCase() : '';
-
-                    // Robust category matching: matches key ('ai'), slug ('ai-ml'), or category string
-                    const matchesCategory = (
-                        currentCategory === 'all' || 
-                        cardCategory.includes(currentCategory) || 
-                        cardSlug === currentCategory ||
-                        (currentCategory === 'systems' && (cardCategory.includes('open') || cardCategory.includes('sys'))) ||
-                        (currentCategory === 'algo' && (cardCategory.includes('algo') || cardCategory.includes('problem'))) ||
-                        (currentCategory === 'ai' && (cardCategory.includes('ai') || cardCategory.includes('machine') || cardCategory.includes('data'))) ||
-                        (currentCategory === 'web' && (cardCategory.includes('web') || cardCategory.includes('cloud') || cardCategory.includes('infra'))) ||
-                        (currentCategory === 'security' && (cardCategory.includes('sec') || cardCategory.includes('cyber'))) ||
-                        (currentCategory === 'mobile' && (cardCategory.includes('mob') || cardCategory.includes('app')))
-                    );
-
-                    const matchesQuery = !query || title.includes(query) || desc.includes(query) || keywords.includes(query) || cardSlug.includes(query);
-
-                    if (matchesCategory && matchesQuery) {
-                        card.style.display = '';
-                        visibleCount++;
-                    } else {
-                        card.style.display = 'none';
-                    }
-                });
-
-                if (hubCount) {
-                    hubCount.textContent = visibleCount;
+                if (!immediate) {
+                    if (skeletonList) skeletonList.classList.remove('d-none');
+                    cards.forEach(card => card.style.opacity = '0.25');
+                    if (noResults) noResults.classList.add('d-none');
                 }
-                if (noResults) {
-                    if (visibleCount === 0) {
-                        noResults.classList.remove('d-none');
-                    } else {
-                        noResults.classList.add('d-none');
+
+                clearTimeout(filterTimeout);
+                const delay = immediate ? 0 : 120;
+
+                filterTimeout = setTimeout(() => {
+                    let visibleCount = 0;
+
+                    cards.forEach(card => {
+                        const cardCategory = (card.getAttribute('data-category') || '').toLowerCase();
+                        const cardSlug = (card.getAttribute('data-slug') || '').toLowerCase();
+                        const keywords = (card.getAttribute('data-keywords') || '').toLowerCase();
+                        const titleEl = card.querySelector('.community-title');
+                        const descEl = card.querySelector('.community-description');
+                        const title = titleEl ? titleEl.textContent.toLowerCase() : '';
+                        const desc = descEl ? descEl.textContent.toLowerCase() : '';
+
+                        // Robust category matching: matches key ('ai'), slug ('ai-ml'), or category string
+                        const matchesCategory = (
+                            currentCategory === 'all' || 
+                            cardCategory.includes(currentCategory) || 
+                            cardSlug === currentCategory ||
+                            (currentCategory === 'systems' && (cardCategory.includes('open') || cardCategory.includes('sys'))) ||
+                            (currentCategory === 'algo' && (cardCategory.includes('algo') || cardCategory.includes('problem'))) ||
+                            (currentCategory === 'ai' && (cardCategory.includes('ai') || cardCategory.includes('machine') || cardCategory.includes('data'))) ||
+                            (currentCategory === 'web' && (cardCategory.includes('web') || cardCategory.includes('cloud') || cardCategory.includes('infra'))) ||
+                            (currentCategory === 'security' && (cardCategory.includes('sec') || cardCategory.includes('cyber'))) ||
+                            (currentCategory === 'mobile' && (cardCategory.includes('mob') || cardCategory.includes('app')))
+                        );
+
+                        const matchesQuery = !query || title.includes(query) || desc.includes(query) || keywords.includes(query) || cardSlug.includes(query);
+
+                        if (matchesCategory && matchesQuery) {
+                            card.style.display = '';
+                            card.style.opacity = '1';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    if (skeletonList) skeletonList.classList.add('d-none');
+
+                    if (hubCount) {
+                        hubCount.textContent = visibleCount;
                     }
-                }
+                    if (noResults) {
+                        if (visibleCount === 0) {
+                            noResults.classList.remove('d-none');
+                        } else {
+                            noResults.classList.add('d-none');
+                        }
+                    }
+                }, delay);
             }
 
             if (searchInput) {
-                searchInput.addEventListener('input', filterCards);
+                searchInput.addEventListener('input', () => filterCards(false));
                 searchInput.addEventListener('keydown', function(e) {
                     if (e.key === 'Escape') {
                         searchInput.value = '';
-                        filterCards();
+                        filterCards(false);
                     }
                 });
             }
@@ -782,7 +845,7 @@
                         searchInput.value = '';
                         searchInput.focus();
                     }
-                    filterCards();
+                    filterCards(false);
                 });
             }
 
@@ -791,7 +854,7 @@
                     filterButtons.forEach(b => b.classList.remove('active'));
                     this.classList.add('active');
                     currentCategory = this.getAttribute('data-category');
-                    filterCards();
+                    filterCards(false);
                 });
             });
 
@@ -800,7 +863,7 @@
                 currentCategory = 'all';
                 filterButtons.forEach(b => b.classList.remove('active'));
                 if (filterButtons.length > 0) filterButtons[0].classList.add('active');
-                filterCards();
+                filterCards(false);
             };
 
             // Apply custom accent colors if specified via data attributes (e.g. from database)
@@ -812,7 +875,7 @@
             });
 
             // Initialize count and state on DOM load
-            filterCards();
+            filterCards(true);
 
             // Client-side image validation and live preview for Hub Icon upload
             const hubImageInput = document.getElementById('hub_image');

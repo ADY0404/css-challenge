@@ -33,7 +33,9 @@
             <div class="card border-0 shadow-sm p-4 text-center sticky-lg-top" style="border-radius: 16px; top: 1.5rem;">
                 <div class="mb-3 mx-auto">
                     {% if member_profile.profile_picture %}
-                        <img src="{{ member_profile.profile_picture.url }}" alt="{{ member_user.username }}" class="rounded-circle shadow-sm" style="width: 110px; height: 110px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
+                        <div class="skeleton-img-wrapper rounded-circle shadow-sm mx-auto" style="width: 110px; height: 110px;">
+                            <img src="{{ member_profile.profile_picture.url }}" alt="{{ member_user.username }}" class="rounded-circle" style="width: 110px; height: 110px; object-fit: cover;" onerror="this.parentElement.style.display='none'; this.parentElement.nextElementSibling.classList.remove('d-none');">
+                        </div>
                         <div class="rounded-circle mx-auto shadow-sm d-none d-flex align-items-center justify-content-center bg-primary text-white" style="width: 110px; height: 110px; font-size: 2.5rem; font-weight: bold;">
                             {{ member_user.first_name|first|default:member_user.username|first|upper }}
                         </div>

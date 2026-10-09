@@ -31,7 +31,9 @@
         <section class="mb-5">
             <div class="row g-0 border rounded overflow-hidden bg-white shadow-sm" style="border-radius: 14px;">
                 <div class="col-lg-6">
-                    <img src="{% static featured_story.image_path %}" alt="{{ featured_story.title }}" class="img-fluid w-100 h-100" style="min-height: 320px; max-height: 420px; object-fit: cover;">
+                    <div class="skeleton-img-wrapper w-100 h-100" style="min-height: 320px; max-height: 420px;">
+                        <img src="{% static featured_story.image_path %}" alt="{{ featured_story.title }}" class="img-fluid w-100 h-100" style="min-height: 320px; max-height: 420px; object-fit: cover;">
+                    </div>
                 </div>
                 <div class="col-lg-6 d-flex align-items-center">
                     <article class="p-4 p-lg-5">
@@ -81,7 +83,9 @@
                 <div class="col-md-4">
                     <article class="card h-100 shadow-sm border-0 d-flex flex-column justify-content-between overflow-hidden" style="border-radius: 12px;">
                         <div>
-                            <img src="{% static article.image_path %}" alt="{{ article.title }}" class="card-img-top" style="height: 180px; object-fit: cover;">
+                            <div class="skeleton-img-wrapper w-100" style="height: 180px;">
+                                <img src="{% static article.image_path %}" alt="{{ article.title }}" class="card-img-top" style="height: 180px; object-fit: cover;">
+                            </div>
                             <div class="card-body p-4">
                                 <span class="badge bg-light text-primary border text-capitalize mb-2">{{ article.category }}</span>
                                 <h4 class="h5 fw-bold card-title">

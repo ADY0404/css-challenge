@@ -560,8 +560,12 @@ class AuthenticationFlowTests(TestCase):
         self.profile.save()
 
         self.client.login(username='admin_tester', password='AdminPass123!')
-        reactivate_url = reverse('admin:user_reactivate', args=[self.user.pk])
-        response = self.client.get(reactivate_url)
+        from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
+        admin_user_changelist = reverse('admin:auth_user_changelist')
+        response = self.client.post(admin_user_changelist, {
+            'action': 'reactivate_selected_users',
+            ACTION_CHECKBOX_NAME: [self.user.pk],
+        })
         self.assertIn(response.status_code, [200, 302])
 
         self.user.refresh_from_db()
@@ -574,13 +578,19 @@ class AuthenticationFlowTests(TestCase):
         admin_user = User.objects.create_superuser('admin_tester2', 'admin2@example.edu', 'AdminPass123!')
         self.client.login(username='admin_tester2', password='AdminPass123!')
 
-        deactivate_url = reverse('admin:user_deactivate', args=[self.user.pk])
-        self.client.get(deactivate_url)
+        from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
+        admin_user_changelist = reverse('admin:auth_user_changelist')
+        self.client.post(admin_user_changelist, {
+            'action': 'deactivate_selected_users',
+            ACTION_CHECKBOX_NAME: [self.user.pk],
+        })
         self.user.refresh_from_db()
         self.assertFalse(self.user.is_active)
 
-        unlock_url = reverse('admin:user_unlock', args=[self.user.pk])
-        self.client.get(unlock_url)
+        self.client.post(admin_user_changelist, {
+            'action': 'unlock_selected_users',
+            ACTION_CHECKBOX_NAME: [self.user.pk],
+        })
         self.user.refresh_from_db()
         self.profile.refresh_from_db()
         self.assertTrue(self.user.is_active)

@@ -64,8 +64,32 @@
             </li>
         </ul>
 
+        <!-- Skeleton Results Loader (shown on search submission or tab switch) -->
+        <div id="searchResultsSkeleton" class="d-none flex-column gap-3 mb-3">
+            <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="skeleton-badge" style="width: 80px;"></div>
+                    <div class="skeleton-text" style="width: 70px; height: 12px;"></div>
+                </div>
+                <div class="skeleton-text skeleton-title mb-2" style="width: 45%; height: 20px;"></div>
+                <div class="skeleton-text mb-2" style="width: 90%;"></div>
+                <div class="skeleton-text mb-3" style="width: 65%;"></div>
+                <div class="skeleton-btn" style="width: 100px; height: 30px;"></div>
+            </div>
+            <div class="card border-0 shadow-sm p-4 bg-white" style="border-radius: 12px;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="skeleton-badge" style="width: 95px;"></div>
+                    <div class="skeleton-text" style="width: 60px; height: 12px;"></div>
+                </div>
+                <div class="skeleton-text skeleton-title mb-2" style="width: 50%; height: 20px;"></div>
+                <div class="skeleton-text mb-2" style="width: 85%;"></div>
+                <div class="skeleton-text mb-3" style="width: 70%;"></div>
+                <div class="skeleton-btn" style="width: 100px; height: 30px;"></div>
+            </div>
+        </div>
+
         {% if total_results > 0 %}
-            <div class="d-flex flex-column gap-3">
+            <div id="searchResultsContent" class="d-flex flex-column gap-3">
                 <!-- Challenges -->
                 {% if tab == 'all' or tab == 'challenges' %}
                     {% for item in challenges %}
@@ -191,6 +215,27 @@
         </div>
     {% endif %}
 </main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const skeleton = document.getElementById('searchResultsSkeleton');
+        const content = document.getElementById('searchResultsContent');
+        const form = document.querySelector('form[action="{% url "search" %}"]');
+        const tabLinks = document.querySelectorAll('.nav-pills .nav-link');
+
+        function triggerSkeleton() {
+            if (skeleton) skeleton.classList.remove('d-none');
+            if (content) content.style.opacity = '0.25';
+        }
+
+        if (form) {
+            form.addEventListener('submit', triggerSkeleton);
+        }
+        tabLinks.forEach(link => {
+            link.addEventListener('click', triggerSkeleton);
+        });
+    });
+</script>
 
 {% endblock content %}
 

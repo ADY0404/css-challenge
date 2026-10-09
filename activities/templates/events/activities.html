@@ -28,13 +28,15 @@
                 <article class="card mb-4 shadow-sm border-0" style="border-radius: 10px;">
                     <div class="row g-0 align-items-center">
                         <div class="col-md-3">
-                            {% if event.image_url %}
-                                <img src="{{ event.image_url }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onerror="this.onerror=null; this.src='{{ default_act_img }}';">
-                            {% elif event.image_path %}
-                                <img src="{% static event.image_path %}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onerror="this.onerror=null; this.src='{{ default_act_img }}';">
-                            {% else %}
-                                <img src="{{ default_act_img }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;">
-                            {% endif %}
+                            <div class="skeleton-img-wrapper rounded-start w-100" style="height: 180px;">
+                                {% if event.image_url %}
+                                    <img src="{{ event.image_url }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onerror="this.onerror=null; this.src='{{ default_act_img }}';">
+                                {% elif event.image_path %}
+                                    <img src="{% static event.image_path %}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;" onerror="this.onerror=null; this.src='{{ default_act_img }}';">
+                                {% else %}
+                                    <img src="{{ default_act_img }}" class="img-fluid rounded-start" alt="{{ event.title }}" style="height: 180px; object-fit: cover; width: 100%;">
+                                {% endif %}
+                            </div>
                         </div>
                         <div class="col-md-9">
                             <div class="card-body p-4">

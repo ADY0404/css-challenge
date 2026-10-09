@@ -142,8 +142,16 @@ WSGI_APPLICATION = 'myfirst.wsgi.application'
 # - Default fallback: SQLite (db.sqlite3) for local development
 DATABASE_URL = config('DATABASE_URL', default='')
 DB_ENGINE = config('DB_ENGINE', default='').lower()
+USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
 
-if DATABASE_URL.startswith(('mysql://', 'mariadb://')) or DB_ENGINE in ('mysql', 'mariadb'):
+if USE_SQLITE or DB_ENGINE == 'sqlite':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+elif DATABASE_URL.startswith(('mysql://', 'mariadb://')) or DB_ENGINE in ('mysql', 'mariadb'):
     try:
         import pymysql
         pymysql.install_as_MySQLdb()

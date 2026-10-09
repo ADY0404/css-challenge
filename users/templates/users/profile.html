@@ -32,7 +32,9 @@
             <div class="d-flex align-items-center gap-4 mb-4 pb-4 border-bottom flex-wrap">
                 <div>
                     {% if user.profile.profile_picture %}
-                        <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle shadow-sm" style="width: 90px; height: 90px; object-fit: cover;">
+                        <div class="skeleton-img-wrapper rounded-circle shadow-sm" style="width: 90px; height: 90px;">
+                            <img src="{{ user.profile.profile_picture.url }}" alt="Profile Picture" class="rounded-circle" style="width: 90px; height: 90px; object-fit: cover;">
+                        </div>
                     {% else %}
                         <div class="d-flex align-items-center justify-content-center rounded-circle bg-primary text-white shadow-sm" style="width: 90px; height: 90px; font-size: 2.2rem; font-weight: bold;">
                             {{ user.username|first|upper }}

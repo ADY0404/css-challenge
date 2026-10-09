@@ -37,7 +37,9 @@
         <article class="card shadow-sm border-0 overflow-hidden" style="border-radius: 14px;">
             <div class="row g-0 align-items-center">
                 <div class="col-md-4 position-relative" style="min-height: 220px;">
-                    <img src="{% static 'images/bot.jpeg' %}" alt="{{ featured_challenge.title }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 220px;">
+                    <div class="skeleton-img-wrapper h-100 w-100" style="min-height: 220px;">
+                        <img src="{% static 'images/bot.jpeg' %}" alt="{{ featured_challenge.title }}" class="img-fluid h-100 w-100" style="object-fit: cover; min-height: 220px;">
+                    </div>
                     <div class="position-absolute top-0 start-0 m-3">
                         <span class="badge bg-primary text-white fw-semibold shadow-sm">{{ featured_challenge.category }}</span>
                     </div>
@@ -82,11 +84,13 @@
                 <div class="col-md-4">
                     <article class="card h-100 shadow-sm border-0 d-flex flex-column justify-content-between overflow-hidden" style="border-radius: 12px;">
                         <div>
-                            {% if forloop.counter|divisibleby:2 %}
-                                <img src="{% static 'images/AI.jpeg' %}" alt="{{ challenge.title }}" class="w-100" style="height: 140px; object-fit: cover;">
-                            {% else %}
-                                <img src="{% static 'images/gat.jpeg' %}" alt="{{ challenge.title }}" class="w-100" style="height: 140px; object-fit: cover;">
-                            {% endif %}
+                            <div class="skeleton-img-wrapper w-100" style="height: 140px;">
+                                {% if forloop.counter|divisibleby:2 %}
+                                    <img src="{% static 'images/AI.jpeg' %}" alt="{{ challenge.title }}" class="w-100" style="height: 140px; object-fit: cover;">
+                                {% else %}
+                                    <img src="{% static 'images/gat.jpeg' %}" alt="{{ challenge.title }}" class="w-100" style="height: 140px; object-fit: cover;">
+                                {% endif %}
+                            </div>
                             <div class="p-4 pb-0">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <span class="badge bg-light text-primary border fw-semibold">{{ challenge.category }}</span>
