@@ -5,13 +5,6 @@
 <!-- Header Banner -->
 <section class="bg-primary text-white py-5 mb-4">
     <div class="container">
-        <nav aria-label="breadcrumb" class="mb-3">
-            <ol class="breadcrumb mb-0">
-                <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-white-50 text-decoration-none">Home</a></li>
-                <li class="breadcrumb-item"><a href="{% url 'challenge' %}" class="text-white-50 text-decoration-none">Challenges</a></li>
-                <li class="breadcrumb-item active text-white" aria-current="page">{{ challenge.title }}</li>
-            </ol>
-        </nav>
         <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
             <span class="badge bg-light text-primary fw-bold px-3 py-1">{{ challenge.week_label }}</span>
             <span class="badge bg-success text-white px-3 py-1">{{ challenge.difficulty }}</span>

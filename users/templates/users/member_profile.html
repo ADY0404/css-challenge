@@ -18,14 +18,6 @@
 </section>
 
 <main class="container pb-5" style="max-width: 960px;">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'community' %}" class="text-decoration-none">Community</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ member_user.get_full_name|default:member_user.username }}</li>
-        </ol>
-    </nav>
 
     <div class="row g-4">
         <!-- Left Column: Member Card -->
