@@ -50,39 +50,41 @@
 </section>
 
 <main class="container pb-5">
-    <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
-        <ol class="breadcrumb justify-content-center justify-content-md-start">
-            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">Home</a></li>
-            {% if page_key == 'school-of-groups' or page_key == 'tell-your-story' %}
-                <li class="breadcrumb-item"><a href="{% url 'programs' %}" class="text-decoration-none">Programs</a></li>
-            {% endif %}
-            <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
-        </ol>
-    </nav>
-
     {% if sections %}
     <!-- Structured Dynamic Content Sections -->
     <div class="row g-4 g-lg-5">
         <!-- Table of Contents Sidebar (Desktop & Tablet) -->
         {% if sections|length >= 3 %}
-        <div class="col-lg-4 col-xl-3 d-none d-lg-block">
+        <div class="col-lg-4 col-xl-4 d-none d-lg-block">
             <div class="position-sticky" style="top: 85px;">
-                <div class="card border-0 shadow-sm p-3 bg-light rounded-4">
-                    <h2 class="h6 text-uppercase fw-bold text-muted mb-3" style="letter-spacing: .06em;">
-                        <i class="bi bi-list-nested me-1 text-primary"></i> On This Page
-                    </h2>
-                    <nav class="nav flex-column gap-1 toc-nav">
+                <div class="card border-0 shadow-sm p-3 p-xl-4 bg-white rounded-4 toc-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                        <h2 class="h6 text-uppercase fw-bold text-dark mb-0 d-flex align-items-center" style="letter-spacing: .06em; font-size: 0.82rem;">
+                            <i class="bi bi-list-nested me-2 text-primary fs-5"></i> On This Page
+                        </h2>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 fw-semibold" style="font-size: 0.72rem;">
+                            {{ sections|length }} sections
+                        </span>
+                    </div>
+
+                    <nav class="nav flex-column gap-1 toc-nav" id="tocNavigation" style="max-height: calc(100vh - 210px); overflow-y: auto; overscroll-behavior: contain;">
                         {% for sec in sections %}
-                            <a href="#{{ sec.section_key }}" class="nav-link py-1 px-2 rounded small text-secondary text-decoration-none toc-link d-flex align-items-center">
-                                {% if sec.icon_class %}<i class="bi {{ sec.icon_class }} me-2 text-primary"></i>{% endif %}
-                                <span class="text-truncate">{{ sec.heading }}</span>
+                            <a href="#{{ sec.section_key }}" class="nav-link py-2 px-2 rounded-3 text-secondary text-decoration-none toc-link d-flex align-items-start gap-2" data-section="{{ sec.section_key }}">
+                                {% if sec.icon_class %}
+                                    <i class="bi {{ sec.icon_class }} text-primary mt-1 flex-shrink-0" style="font-size: 0.95rem;"></i>
+                                {% else %}
+                                    <i class="bi bi-hash text-muted mt-1 flex-shrink-0"></i>
+                                {% endif %}
+                                <span class="toc-text">{{ sec.heading }}</span>
                             </a>
                         {% endfor %}
                     </nav>
-                    <hr class="my-3 text-muted">
-                    <div class="small text-muted">
-                        <i class="bi bi-shield-check text-success me-1"></i> Official Society Resource
+
+                    <div class="pt-3 mt-2 border-top d-flex align-items-center justify-content-between small text-muted">
+                        <span><i class="bi bi-shield-check text-success me-1"></i> Official Society Resource</span>
+                        <a href="#" class="text-decoration-none text-muted small" onclick="window.scrollTo({top: 0, behavior: 'smooth'}); return false;">
+                            Top <i class="bi bi-arrow-up-short"></i>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -90,15 +92,15 @@
         {% endif %}
 
         <!-- Content Column -->
-        <div class="{% if sections|length >= 3 %}col-lg-8 col-xl-9{% else %}col-12{% endif %}">
+        <div class="{% if sections|length >= 3 %}col-lg-8 col-xl-8{% else %}col-12{% endif %}">
             <!-- Mobile Table of Contents Accordion -->
             {% if sections|length >= 3 %}
             <div class="d-lg-none mb-4">
                 <div class="accordion" id="mobileTocAccordion">
-                    <div class="accordion-item border-0 shadow-sm rounded-3 overflow-hidden">
+                    <div class="accordion-item border-0 shadow-sm rounded-4 overflow-hidden" style="border: 1px solid rgba(226, 232, 240, 0.9) !important;">
                         <h2 class="accordion-header" id="headingMobileToc">
-                            <button class="accordion-button collapsed py-2 px-3 fw-semibold small bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMobileToc" aria-expanded="false" aria-controls="collapseMobileToc">
-                                <i class="bi bi-list-nested me-2 text-primary"></i> Jump to Section ({{ sections|length }} sections)
+                            <button class="accordion-button collapsed py-2 px-3 fw-semibold small bg-white" type="button" data-bs-toggle="collapse" data-bs-target="#collapseMobileToc" aria-expanded="false" aria-controls="collapseMobileToc">
+                                <i class="bi bi-list-nested me-2 text-primary"></i> On This Page ({{ sections|length }} sections)
                             </button>
                         </h2>
                         <div id="collapseMobileToc" class="accordion-collapse collapse" aria-labelledby="headingMobileToc" data-bs-parent="#mobileTocAccordion">
@@ -106,9 +108,9 @@
                                 <ul class="list-unstyled mb-0 small">
                                     {% for sec in sections %}
                                         <li class="py-1 px-2">
-                                            <a href="#{{ sec.section_key }}" class="text-secondary text-decoration-none">
-                                                {% if sec.icon_class %}<i class="bi {{ sec.icon_class }} me-1 text-primary"></i>{% endif %}
-                                                {{ sec.heading }}
+                                            <a href="#{{ sec.section_key }}" class="text-secondary text-decoration-none d-flex align-items-start gap-2 py-1">
+                                                {% if sec.icon_class %}<i class="bi {{ sec.icon_class }} text-primary mt-1 flex-shrink-0"></i>{% endif %}
+                                                <span>{{ sec.heading }}</span>
                                             </a>
                                         </li>
                                     {% endfor %}
@@ -271,9 +273,45 @@
 </main>
 
 <style>
+.toc-card {
+    border: 1px solid rgba(226, 232, 240, 0.9) !important;
+}
+.toc-nav::-webkit-scrollbar {
+    width: 4px;
+}
+.toc-nav::-webkit-scrollbar-track {
+    background: transparent;
+}
+.toc-nav::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 4px;
+}
+.toc-link {
+    font-size: 0.86rem;
+    line-height: 1.4;
+    color: #475569 !important;
+    transition: all 0.15s ease-in-out;
+    border-left: 2px solid transparent;
+}
 .toc-link:hover {
-    background-color: #e2e8f0;
-    color: #1e40af !important;
+    background-color: #f1f5f9;
+    color: #0d6efd !important;
+    border-left-color: #93c5fd;
+    transform: translateX(2px);
+}
+.toc-link.active {
+    background-color: #eff6ff;
+    color: #0d6efd !important;
+    font-weight: 600;
+    border-left-color: #0d6efd;
+}
+.toc-text {
+    word-break: normal;
+    overflow-wrap: break-word;
+    display: inline-block;
+}
+article.card {
+    scroll-margin-top: 90px;
 }
 .leading-relaxed {
     line-height: 1.75;
@@ -288,4 +326,48 @@
     margin-bottom: 0.35rem;
 }
 </style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tocLinks = document.querySelectorAll('.toc-link');
+    const sections = document.querySelectorAll('article.card[id]');
+    
+    if (sections.length > 0 && tocLinks.length > 0) {
+        // Set first link active initially
+        if (tocLinks.length > 0) {
+            tocLinks[0].classList.add('active');
+        }
+
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    const id = entry.target.getAttribute('id');
+                    tocLinks.forEach(function(link) {
+                        if (link.getAttribute('href') === '#' + id) {
+                            link.classList.add('active');
+                            // Ensure the active link is visible in scrollable TOC
+                            var nav = document.getElementById('tocNavigation');
+                            if (nav) {
+                                var linkTop = link.offsetTop - nav.offsetTop;
+                                if (linkTop < nav.scrollTop || linkTop > (nav.scrollTop + nav.clientHeight - 40)) {
+                                    nav.scrollTo({ top: linkTop - 20, behavior: 'smooth' });
+                                }
+                            }
+                        } else {
+                            link.classList.remove('active');
+                        }
+                    });
+                }
+            });
+        }, {
+            rootMargin: '-80px 0px -60% 0px',
+            threshold: 0.1
+        });
+
+        sections.forEach(function(section) {
+            observer.observe(section);
+        });
+    }
+});
+</script>
 {% endblock content %}
