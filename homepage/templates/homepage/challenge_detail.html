@@ -79,7 +79,7 @@
                                     <button type="button" 
                                             class="btn btn-sm {% if sub.id in user_upvoted_ids %}btn-danger text-white{% else %}btn-outline-danger{% endif %} py-1 px-2 upvote-btn" 
                                             id="upvote-btn-{{ sub.id }}"
-                                            onclick="toggleUpvote({{ sub.id }})" 
+                                            data-sub-id="{{ sub.id }}" 
                                             title="Appreciate this solution">
                                         <i class="bi {% if sub.id in user_upvoted_ids %}bi-heart-fill{% else %}bi-heart{% endif %} me-1" id="upvote-icon-{{ sub.id }}"></i>
                                         <span id="upvote-count-{{ sub.id }}">{{ sub.num_upvotes }}</span>
@@ -287,6 +287,17 @@
             btn.disabled = false;
         });
     };
+
+    // Unobtrusive click listener for upvote buttons
+    document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.upvote-btn');
+        if (btn) {
+            var subId = btn.getAttribute('data-sub-id');
+            if (subId) {
+                window.toggleUpvote(subId);
+            }
+        }
+    });
 })();
 </script>
 {% endblock content %}
