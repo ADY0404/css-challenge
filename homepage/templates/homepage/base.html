@@ -157,12 +157,26 @@
         <div class="container d-flex flex-wrap justify-content-between align-items-center">
             <p class="mb-0 text-white-50 small">&copy; {% now "Y" %} Computer Science Society. All rights reserved.</p>
             <div class="d-flex flex-wrap gap-3 small">
-                <a href="{% url 'school_of_groups' %}" class="text-white-50 text-decoration-none">School of Groups</a>
-                <a href="{% url 'tell_your_story' %}" class="text-white-50 text-decoration-none">Tell Your Story</a>
-                <a href="{% url 'community_guidelines' %}" class="text-white-50 text-decoration-none">Community Guidelines</a>
-                <a href="{% url 'guidelines' %}" class="text-white-50 text-decoration-none">Platform Guidelines</a>
-                <a href="{% url 'terms' %}" class="text-white-50 text-decoration-none">Terms</a>
-                <a href="{% url 'privacy' %}" class="text-white-50 text-decoration-none">Privacy</a>
+                {% if request.resolver_match.url_name != 'home' and request.path != '/' %}
+                    {% if request.resolver_match.url_name != 'school_of_groups' and request.path != '/school-of-groups/' %}
+                        <a href="{% url 'school_of_groups' %}" class="text-white-50 text-decoration-none">School of Groups</a>
+                    {% endif %}
+                    {% if request.resolver_match.url_name != 'tell_your_story' and request.path != '/tell-your-story/' %}
+                        <a href="{% url 'tell_your_story' %}" class="text-white-50 text-decoration-none">Tell Your Story</a>
+                    {% endif %}
+                    {% if request.resolver_match.url_name != 'community_guidelines' and request.path != '/community-guidelines/' %}
+                        <a href="{% url 'community_guidelines' %}" class="text-white-50 text-decoration-none">Community Guidelines</a>
+                    {% endif %}
+                    {% if request.resolver_match.url_name != 'guidelines' and request.path != '/guidelines/' %}
+                        <a href="{% url 'guidelines' %}" class="text-white-50 text-decoration-none">Platform Guidelines</a>
+                    {% endif %}
+                {% endif %}
+                {% if request.resolver_match.url_name != 'terms' and request.path != '/terms/' %}
+                    <a href="{% url 'terms' %}" class="text-white-50 text-decoration-none">Terms</a>
+                {% endif %}
+                {% if request.resolver_match.url_name != 'privacy' and request.path != '/privacy/' %}
+                    <a href="{% url 'privacy' %}" class="text-white-50 text-decoration-none">Privacy</a>
+                {% endif %}
             </div>
         </div>
     </footer>

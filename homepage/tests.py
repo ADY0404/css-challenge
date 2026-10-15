@@ -933,14 +933,48 @@ class ManagedContentPagesTests(TestCase):
         self.assertEqual(student_resp.status_code, 403)
 
     def test_public_navigation_footer_links_present(self):
-        resp = self.client.get(reverse('home'))
-        self.assertEqual(resp.status_code, 200)
-        self.assertContains(resp, reverse('school_of_groups'))
-        self.assertContains(resp, reverse('tell_your_story'))
-        self.assertContains(resp, reverse('community_guidelines'))
-        self.assertContains(resp, reverse('guidelines'))
-        self.assertContains(resp, reverse('terms'))
-        self.assertContains(resp, reverse('privacy'))
+        # 1. On Home page, links exist in Society Programs & Resources & Support sections,
+        # but the dark footer bar excludes those 4 items (showing only Terms and Privacy)
+        home_resp = self.client.get(reverse('home'))
+        self.assertEqual(home_resp.status_code, 200)
+        self.assertContains(home_resp, reverse('school_of_groups'))
+        self.assertContains(home_resp, reverse('tell_your_story'))
+        self.assertContains(home_resp, reverse('terms'))
+        self.assertContains(home_resp, reverse('privacy'))
+
+        # Inspect footer block specifically
+        home_content = home_resp.content.decode('utf-8')
+        footer_html = home_content.split('<footer')[-1].split('</footer>')[0]
+        self.assertNotIn(reverse('school_of_groups'), footer_html)
+        self.assertNotIn(reverse('tell_your_story'), footer_html)
+        self.assertNotIn(reverse('community_guidelines'), footer_html)
+        self.assertNotIn(reverse('guidelines'), footer_html)
+        self.assertIn(reverse('terms'), footer_html)
+        self.assertIn(reverse('privacy'), footer_html)
+
+        # 2. When opening 'tell-your-story', it is omitted from the footer options
+        tys_resp = self.client.get(reverse('tell_your_story'))
+        self.assertEqual(tys_resp.status_code, 200)
+        tys_content = tys_resp.content.decode('utf-8')
+        tys_footer = tys_content.split('<footer')[-1].split('</footer>')[0]
+        self.assertNotIn(reverse('tell_your_story'), tys_footer)
+        self.assertIn(reverse('school_of_groups'), tys_footer)
+        self.assertIn(reverse('community_guidelines'), tys_footer)
+        self.assertIn(reverse('guidelines'), tys_footer)
+        self.assertIn(reverse('terms'), tys_footer)
+        self.assertIn(reverse('privacy'), tys_footer)
+
+        # 3. On other pages (e.g. community), all 6 options are present in the footer
+        comm_resp = self.client.get(reverse('community'))
+        self.assertEqual(comm_resp.status_code, 200)
+        comm_content = comm_resp.content.decode('utf-8')
+        comm_footer = comm_content.split('<footer')[-1].split('</footer>')[0]
+        self.assertIn(reverse('school_of_groups'), comm_footer)
+        self.assertIn(reverse('tell_your_story'), comm_footer)
+        self.assertIn(reverse('community_guidelines'), comm_footer)
+        self.assertIn(reverse('guidelines'), comm_footer)
+        self.assertIn(reverse('terms'), comm_footer)
+        self.assertIn(reverse('privacy'), comm_footer)
 
 
 
