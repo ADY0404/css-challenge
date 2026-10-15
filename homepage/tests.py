@@ -11,7 +11,11 @@ from .models import (
     CommunityMessage,
     CommunityChannel,
     ClinicAppointment,
+    InfoPage,
+    PageSection,
+    PageVersion,
 )
+from .management.commands.seed_pages_data import PAGES_DATA
 
 
 class HomepageViewsTests(TestCase):
@@ -59,6 +63,41 @@ class HomepageViewsTests(TestCase):
             apply_url='https://atlas.example.com/careers',
             tags='Python, Django, PostgreSQL',
             is_featured=True,
+        )
+
+        for p_data in PAGES_DATA:
+            p_obj = InfoPage.objects.create(
+                slug=p_data['slug'],
+                title=p_data['title'],
+                subtitle=p_data.get('subtitle', ''),
+                summary=p_data.get('summary', ''),
+                badge_text=p_data.get('badge_text', ''),
+                status='published',
+                is_published=True,
+                effective_date=p_data.get('effective_date', ''),
+                contact_email=p_data.get('contact_email', ''),
+                hero_cta_text=p_data.get('hero_cta_text', ''),
+                hero_cta_url=p_data.get('hero_cta_url', ''),
+            )
+            for s_data in p_data.get('sections', []):
+                PageSection.objects.create(
+                    page=p_obj,
+                    heading=s_data['heading'],
+                    section_key=s_data.get('section_key', ''),
+                    body=s_data['body'],
+                    icon_class=s_data.get('icon_class', ''),
+                    call_to_action_text=s_data.get('call_to_action_text', ''),
+                    call_to_action_url=s_data.get('call_to_action_url', ''),
+                    call_to_action_style=s_data.get('call_to_action_style', 'btn-primary'),
+                    order=s_data.get('order', 0),
+                    is_visible=s_data.get('is_visible', True),
+                )
+        InfoPage.objects.create(
+            slug='programs',
+            title='CSS Programs',
+            summary='Explore society programs',
+            status='published',
+            is_published=True,
         )
 
     def test_home_page_renders_status_200(self):
@@ -185,9 +224,9 @@ class HomepageViewsTests(TestCase):
         self.assertContains(chat_page, reverse('member_profile', kwargs={'username': self.user.username}))
 
     def test_informational_pages(self):
-        for page_name in ['guidelines', 'programs', 'terms', 'privacy']:
+        for page_name in ['school_of_groups', 'tell_your_story', 'community_guidelines', 'guidelines', 'programs', 'terms', 'privacy']:
             resp = self.client.get(reverse(page_name))
-            self.assertEqual(resp.status_code, 200)
+            self.assertEqual(resp.status_code, 200, f"Page {page_name} failed to render status 200")
 
     def test_programs_page_links_to_clinic_dates(self):
         resp = self.client.get(reverse('programs'))
@@ -374,6 +413,7 @@ class AdminPortalTests(TestCase):
     def test_admin_index_renders_organized_sections(self):
         resp = self.client.get('/adcs/')
         self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Content Management')
         self.assertContains(resp, 'Site Governance &amp; Security')
         self.assertContains(resp, 'Coding Challenges &amp; Leaderboard')
         self.assertContains(resp, 'Community Channels &amp; Discussions')
@@ -393,6 +433,14 @@ class AdminPortalTests(TestCase):
             'clinicappointment',
             'clinicsession',
             'infopage',
+            'pagesection',
+            'pageversion',
+            'schoolofgroupspage',
+            'tellyourstorypage',
+            'communityguidelinespage',
+            'guidelinespage',
+            'termspage',
+            'privacypage',
             'communitychannel',
             'siteconfiguration',
         ]
@@ -636,6 +684,264 @@ class SecuritySettingsTests(TestCase):
     def test_secure_proxy_ssl_header_configured(self):
         from django.conf import settings
         self.assertEqual(settings.SECURE_PROXY_SSL_HEADER, ('HTTP_X_FORWARDED_PROTO', 'https'))
+
+
+class ManagedContentPagesTests(TestCase):
+    def setUp(self):
+        # Create regular student user
+        self.student = User.objects.create_user(
+            username='student_reader',
+            email='student@example.edu',
+            password='TestPassword123!',
+        )
+        if hasattr(self.student, 'profile'):
+            self.student.profile.email_verified = True
+            self.student.profile.save()
+
+        # Create staff / administrator user
+        self.staff_admin = User.objects.create_superuser(
+            username='content_director',
+            email='director@css.knust.edu',
+            password='AdminPassword123!',
+        )
+        if hasattr(self.staff_admin, 'profile'):
+            self.staff_admin.profile.email_verified = True
+            self.staff_admin.profile.save()
+
+        # Seed all six managed pages with sections and snapshots
+        for p_data in PAGES_DATA:
+            page_obj = InfoPage.objects.create(
+                slug=p_data['slug'],
+                title=p_data['title'],
+                subtitle=p_data.get('subtitle', ''),
+                summary=p_data.get('summary', ''),
+                badge_text=p_data.get('badge_text', ''),
+                status='published',
+                is_published=True,
+                effective_date=p_data.get('effective_date', ''),
+                contact_email=p_data.get('contact_email', ''),
+                hero_cta_text=p_data.get('hero_cta_text', ''),
+                hero_cta_url=p_data.get('hero_cta_url', ''),
+                last_modified_by=self.staff_admin,
+            )
+            for s_data in p_data.get('sections', []):
+                PageSection.objects.create(
+                    page=page_obj,
+                    heading=s_data['heading'],
+                    section_key=s_data.get('section_key', ''),
+                    body=s_data['body'],
+                    icon_class=s_data.get('icon_class', ''),
+                    call_to_action_text=s_data.get('call_to_action_text', ''),
+                    call_to_action_url=s_data.get('call_to_action_url', ''),
+                    call_to_action_style=s_data.get('call_to_action_style', 'btn-primary'),
+                    order=s_data.get('order', 0),
+                    is_visible=s_data.get('is_visible', True),
+                )
+            page_obj.create_version_snapshot(user=self.staff_admin, notes="Initial test v1")
+
+    def test_all_six_pages_render_status_200_with_expected_titles(self):
+        pages_to_check = [
+            ('school_of_groups', 'School of Groups', 'Peer Study Cohorts'),
+            ('tell_your_story', 'Tell Your Story', 'Speaker Series &amp; Reflections'),
+            ('community_guidelines', 'Community Guidelines &amp; Code of Conduct', 'Behavior &amp; Safety Standards'),
+            ('guidelines', 'Platform Guidelines &amp; Operational Manual', 'Platform Operations'),
+            ('terms', 'Terms of Service', 'Terms &amp; Conditions'),
+            ('privacy', 'Privacy Policy', 'Data Protection &amp; Transparency'),
+        ]
+        for route_name, expected_title, expected_badge in pages_to_check:
+            resp = self.client.get(reverse(route_name))
+            self.assertEqual(resp.status_code, 200, f"Route {route_name} did not return 200")
+            self.assertContains(resp, expected_title)
+            self.assertContains(resp, expected_badge)
+
+    def test_school_of_groups_page_has_complete_sections_and_links(self):
+        resp = self.client.get(reverse('school_of_groups'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Welcome to School of Groups')
+        self.assertContains(resp, 'How School of Groups Works')
+        self.assertContains(resp, 'Specialized Domain Tracks')
+        self.assertContains(resp, 'AI &amp; Machine Learning Guild')
+        self.assertContains(resp, 'Web &amp; Cloud Systems Guild')
+        self.assertContains(resp, 'href="/community/"')
+
+    def test_tell_your_story_page_has_complete_sections_and_links(self):
+        resp = self.client.get(reverse('tell_your_story'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Why Your Story Matters')
+        self.assertContains(resp, 'The Bi-Weekly Student Stage')
+        self.assertContains(resp, 'Types of Stories We Welcome')
+        self.assertContains(resp, 'Crafting an Engaging Story: Guidelines')
+        self.assertContains(resp, 'stories@css.community')
+
+    def test_community_guidelines_distinct_from_guidelines(self):
+        cg_resp = self.client.get(reverse('community_guidelines'))
+        g_resp = self.client.get(reverse('guidelines'))
+
+        self.assertEqual(cg_resp.status_code, 200)
+        self.assertEqual(g_resp.status_code, 200)
+
+        # Community guidelines must focus on interpersonal behavior, anti-harassment, and reporting
+        self.assertContains(cg_resp, 'Zero Tolerance for Harassment &amp; Discrimination')
+        self.assertContains(cg_resp, 'Hate Speech, Threats &amp; Doxxing')
+        self.assertContains(cg_resp, 'ethics@css.community')
+        self.assertNotContains(cg_resp, 'PC Clinic Appointments &amp; Hardware Safety')
+
+        # Platform guidelines must focus on platform operations, challenges, and clinic
+        self.assertContains(g_resp, 'Getting Started on the CSS Platform')
+        self.assertContains(g_resp, 'Coding Challenges &amp; Submission Guidelines')
+        self.assertContains(g_resp, 'PC Clinic Appointments &amp; Hardware Safety')
+        self.assertNotContains(g_resp, 'Zero Tolerance for Harassment &amp; Discrimination')
+
+    def test_terms_and_privacy_have_distinct_content_and_effective_dates(self):
+        terms_resp = self.client.get(reverse('terms'))
+        priv_resp = self.client.get(reverse('privacy'))
+
+        self.assertEqual(terms_resp.status_code, 200)
+        self.assertEqual(priv_resp.status_code, 200)
+
+        # Terms checks
+        self.assertContains(terms_resp, 'Agreement to Terms')
+        self.assertContains(terms_resp, 'User Content Ownership')
+        self.assertContains(terms_resp, 'Limited License Granted to CSS')
+        self.assertContains(terms_resp, 'Effective Date: <strong class="text-white">October 15, 2024</strong>')
+        self.assertContains(terms_resp, 'governance@css.community')
+
+        # Privacy checks
+        self.assertContains(priv_resp, 'Categories of Information Collected')
+        self.assertContains(priv_resp, 'Storage, Encryption &amp; Security Protections')
+        self.assertContains(priv_resp, 'Cookies and Local Session Storage')
+        self.assertContains(priv_resp, 'Data Retention and Account Deletion')
+        self.assertContains(priv_resp, 'privacy@css.community')
+
+    def test_unknown_slug_returns_404(self):
+        resp = self.client.get('/non-existent-random-page/')
+        self.assertEqual(resp.status_code, 404)
+
+    def test_draft_page_returns_404_to_public_and_allows_staff_preview(self):
+        privacy_page = InfoPage.objects.get(slug='privacy')
+        privacy_page.status = 'draft'
+        privacy_page.is_published = False
+        privacy_page.save()
+
+        # Anonymous user -> 404
+        anon_resp = self.client.get(reverse('privacy'))
+        self.assertEqual(anon_resp.status_code, 404)
+
+        # Regular student authenticated -> 404
+        self.client.login(username='student_reader', password='TestPassword123!')
+        student_resp = self.client.get(reverse('privacy'))
+        self.assertEqual(student_resp.status_code, 404)
+        self.client.logout()
+
+        # Staff user -> 200 with Preview Mode Alert Banner
+        self.client.login(username='content_director', password='AdminPassword123!')
+        staff_resp = self.client.get(reverse('privacy'))
+        self.assertEqual(staff_resp.status_code, 200)
+        self.assertContains(staff_resp, 'Administrator Preview Mode')
+        self.assertContains(staff_resp, 'Draft / Unpublished')
+
+    def test_admin_can_update_content_sections_and_reflects_immediately(self):
+        groups_page = InfoPage.objects.get(slug='school-of-groups')
+        first_section = groups_page.sections.first()
+        first_section.heading = 'Next-Generation Autonomous Peer Guilds'
+        first_section.body = '<p>Revolutionary collaborative engineering pods.</p>'
+        first_section.save()
+
+        resp = self.client.get(reverse('school_of_groups'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Next-Generation Autonomous Peer Guilds')
+        self.assertContains(resp, 'Revolutionary collaborative engineering pods.')
+
+    def test_section_visibility_and_reordering(self):
+        terms_page = InfoPage.objects.get(slug='terms')
+        section_to_hide = terms_page.sections.get(section_key='permitted-prohibited')
+        section_to_hide.is_visible = False
+        section_to_hide.save()
+
+        resp = self.client.get(reverse('terms'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotContains(resp, '4. Permitted and Prohibited Conduct')
+
+    def test_html_sanitizer_blocks_script_injection_and_unsafe_urls(self):
+        guidelines_page = InfoPage.objects.get(slug='guidelines')
+        PageSection.objects.create(
+            page=guidelines_page,
+            heading='Security Advisory Section',
+            section_key='security-advisory',
+            body='<p>Safe paragraph <strong>bold text</strong></p><script>alert("hacked")</script><a href="javascript:alert(1)" onclick="malicious()">Malicious Link</a>',
+            order=99,
+            is_visible=True,
+        )
+
+        resp = self.client.get(reverse('guidelines'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'Safe paragraph')
+        self.assertContains(resp, '<strong>bold text</strong>')
+        self.assertNotContains(resp, '<script>alert("hacked")</script>')
+        self.assertNotContains(resp, 'alert("hacked")')
+        self.assertNotContains(resp, 'javascript:alert(1)')
+        self.assertNotContains(resp, 'onclick="malicious()"')
+
+        # Direct unit test of sanitize_html
+        from homepage.sanitizer import sanitize_html
+        dirty = '<script>alert(1)</script><img src="x" onerror="evil()"><a href="javascript:run()">click</a>'
+        cleaned = sanitize_html(dirty)
+        self.assertNotIn('<script>', cleaned)
+        self.assertNotIn('onerror', cleaned)
+        self.assertNotIn('javascript:', cleaned)
+
+    def test_version_history_snapshot_and_restoration(self):
+        terms_page = InfoPage.objects.get(slug='terms')
+        original_title = terms_page.title
+
+        # Create changes and snapshot
+        terms_page.title = 'Updated Terms of Service 2025'
+        terms_page.save()
+        snap_v2 = terms_page.create_version_snapshot(user=self.staff_admin, notes="Title change")
+        self.assertEqual(snap_v2.version_num, 2)
+
+        # Restore back to version 1
+        v1 = terms_page.versions.get(version_num=1)
+        self.client.login(username='content_director', password='AdminPassword123!')
+        restore_url = reverse('restore_page_version', kwargs={'slug': 'terms', 'version_id': v1.id})
+
+        # GET confirms restoration details
+        get_resp = self.client.get(restore_url)
+        self.assertEqual(get_resp.status_code, 200)
+        self.assertContains(get_resp, 'Confirm Version Restoration')
+
+        # POST executes restoration
+        post_resp = self.client.post(restore_url)
+        self.assertEqual(post_resp.status_code, 302)
+
+        terms_page.refresh_from_db()
+        self.assertEqual(terms_page.title, original_title)
+
+    def test_unauthorized_user_cannot_restore_page_version(self):
+        terms_page = InfoPage.objects.get(slug='terms')
+        v1 = terms_page.versions.first()
+        restore_url = reverse('restore_page_version', kwargs={'slug': 'terms', 'version_id': v1.id})
+
+        # Anonymous POST
+        anon_resp = self.client.post(restore_url)
+        self.assertEqual(anon_resp.status_code, 302)
+        self.assertIn('/login/', anon_resp.url)
+
+        # Student user POST -> 403 Forbidden
+        self.client.login(username='student_reader', password='TestPassword123!')
+        student_resp = self.client.post(restore_url)
+        self.assertEqual(student_resp.status_code, 403)
+
+    def test_public_navigation_footer_links_present(self):
+        resp = self.client.get(reverse('home'))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, reverse('school_of_groups'))
+        self.assertContains(resp, reverse('tell_your_story'))
+        self.assertContains(resp, reverse('community_guidelines'))
+        self.assertContains(resp, reverse('guidelines'))
+        self.assertContains(resp, reverse('terms'))
+        self.assertContains(resp, reverse('privacy'))
+
 
 
 

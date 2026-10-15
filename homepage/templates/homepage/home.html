@@ -141,7 +141,7 @@
             <p class="mx-auto mb-4 text-white-50" style="max-width: 620px;">
                 {{ site_config.guidelines_description|default:"We maintain an inclusive, supportive, and harassment-free environment for all computer science students across all physical and digital spaces." }}
             </p>
-            <a href="{% url 'guidelines' %}" class="btn btn-light fw-semibold text-primary px-4 py-2 shadow-sm">
+            <a href="{% url 'community_guidelines' %}" class="btn btn-light fw-semibold text-primary px-4 py-2 shadow-sm">
                 {{ site_config.guidelines_button_text|default:"Read Community Guidelines" }}
             </a>
         </div>
@@ -242,7 +242,7 @@
                     <p class="text-secondary small mb-0">{{ site_config.speaker_series_description|default:"Hear how fellow CS students build notable projects, secure internships, and prepare for tech careers." }}</p>
                 </div>
                 <div class="col-md-auto">
-                    <a href="{% url 'programs' %}" class="btn btn-outline-primary btn-sm">Explore Programs</a>
+                    <a href="{% url 'tell_your_story' %}" class="btn btn-outline-primary btn-sm">Explore Student Stories</a>
                 </div>
             </div>
         </div>
@@ -284,8 +284,8 @@
                 <div class="col-6 col-md-3">
                     <h6 class="fw-bold text-dark mb-3">Society Programs</h6>
                     <ul class="list-unstyled small mb-0">
-                        <li class="mb-2"><a href="{% url 'programs' %}" class="text-secondary text-decoration-none">School of Groups</a></li>
-                        <li class="mb-2"><a href="{% url 'programs' %}" class="text-secondary text-decoration-none">Tell Your Story</a></li>
+                        <li class="mb-2"><a href="{% url 'school_of_groups' %}" class="text-secondary text-decoration-none">School of Groups</a></li>
+                        <li class="mb-2"><a href="{% url 'tell_your_story' %}" class="text-secondary text-decoration-none">Tell Your Story</a></li>
                         <li class="mb-2"><a href="{% url 'clinic_dates' %}" class="text-secondary text-decoration-none">PC Clinic &amp; Dates</a></li>
                         <li class="mb-2"><a href="{% url 'challenge' %}" class="text-secondary text-decoration-none">Weekly Challenges</a></li>
                     </ul>
@@ -297,7 +297,8 @@
                         <li class="mb-2"><a href="{% url 'blog' %}" class="text-secondary text-decoration-none">CSS Journal</a></li>
                         <li class="mb-2"><a href="{% url 'internships' %}" class="text-secondary text-decoration-none">Internships Board</a></li>
                         <li class="mb-2"><a href="{% url 'executives:list' %}" class="text-secondary text-decoration-none">Executive Leadership</a></li>
-                        <li class="mb-2"><a href="{% url 'guidelines' %}" class="text-secondary text-decoration-none">Community Guidelines</a></li>
+                        <li class="mb-2"><a href="{% url 'community_guidelines' %}" class="text-secondary text-decoration-none">Community Guidelines</a></li>
+                        <li class="mb-2"><a href="{% url 'guidelines' %}" class="text-secondary text-decoration-none">Platform Guidelines</a></li>
                     </ul>
                 </div>
             </div>

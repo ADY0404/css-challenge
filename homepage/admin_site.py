@@ -23,9 +23,24 @@ def setup_custom_admin_dashboard(site):
 
         sections_def = [
             (
+                'Content Management',
+                'content_management',
+                [
+                    'SchoolOfGroupsPage',
+                    'TellYourStoryPage',
+                    'CommunityGuidelinesPage',
+                    'GuidelinesPage',
+                    'TermsPage',
+                    'PrivacyPage',
+                    'InfoPage',
+                    'PageSection',
+                    'PageVersion',
+                ],
+            ),
+            (
                 'Site Governance & Security',
                 'governance',
-                ['SiteConfiguration', 'User', 'Profile', 'Group', 'InfoPage'],
+                ['SiteConfiguration', 'User', 'Profile', 'Group'],
             ),
             (
                 'Coding Challenges & Leaderboard',

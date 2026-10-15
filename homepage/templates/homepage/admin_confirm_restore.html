@@ -1,0 +1,38 @@
+{% extends "homepage/base2.html" %}
+{% block content %}
+<div class="container py-5 my-4" style="max-width: 680px;">
+    <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: 14px;">
+        <div class="d-flex align-items-center gap-2 text-warning mb-3">
+            <i class="bi bi-clock-history fs-2"></i>
+            <h2 class="h4 fw-bold text-dark mb-0">Confirm Version Restoration</h2>
+        </div>
+        <p class="text-secondary leading-relaxed">
+            You are about to restore <strong>{{ page_obj.title }}</strong> to <strong>Version #{{ version.version_num }}</strong>
+            recorded on <strong>{{ version.saved_at|date:"F d, Y H:i" }}</strong>
+            {% if version.saved_by %}by {{ version.saved_by.get_full_name|default:version.saved_by.username }}{% endif %}.
+        </p>
+
+        <div class="bg-light rounded-3 p-3 mb-4 small text-secondary">
+            <div><strong>Version Note:</strong> {{ version.notes|default:"Snapshot" }}</div>
+            <div><strong>Status in this snapshot:</strong> <span class="badge bg-secondary">{{ version.status|title }}</span></div>
+            <div><strong>Sections to restore:</strong> {{ version.sections_snapshot|length }} section(s)</div>
+        </div>
+
+        <div class="alert alert-warning border-0 small mb-4">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+            Current sections on the live page will be replaced with this snapshot. A new recovery snapshot of your current state will also be preserved.
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-3 justify-content-end">
+                <a href="/adcs/homepage/infopage/{{ page_obj.id }}/change/" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger fw-semibold">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Confirm &amp; Restore Version #{{ version.version_num }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock content %}
+

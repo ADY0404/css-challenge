@@ -47,14 +47,32 @@ if not SECRET_KEY:
             "SECRET_KEY environment variable must be set in production when DEBUG=False."
         )
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com', 'testserver']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '.onrender.com', '.fly.dev', 'testserver']
 RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default=None)
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+FLY_APP_NAME = config('FLY_APP_NAME', default=None)
+if FLY_APP_NAME:
+    ALLOWED_HOSTS.append(f"{FLY_APP_NAME}.fly.dev")
+
+custom_allowed_hosts = config('ALLOWED_HOSTS', default='')
+if custom_allowed_hosts:
+    for host in custom_allowed_hosts.split(','):
+        host = host.strip()
+        if host and host not in ALLOWED_HOSTS:
+            ALLOWED_HOSTS.append(host)
+
 CSRF_TRUSTED_ORIGINS = [
     'https://*.onrender.com',
+    'https://*.fly.dev',
 ]
+custom_csrf = config('CSRF_TRUSTED_ORIGINS', default='')
+if custom_csrf:
+    for origin in custom_csrf.split(','):
+        origin = origin.strip()
+        if origin and origin not in CSRF_TRUSTED_ORIGINS:
+            CSRF_TRUSTED_ORIGINS.append(origin)
 
 # Security Headers & Reverse-Proxy Configuration
 # Render terminates SSL at reverse proxy and forwards proto
@@ -144,11 +162,21 @@ DATABASE_URL = config('DATABASE_URL', default='')
 DB_ENGINE = config('DB_ENGINE', default='').lower()
 USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
 
+SQLITE_DB_PATH = config('SQLITE_DB_PATH', default=None)
+if SQLITE_DB_PATH:
+    _sqlite_file = Path(SQLITE_DB_PATH)
+    try:
+        _sqlite_file.parent.mkdir(parents=True, exist_ok=True)
+    except Exception:
+        pass
+else:
+    _sqlite_file = BASE_DIR / 'db.sqlite3'
+
 if USE_SQLITE or DB_ENGINE == 'sqlite':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': _sqlite_file,
         }
     }
 elif DATABASE_URL.startswith(('mysql://', 'mariadb://')) or DB_ENGINE in ('mysql', 'mariadb'):
@@ -202,21 +230,34 @@ elif DATABASE_URL.startswith(('mysql://', 'mariadb://')) or DB_ENGINE in ('mysql
         }
     }
 elif DATABASE_URL.startswith(('postgres://', 'postgresql://')):
-    # Parse postgres://user:pass@host:port/dbname  (Render provides this format)
+    # Parse postgres://user:pass@host:port/dbname (Supports Render, Fly.io, Supabase, Neon)
     import urllib.parse as _urlparse
     _url = _urlparse.urlparse(DATABASE_URL)
+    _db_host = _url.hostname or '127.0.0.1'
+    _db_port = _url.port or 5432
+
+    _db_sslmode = config('DB_SSLMODE', default=None)
+    if _db_sslmode is None:
+        # Fly.io internal wireguard network (.internal) and localhost don't require external TLS
+        if _db_host.endswith('.internal') or _db_host in ('localhost', '127.0.0.1'):
+            _db_sslmode = 'disable'
+        else:
+            _db_sslmode = 'require'
+
+    _pg_options = {}
+    if _db_sslmode and _db_sslmode != 'disable':
+        _pg_options['sslmode'] = _db_sslmode
+
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
             'NAME': _url.path.lstrip('/'),
             'USER': _url.username,
             'PASSWORD': _url.password,
-            'HOST': _url.hostname,
-            'PORT': _url.port or 5432,
-            'OPTIONS': {
-                'sslmode': 'require',   # Render requires SSL on external connections
-            },
-            'CONN_MAX_AGE': 60,         # Reuse connections for 60 s (reduces overhead)
+            'HOST': _db_host,
+            'PORT': _db_port,
+            'OPTIONS': _pg_options,
+            'CONN_MAX_AGE': 60,
         }
     }
 else:
@@ -243,7 +284,7 @@ else:
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': BASE_DIR / 'db.sqlite3',
+                'NAME': _sqlite_file,
             }
         }
 
@@ -300,7 +341,7 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_ROOT = Path(config('MEDIA_ROOT', default=str(BASE_DIR / 'media')))
 
 # Redirect to the home page or any other page after login
 LOGIN_REDIRECT_URL = ''

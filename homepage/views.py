@@ -574,22 +574,71 @@ INFO_PAGES = {
 }
 
 
+from django.http import Http404, HttpResponseForbidden
+
+
 def info_page(request, page):
-    """Render informational pages (guidelines, programs, terms, privacy) backed by InfoPage model."""
-    db_page = InfoPage.objects.filter(slug=page).first()
-    if db_page:
-        context = {
-            'title': db_page.title,
-            'summary': db_page.summary,
-            'body': db_page.body,
-            'page_key': page,
-            'updated_at': db_page.updated_at,
-        }
-    else:
-        page_data = INFO_PAGES.get(page, {'title': page.capitalize(), 'summary': ''})
-        context = dict(page_data)
-        context['page_key'] = page
+    """
+    Render database-managed content pages (School of Groups, Tell Your Story,
+    Community Guidelines, Guidelines, Terms, Privacy, Programs).
+    Enforces staff-only access for draft and unpublished content.
+    Raises Http404 for unknown slugs or unauthorized draft access.
+    """
+    page_obj = InfoPage.objects.prefetch_related('sections').filter(slug=page).first()
+    if not page_obj:
+        raise Http404(f"The requested page '{page}' was not found.")
+
+    is_staff_user = bool(request.user.is_authenticated and request.user.is_staff)
+    is_draft = (page_obj.status == 'draft' or not page_obj.is_published)
+
+    if is_draft and not is_staff_user:
+        raise Http404("This page is currently unpublished or in draft mode.")
+
+    sections = list(page_obj.sections.filter(is_visible=True).order_by('order', 'id'))
+
+    context = {
+        'page': page_obj,
+        'page_key': page,
+        'title': page_obj.title,
+        'subtitle': page_obj.subtitle or page_obj.summary,
+        'summary': page_obj.summary or page_obj.subtitle,
+        'badge_text': page_obj.badge_text,
+        'hero_cta_text': page_obj.hero_cta_text,
+        'hero_cta_url': page_obj.hero_cta_url,
+        'effective_date': page_obj.effective_date,
+        'contact_email': page_obj.contact_email,
+        'updated_at': page_obj.updated_at,
+        'sections': sections,
+        'body': page_obj.body,
+        'is_preview': bool(is_draft and is_staff_user),
+    }
     return render(request, 'homepage/info_page.html', context)
+
+
+@login_required
+def restore_page_version_view(request, slug, version_id):
+    """
+    Authorized administrator view to restore a previous snapshot version of a managed page.
+    """
+    if not request.user.is_staff:
+        return HttpResponseForbidden("Only authorized administrators can restore page versions.")
+
+    page_obj = get_object_or_404(InfoPage, slug=slug)
+    version = get_object_or_404(page_obj.versions, id=version_id)
+
+    if request.method == 'POST':
+        page_obj.restore_version(version_id=version_id, restored_by=request.user)
+        messages.success(
+            request,
+            f"Successfully restored '{page_obj.title}' to Version #{version.version_num} ({version.saved_at.strftime('%Y-%m-%d %H:%M')})."
+        )
+        return redirect(f"/adcs/homepage/infopage/{page_obj.id}/change/")
+
+    return render(request, 'homepage/admin_confirm_restore.html', {
+        'page_obj': page_obj,
+        'version': version,
+    })
+
 
 
 # -----------------------------------------------------------------------------

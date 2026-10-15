@@ -280,17 +280,222 @@ class ClinicSession(models.Model):
 
 
 class InfoPage(models.Model):
-    slug = models.SlugField(max_length=50, unique=True, help_text="guidelines, programs, terms, or privacy")
-    title = models.CharField(max_length=150)
-    summary = models.TextField(blank=True, default='')
+    STATUS_CHOICES = [
+        ('published', 'Published'),
+        ('draft', 'Draft / Unpublished'),
+    ]
+
+    slug = models.SlugField(max_length=100, unique=True, help_text="Unique URL identifier e.g. school-of-groups, tell-your-story, community-guidelines")
+    title = models.CharField(max_length=200)
+    subtitle = models.TextField(blank=True, default='', help_text="Introductory text or subtitle for the page")
+    summary = models.TextField(blank=True, default='', help_text="Short summary for meta/banner")
+    badge_text = models.CharField(max_length=80, blank=True, default='', help_text="Badge above title e.g. Community Standards, Legal, Cohorts")
+    hero_cta_text = models.CharField(max_length=100, blank=True, default='', help_text="Hero Call to Action button label")
+    hero_cta_url = models.CharField(max_length=255, blank=True, default='', help_text="Hero Call to Action URL or path")
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='published', help_text="Publication state")
+    is_published = models.BooleanField(default=True, help_text="Public visibility toggle. When false, only staff can preview.")
+    effective_date = models.CharField(max_length=100, blank=True, default='', help_text="Effective date (e.g. October 2024)")
+    contact_email = models.CharField(max_length=150, blank=True, default='', help_text="Contact email for inquiries or reports")
     body = models.TextField(blank=True, default='', help_text="Optional custom body/content to supplement template content.")
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
+    last_modified_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='modified_infopages')
 
     class Meta:
-        ordering = ['slug']
+        ordering = ['title']
+        verbose_name = "Managed Page"
+        verbose_name_plural = "Managed Pages"
 
     def __str__(self):
         return f"{self.title} (/{self.slug}/)"
+
+    def get_absolute_url(self):
+        from django.urls import reverse
+        named_routes = {
+            'school-of-groups': 'school_of_groups',
+            'tell-your-story': 'tell_your_story',
+            'community-guidelines': 'community_guidelines',
+            'guidelines': 'guidelines',
+            'terms': 'terms',
+            'privacy': 'privacy',
+            'programs': 'programs',
+        }
+        if self.slug in named_routes:
+            try:
+                return reverse(named_routes[self.slug])
+            except Exception:
+                pass
+        return f"/{self.slug}/"
+
+    def create_version_snapshot(self, user=None, notes=''):
+        """Create an immutable snapshot of this page and its sections."""
+        next_ver = (self.versions.aggregate(models.Max('version_num'))['version_num__max'] or 0) + 1
+        sections_data = [
+            {
+                'heading': s.heading,
+                'section_key': s.section_key,
+                'body': s.body,
+                'icon_class': s.icon_class,
+                'call_to_action_text': s.call_to_action_text,
+                'call_to_action_url': s.call_to_action_url,
+                'call_to_action_style': s.call_to_action_style,
+                'order': s.order,
+                'is_visible': s.is_visible,
+            }
+            for s in self.sections.all().order_by('order', 'id')
+        ]
+        return self.versions.create(
+            version_num=next_ver,
+            title=self.title,
+            summary=self.summary,
+            subtitle=self.subtitle,
+            status=self.status,
+            effective_date=self.effective_date,
+            sections_snapshot=sections_data,
+            saved_by=user,
+            notes=notes or f"Snapshot v{next_ver} saved by {user.username if user else 'System'}",
+        )
+
+    def restore_version(self, version_id, restored_by=None):
+        """Restore all content fields and sections from a selected PageVersion snapshot."""
+        version = self.versions.get(id=version_id)
+        self.title = version.title
+        self.summary = version.summary
+        self.subtitle = version.subtitle
+        self.status = version.status
+        self.is_published = (version.status == 'published')
+        self.effective_date = version.effective_date
+        self.last_modified_by = restored_by
+        self.save()
+
+        # Re-populate sections atomically
+        self.sections.all().delete()
+        for s_data in version.sections_snapshot:
+            self.sections.create(
+                heading=s_data.get('heading', ''),
+                section_key=s_data.get('section_key', ''),
+                body=s_data.get('body', ''),
+                icon_class=s_data.get('icon_class', ''),
+                call_to_action_text=s_data.get('call_to_action_text', ''),
+                call_to_action_url=s_data.get('call_to_action_url', ''),
+                call_to_action_style=s_data.get('call_to_action_style', 'btn-primary'),
+                order=s_data.get('order', 0),
+                is_visible=s_data.get('is_visible', True),
+            )
+        self.create_version_snapshot(
+            user=restored_by,
+            notes=f"Restored from version #{version.version_num} ({version.saved_at.strftime('%Y-%m-%d %H:%M')})"
+        )
+
+
+class PageSection(models.Model):
+    CTA_STYLE_CHOICES = [
+        ('btn-primary', 'Primary Solid (Blue)'),
+        ('btn-outline-primary', 'Primary Outline'),
+        ('btn-success', 'Success Solid (Green)'),
+        ('btn-outline-success', 'Success Outline'),
+        ('btn-secondary', 'Secondary Solid (Gray)'),
+        ('btn-light', 'Light Button'),
+    ]
+
+    page = models.ForeignKey(InfoPage, on_delete=models.CASCADE, related_name='sections')
+    heading = models.CharField(max_length=255)
+    section_key = models.SlugField(max_length=100, blank=True, default='', help_text="Anchor slug for table of contents, e.g. 'code-of-conduct'")
+    body = models.TextField(help_text="Section body text. Supports formatted paragraphs, lists, and safe HTML.")
+    icon_class = models.CharField(max_length=80, blank=True, default='', help_text="Bootstrap icon e.g. bi-shield-check, bi-people")
+    call_to_action_text = models.CharField(max_length=120, blank=True, default='', help_text="Optional CTA button text")
+    call_to_action_url = models.CharField(max_length=255, blank=True, default='', help_text="Optional CTA URL or relative link")
+    call_to_action_style = models.CharField(max_length=50, default='btn-primary', choices=CTA_STYLE_CHOICES)
+    order = models.PositiveIntegerField(default=0, help_text="Display order (ascending)")
+    is_visible = models.BooleanField(default=True, help_text="Show or hide this section on the public page")
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['order', 'id']
+        verbose_name = "Page Section"
+        verbose_name_plural = "Page Sections"
+
+    def __str__(self):
+        return f"[{self.page.slug}] #{self.order} {self.heading}"
+
+    @property
+    def rendered_body(self):
+        from .sanitizer import sanitize_html
+        return sanitize_html(self.body)
+
+    def save(self, *args, **kwargs):
+        if not self.section_key and self.heading:
+            from django.utils.text import slugify
+            self.section_key = slugify(self.heading)[:100]
+        super().save(*args, **kwargs)
+
+
+class PageVersion(models.Model):
+    page = models.ForeignKey(InfoPage, on_delete=models.CASCADE, related_name='versions')
+    version_num = models.PositiveIntegerField(default=1)
+    title = models.CharField(max_length=200)
+    summary = models.TextField(blank=True, default='')
+    subtitle = models.TextField(blank=True, default='')
+    status = models.CharField(max_length=20, default='published')
+    effective_date = models.CharField(max_length=100, blank=True, default='')
+    sections_snapshot = models.JSONField(default=list, help_text="Snapshot of sections data")
+    saved_by = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='page_versions')
+    saved_at = models.DateTimeField(auto_now_add=True)
+    notes = models.CharField(max_length=255, blank=True, default='')
+
+    class Meta:
+        ordering = ['-version_num', '-saved_at']
+        unique_together = ('page', 'version_num')
+        verbose_name = "Page Version"
+        verbose_name_plural = "Page Versions"
+
+    def __str__(self):
+        return f"{self.page.slug} v{self.version_num} ({self.saved_at.strftime('%Y-%m-%d %H:%M')})"
+
+
+# Proxy models for dedicated individual admin entries
+class SchoolOfGroupsPage(InfoPage):
+    class Meta:
+        proxy = True
+        verbose_name = "School of Groups"
+        verbose_name_plural = "School of Groups"
+
+
+class TellYourStoryPage(InfoPage):
+    class Meta:
+        proxy = True
+        verbose_name = "Tell Your Story"
+        verbose_name_plural = "Tell Your Story"
+
+
+class CommunityGuidelinesPage(InfoPage):
+    class Meta:
+        proxy = True
+        verbose_name = "Community Guidelines"
+        verbose_name_plural = "Community Guidelines"
+
+
+class GuidelinesPage(InfoPage):
+    class Meta:
+        proxy = True
+        verbose_name = "Guidelines"
+        verbose_name_plural = "Guidelines"
+
+
+class TermsPage(InfoPage):
+    class Meta:
+        proxy = True
+        verbose_name = "Terms"
+        verbose_name_plural = "Terms"
+
+
+class PrivacyPage(InfoPage):
+    class Meta:
+        proxy = True
+        verbose_name = "Privacy"
+        verbose_name_plural = "Privacy"
+
 
 
 class CommunityChannel(models.Model):

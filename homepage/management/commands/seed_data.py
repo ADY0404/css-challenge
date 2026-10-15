@@ -8,9 +8,12 @@ from homepage.models import (
     CommunityMessage,
     ClinicSession,
     InfoPage,
+    PageSection,
+    PageVersion,
     CommunityChannel,
     SiteConfiguration,
 )
+from .seed_pages_data import PAGES_DATA
 from activities.models import Event, GuestSpeaker
 from executives.models import Executive
 from users.models import Profile
@@ -44,6 +47,25 @@ class Command(BaseCommand):
         profile.bio = 'Junior CS major focused on backend systems, distributed computing, and open source.'
         profile.github_url = 'https://github.com'
         profile.save()
+
+        # 1b. Ensure primary administrator exists
+        admin_user, admin_created = User.objects.get_or_create(
+            username='dyaddai_sup',
+            defaults={
+                'first_name': 'Dickson',
+                'last_name': 'Addai',
+                'email': 'dicksonaddai@proton.me',
+                'is_staff': True,
+                'is_superuser': True,
+            }
+        )
+        if admin_created:
+            admin_user.password = 'pbkdf2_sha256$1000000$UXeVSPGrtxJneA6Kh6APc8$T89rU2pr5ALuaz0P97Un02pF+iTrTr2rrKvgs/5QZ8Y='
+            admin_user.save()
+        admin_profile, _ = Profile.objects.get_or_create(user=admin_user)
+        admin_profile.email_verified = True
+        admin_profile.is_locked = False
+        admin_profile.save()
 
         # 2. Seed Challenges
         challenges_data = [
@@ -475,39 +497,73 @@ class Command(BaseCommand):
             )
         self.stdout.write(f"  Loaded {len(clinic_sessions)} Clinic Sessions.")
 
-        # 9. Seed Informational / Policy Pages
-        info_pages = [
-            {
-                'slug': 'guidelines',
-                'title': 'Society Guidelines',
-                'summary': 'Be respectful, inclusive, and constructive. These principles help keep CSS a welcoming place to learn and collaborate.',
-                'body': 'These community guidelines outline expected behavior, respect for shared resources, academic honesty, and inclusive participation across all Computer Science Society forums, workshops, hackathons, and collaborative tracks.',
-            },
-            {
-                'slug': 'programs',
-                'title': 'CSS Programs',
-                'summary': 'Explore society programs including School of Groups, Tell Your Story, PC Clinic, and Hackathons.',
-                'body': 'CSS provides academic and career advancement opportunities through specialized cohorts, peer mentorship, hands-on clinics, and annual software competitions designed to accelerate your growth as an engineer.',
-            },
-            {
-                'slug': 'terms',
-                'title': 'Terms of Use',
-                'summary': 'Use CSS community spaces responsibly and respect the privacy, work, and time of other members.',
-                'body': 'By registering an account and accessing CSS web services, coding challenge submissions, or community channels, members agree to adhere to university acceptable use policies, code confidentiality, and respectful conduct.',
-            },
-            {
-                'slug': 'privacy',
-                'title': 'Privacy Policy',
-                'summary': 'CSS uses the information you provide to operate your account and deliver society activities.',
-                'body': 'We respect your student data privacy. Information collected during account registration, event RSVPs, or PC Clinic reservations is strictly used for university society operations and is never shared with unauthorized third parties.',
-            },
-        ]
-        for ip in info_pages:
-            InfoPage.objects.update_or_create(
-                slug=ip['slug'],
-                defaults=ip
+        # 9. Seed the Six Complete Managed Content Pages (Configurable in Admin)
+        total_sections_count = 0
+        for p_data in PAGES_DATA:
+            sections_list = p_data.get('sections', [])
+            page_defaults = {
+                'title': p_data['title'],
+                'subtitle': p_data.get('subtitle', ''),
+                'summary': p_data.get('summary', ''),
+                'badge_text': p_data.get('badge_text', ''),
+                'status': p_data.get('status', 'published'),
+                'is_published': p_data.get('is_published', True),
+                'effective_date': p_data.get('effective_date', ''),
+                'contact_email': p_data.get('contact_email', ''),
+                'hero_cta_text': p_data.get('hero_cta_text', ''),
+                'hero_cta_url': p_data.get('hero_cta_url', ''),
+                'last_modified_by': admin_user,
+            }
+            page_obj, _ = InfoPage.objects.update_or_create(
+                slug=p_data['slug'],
+                defaults=page_defaults
             )
-        self.stdout.write(f"  Loaded {len(info_pages)} Informational CMS Pages.")
+
+            # Re-seed sections cleanly
+            page_obj.sections.all().delete()
+            for s_data in sections_list:
+                PageSection.objects.create(
+                    page=page_obj,
+                    heading=s_data['heading'],
+                    section_key=s_data.get('section_key', ''),
+                    body=s_data['body'],
+                    icon_class=s_data.get('icon_class', ''),
+                    call_to_action_text=s_data.get('call_to_action_text', ''),
+                    call_to_action_url=s_data.get('call_to_action_url', ''),
+                    call_to_action_style=s_data.get('call_to_action_style', 'btn-primary'),
+                    order=s_data.get('order', 0),
+                    is_visible=s_data.get('is_visible', True),
+                )
+                total_sections_count += 1
+
+            # Ensure version 1 snapshot exists
+            if not page_obj.versions.exists():
+                page_obj.create_version_snapshot(
+                    user=admin_user,
+                    notes="Initial production content snapshot v1"
+                )
+
+        # Ensure programs fallback page is also initialized
+        programs_page, _ = InfoPage.objects.update_or_create(
+            slug='programs',
+            defaults={
+                'title': 'CSS Programs & Initiatives',
+                'subtitle': 'Structured initiatives supporting students from their first line of code to industry placement.',
+                'summary': 'Explore society programs including School of Groups, Tell Your Story, PC Clinic, and Hackathons.',
+                'badge_text': 'Society Programs',
+                'status': 'published',
+                'is_published': True,
+                'effective_date': 'Academic Year 2024 / 2025',
+                'contact_email': 'programs@css.community',
+                'hero_cta_text': 'School of Groups',
+                'hero_cta_url': '/school-of-groups/',
+                'last_modified_by': admin_user,
+            }
+        )
+        if not programs_page.versions.exists():
+            programs_page.create_version_snapshot(user=admin_user, notes="Initial programs snapshot v1")
+
+        self.stdout.write(f"  Loaded {len(PAGES_DATA) + 1} Managed Content Pages with {total_sections_count} structured sections.")
 
         # 10. Seed Community Channels
         channels_data = [

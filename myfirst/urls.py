@@ -17,6 +17,7 @@ setup_custom_admin_dashboard(admin.site)
 
 urlpatterns = [
     path('favicon.ico', RedirectView.as_view(url='/static/images/com.png', permanent=True)),
+    path('adcs/content/restore/<slug:slug>/<int:version_id>/', views.restore_page_version_view, name='restore_page_version'),
     path('adcs/', admin.site.urls),
     path('login/', login_view, name='login'),
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
@@ -50,13 +51,16 @@ urlpatterns = [
     # Newsletter
     path('newsletter/subscribe/', views.newsletter_subscribe, name='newsletter_subscribe'),
 
-    # Informational Pages & Programs
+    # Managed Content Pages (Configurable via Admin Console)
+    path('school-of-groups/', views.info_page, {'page': 'school-of-groups'}, name='school_of_groups'),
+    path('tell-your-story/', views.info_page, {'page': 'tell-your-story'}, name='tell_your_story'),
+    path('community-guidelines/', views.info_page, {'page': 'community-guidelines'}, name='community_guidelines'),
     path('guidelines/', views.info_page, {'page': 'guidelines'}, name='guidelines'),
+    path('terms/', views.info_page, {'page': 'terms'}, name='terms'),
+    path('privacy/', views.info_page, {'page': 'privacy'}, name='privacy'),
     path('programs/', views.info_page, {'page': 'programs'}, name='programs'),
     path('programs/clinic/', views.clinic_dates, name='pc_clinic'),
     path('clinic/', views.clinic_dates, name='clinic_dates'),
-    path('terms/', views.info_page, {'page': 'terms'}, name='terms'),
-    path('privacy/', views.info_page, {'page': 'privacy'}, name='privacy'),
 
     # Legacy / exploratory route masks
     path('home/', RedirectView.as_view(url='/', permanent=False)),

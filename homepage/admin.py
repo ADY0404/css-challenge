@@ -12,6 +12,14 @@ from .models import (
     ClinicAppointment,
     ClinicSession,
     InfoPage,
+    PageSection,
+    PageVersion,
+    SchoolOfGroupsPage,
+    TellYourStoryPage,
+    CommunityGuidelinesPage,
+    GuidelinesPage,
+    TermsPage,
+    PrivacyPage,
     CommunityChannel,
     SiteConfiguration,
 )
@@ -219,26 +227,189 @@ class ClinicSessionAdmin(admin.ModelAdmin):
     )
 
 
+class PageSectionInline(admin.StackedInline):
+    model = PageSection
+    extra = 0
+    fields = (
+        ('heading', 'order', 'is_visible'),
+        ('section_key', 'icon_class'),
+        'body',
+        ('call_to_action_text', 'call_to_action_url', 'call_to_action_style'),
+    )
+    prepopulated_fields = {'section_key': ('heading',)}
+
+
+class PageVersionInline(admin.TabularInline):
+    model = PageVersion
+    extra = 0
+    readonly_fields = ('version_num', 'saved_at', 'saved_by', 'status', 'sections_count', 'notes', 'restore_action')
+    fields = ('version_num', 'saved_at', 'saved_by', 'status', 'sections_count', 'notes', 'restore_action')
+    can_delete = False
+    ordering = ('-version_num',)
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    @admin.display(description='Sections')
+    def sections_count(self, obj):
+        return len(obj.sections_snapshot) if obj.sections_snapshot else 0
+
+    @admin.display(description='Restore')
+    def restore_action(self, obj):
+        return format_html(
+            '<a class="button" style="background:#dc2626; color:white; padding:3px 10px; border-radius:4px; text-decoration:none;" href="/adcs/content/restore/{}/{}/">Restore v{}</a>',
+            obj.page.slug,
+            obj.id,
+            obj.version_num
+        )
+
+
 @admin.register(InfoPage)
 class InfoPageAdmin(admin.ModelAdmin):
-    list_display = ('title', 'slug', 'summary_preview', 'updated_at')
-    search_fields = ('title', 'slug', 'summary', 'body')
+    list_display = (
+        'title',
+        'slug',
+        'status_badge',
+        'is_published',
+        'sections_count',
+        'effective_date',
+        'last_modified_by',
+        'updated_at',
+        'preview_link',
+    )
+    list_filter = ('status', 'is_published', 'updated_at')
+    search_fields = ('title', 'slug', 'subtitle', 'summary', 'body')
     prepopulated_fields = {'slug': ('title',)}
+    inlines = [PageSectionInline, PageVersionInline]
+    actions = ['publish_pages', 'unpublish_pages', 'create_version_snapshot_action']
+
     fieldsets = (
-        ('Page Identification', {
-            'fields': ('title', 'slug')
+        ('Page Identification & Branding', {
+            'fields': ('title', 'slug', 'badge_text')
         }),
-        ('Summary Banner', {
-            'fields': ('summary',)
+        ('Introductory Content & Summaries', {
+            'fields': ('subtitle', 'summary')
         }),
-        ('Body Content (Optional Override / Supplement)', {
-            'fields': ('body',)
+        ('Publication Status & Visibility', {
+            'fields': ('status', 'is_published', 'effective_date', 'contact_email')
+        }),
+        ('Hero Call to Action (Optional)', {
+            'fields': ('hero_cta_text', 'hero_cta_url')
+        }),
+        ('Legacy / Fallback Content', {
+            'fields': ('body',),
+            'classes': ('collapse',),
+            'description': 'Used only if no structured page sections are defined.'
         }),
     )
 
-    @admin.display(description='Summary Preview')
-    def summary_preview(self, obj):
-        return (obj.summary[:75] + '...') if len(obj.summary) > 75 else obj.summary
+    @admin.display(description='Status')
+    def status_badge(self, obj):
+        if obj.status == 'published' and obj.is_published:
+            return format_html('<span style="color:#15803d; font-weight:600;">&#10003; Published</span>')
+        return format_html('<span style="color:#b45309; font-weight:600;">&#9998; Draft</span>')
+
+    @admin.display(description='Sections')
+    def sections_count(self, obj):
+        return obj.sections.count()
+
+    @admin.display(description='Preview')
+    def preview_link(self, obj):
+        url = obj.get_absolute_url()
+        return format_html('<a href="{}" target="_blank" style="font-weight:600; text-decoration:none;">View &rarr;</a>', url)
+
+    def save_model(self, request, obj, form, change):
+        obj.last_modified_by = request.user
+        super().save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.create_version_snapshot(
+            user=request.user,
+            notes=f"Updated by {request.user.get_full_name() or request.user.username}"
+        )
+
+    @admin.action(description="Publish selected pages")
+    def publish_pages(self, request, queryset):
+        count = queryset.update(status='published', is_published=True, last_modified_by=request.user)
+        for page in queryset:
+            page.create_version_snapshot(user=request.user, notes="Published via admin action")
+        self.message_user(request, f"{count} page(s) published successfully.")
+
+    @admin.action(description="Unpublish selected pages (Set to Draft)")
+    def unpublish_pages(self, request, queryset):
+        count = queryset.update(status='draft', is_published=False, last_modified_by=request.user)
+        for page in queryset:
+            page.create_version_snapshot(user=request.user, notes="Unpublished to Draft via admin action")
+        self.message_user(request, f"{count} page(s) marked as Draft.")
+
+    @admin.action(description="Create Version Snapshot for selected pages")
+    def create_version_snapshot_action(self, request, queryset):
+        for page in queryset:
+            page.create_version_snapshot(user=request.user, notes="Manual snapshot via admin action")
+        self.message_user(request, f"Created snapshots for {queryset.count()} page(s).")
+
+
+class BaseSpecificPageAdmin(InfoPageAdmin):
+    target_slug = ''
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if self.target_slug:
+            return qs.filter(slug=self.target_slug)
+        return qs
+
+    def save_model(self, request, obj, form, change):
+        if self.target_slug and not obj.slug:
+            obj.slug = self.target_slug
+        super().save_model(request, obj, form, change)
+
+
+@admin.register(SchoolOfGroupsPage)
+class SchoolOfGroupsPageAdmin(BaseSpecificPageAdmin):
+    target_slug = 'school-of-groups'
+
+
+@admin.register(TellYourStoryPage)
+class TellYourStoryPageAdmin(BaseSpecificPageAdmin):
+    target_slug = 'tell-your-story'
+
+
+@admin.register(CommunityGuidelinesPage)
+class CommunityGuidelinesPageAdmin(BaseSpecificPageAdmin):
+    target_slug = 'community-guidelines'
+
+
+@admin.register(GuidelinesPage)
+class GuidelinesPageAdmin(BaseSpecificPageAdmin):
+    target_slug = 'guidelines'
+
+
+@admin.register(TermsPage)
+class TermsPageAdmin(BaseSpecificPageAdmin):
+    target_slug = 'terms'
+
+
+@admin.register(PrivacyPage)
+class PrivacyPageAdmin(BaseSpecificPageAdmin):
+    target_slug = 'privacy'
+
+
+@admin.register(PageSection)
+class PageSectionAdmin(admin.ModelAdmin):
+    list_display = ('heading', 'page', 'order', 'is_visible', 'call_to_action_text', 'updated_at')
+    list_filter = ('page', 'is_visible')
+    list_editable = ('order', 'is_visible')
+    search_fields = ('heading', 'body', 'page__title')
+
+
+@admin.register(PageVersion)
+class PageVersionAdmin(admin.ModelAdmin):
+    list_display = ('page', 'version_num', 'status', 'saved_by', 'saved_at', 'notes')
+    list_filter = ('page', 'status', 'saved_at')
+    search_fields = ('page__title', 'notes', 'saved_by__username')
+    readonly_fields = ('page', 'version_num', 'title', 'summary', 'subtitle', 'status', 'effective_date', 'sections_snapshot', 'saved_by', 'saved_at', 'notes')
+
 
 
 @admin.register(CommunityChannel)
