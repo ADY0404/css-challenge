@@ -53,8 +53,8 @@
                                 <div class="d-flex align-items-center gap-3">
                                     <a href="{% url 'member_profile' sub.user.username %}" class="text-decoration-none" title="View {{ sub.user.username }}'s profile">
                                         {% if sub.user.profile.profile_picture %}
-                                            <img src="{{ sub.user.profile.profile_picture.url }}" alt="{{ sub.user.username }}" class="rounded-circle shadow-sm" style="width: 44px; height: 44px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.classList.remove('d-none');">
-                                            <div class="rounded-circle shadow-sm d-none d-flex align-items-center justify-content-center bg-primary text-white" style="width: 44px; height: 44px; font-weight: bold; font-size: 1rem;">
+                                            <img src="{{ sub.user.profile.profile_picture.url }}" alt="{{ sub.user.username }}" class="rounded-circle shadow-sm" style="width: 44px; height: 44px; object-fit: cover;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                            <div class="rounded-circle shadow-sm align-items-center justify-content-center bg-primary text-white" style="display: none; width: 44px; height: 44px; font-weight: bold; font-size: 1rem;">
                                                 {{ sub.user.first_name|first|default:sub.user.username|first|upper }}
                                             </div>
                                         {% else %}
@@ -84,11 +84,11 @@
                                         <i class="bi {% if sub.id in user_upvoted_ids %}bi-heart-fill{% else %}bi-heart{% endif %} me-1" id="upvote-icon-{{ sub.id }}"></i>
                                         <span id="upvote-count-{{ sub.id }}">{{ sub.num_upvotes }}</span>
                                     </button>
-                                    <a href="{{ sub.repo_url }}" target="_blank" class="btn btn-outline-secondary btn-sm py-1 px-2" title="Source Code">
+                                    <a href="{{ sub.repo_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-secondary btn-sm py-1 px-2" title="Source Code">
                                         <i class="bi bi-github me-1"></i>Repo
                                     </a>
                                     {% if sub.demo_url %}
-                                        <a href="{{ sub.demo_url }}" target="_blank" class="btn btn-outline-primary btn-sm py-1 px-2" title="Live Demo">
+                                        <a href="{{ sub.demo_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm py-1 px-2" title="Live Demo">
                                             <i class="bi bi-box-arrow-up-right me-1"></i>Demo
                                         </a>
                                     {% endif %}
@@ -195,72 +195,99 @@
             </aside>
         </div>
     </div>
+
+    <!-- Hidden Config & CSRF Token Holder for AJAX Upvoting -->
+    <input type="hidden" id="challengeCsrfToken" value="{{ csrf_token }}">
+    <div id="challengeConfig" 
+         data-authenticated="{{ user.is_authenticated|yesno:'true,false' }}" 
+         data-login-url="{% url 'login' %}?next={{ request.path }}">
+    </div>
 </main>
 
+<style>
+.leading-relaxed {
+    line-height: 1.75;
+}
+</style>
+
 <script>
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
+(function() {
+    function getCsrfToken() {
+        var tokenInput = document.getElementById('challengeCsrfToken');
+        if (tokenInput && tokenInput.value) {
+            return tokenInput.value;
+        }
+        if (document.cookie && document.cookie !== '') {
+            var cookies = document.cookie.split(';');
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.substring(0, 10) === 'csrftoken=') {
+                    return decodeURIComponent(cookie.substring(10));
+                }
             }
         }
+        return '';
     }
-    return cookieValue;
-}
 
-function toggleUpvote(subId) {
-    {% if not user.is_authenticated %}
-        window.location.href = "{% url 'login' %}?next={{ request.path }}";
-        return;
-    {% endif %}
+    var configElem = document.getElementById('challengeConfig');
+    var isAuthenticated = configElem ? configElem.getAttribute('data-authenticated') === 'true' : false;
+    var loginUrl = configElem ? configElem.getAttribute('data-login-url') : '/login/';
 
-    const btn = document.getElementById('upvote-btn-' + subId);
-    const icon = document.getElementById('upvote-icon-' + subId);
-    const countSpan = document.getElementById('upvote-count-' + subId);
-    if (!btn) return;
-
-    btn.disabled = true;
-
-    fetch('/challenges/submission/' + subId + '/upvote/', {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Content-Type': 'application/json'
-        }
-    })
-    .then(res => {
-        if (res.status === 401) {
-            window.location.href = "{% url 'login' %}?next={{ request.path }}";
+    window.toggleUpvote = function(subId) {
+        if (!isAuthenticated) {
+            window.location.href = loginUrl;
             return;
         }
-        return res.json();
-    })
-    .then(data => {
-        if (data && data.authenticated) {
-            countSpan.textContent = data.count;
-            if (data.upvoted) {
-                btn.classList.remove('btn-outline-danger');
-                btn.classList.add('btn-danger', 'text-white');
-                icon.classList.remove('bi-heart');
-                icon.classList.add('bi-heart-fill');
-            } else {
-                btn.classList.remove('btn-danger', 'text-white');
-                btn.classList.add('btn-outline-danger');
-                icon.classList.remove('bi-heart-fill');
-                icon.classList.add('bi-heart');
+
+        var btn = document.getElementById('upvote-btn-' + subId);
+        var icon = document.getElementById('upvote-icon-' + subId);
+        var countSpan = document.getElementById('upvote-count-' + subId);
+        if (!btn) return;
+
+        btn.disabled = true;
+
+        fetch('/challenges/submission/' + subId + '/upvote/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+                'Content-Type': 'application/json'
             }
-        }
-    })
-    .catch(err => console.error('Error toggling upvote:', err))
-    .finally(() => {
-        btn.disabled = false;
-    });
-}
+        })
+        .then(function(res) {
+            if (res.status === 401) {
+                window.location.href = loginUrl;
+                return null;
+            }
+            return res.json();
+        })
+        .then(function(data) {
+            if (data && data.authenticated) {
+                if (countSpan) countSpan.textContent = data.count;
+                if (data.upvoted) {
+                    btn.classList.remove('btn-outline-danger');
+                    btn.classList.add('btn-danger', 'text-white');
+                    if (icon) {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill');
+                    }
+                } else {
+                    btn.classList.remove('btn-danger', 'text-white');
+                    btn.classList.add('btn-outline-danger');
+                    if (icon) {
+                        icon.classList.remove('bi-heart-fill');
+                        icon.classList.add('bi-heart');
+                    }
+                }
+            }
+        })
+        .catch(function(err) {
+            console.error('Error toggling upvote:', err);
+        })
+        .finally(function() {
+            btn.disabled = false;
+        });
+    };
+})();
 </script>
 {% endblock content %}
 
