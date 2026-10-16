@@ -390,9 +390,26 @@ else:
 # Google provides official test keys which always pass for local dev:
 # Site key: 6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI
 # Secret key: 6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe
+GOOGLE_LOCALHOST_RECAPTCHA_SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'
+GOOGLE_LOCALHOST_RECAPTCHA_SECRET_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
+
 RECAPTCHA_ENABLED = config('RECAPTCHA_ENABLED', default=True, cast=bool)
-RECAPTCHA_SITE_KEY = config('RECAPTCHA_SITE_KEY', default='6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI')
-RECAPTCHA_SECRET_KEY = config('RECAPTCHA_SECRET_KEY', default='6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe')
+
+# Automatically use localhost test keys when running locally (dev server / DEBUG)
+# while using production keys when deployed to Fly.io
+if IS_RUNNING_DEV_SERVER or (DEBUG and not config('FORCE_PROD_RECAPTCHA', default=False, cast=bool)):
+    _configured_site = config('RECAPTCHA_SITE_KEY', default=GOOGLE_LOCALHOST_RECAPTCHA_SITE_KEY)
+    _configured_secret = config('RECAPTCHA_SECRET_KEY', default=GOOGLE_LOCALHOST_RECAPTCHA_SECRET_KEY)
+    # If the user has production domain keys in .env, automatically fallback to test keys on localhost
+    if _configured_site.startswith(('6LdZ', '6LcL')) or config('USE_LOCALHOST_RECAPTCHA', default=True, cast=bool):
+        RECAPTCHA_SITE_KEY = GOOGLE_LOCALHOST_RECAPTCHA_SITE_KEY
+        RECAPTCHA_SECRET_KEY = GOOGLE_LOCALHOST_RECAPTCHA_SECRET_KEY
+    else:
+        RECAPTCHA_SITE_KEY = _configured_site
+        RECAPTCHA_SECRET_KEY = _configured_secret
+else:
+    RECAPTCHA_SITE_KEY = config('RECAPTCHA_SITE_KEY', default=GOOGLE_LOCALHOST_RECAPTCHA_SITE_KEY)
+    RECAPTCHA_SECRET_KEY = config('RECAPTCHA_SECRET_KEY', default=GOOGLE_LOCALHOST_RECAPTCHA_SECRET_KEY)
 
 # Terminal & Server Logging Configuration
 LOGGING = {
